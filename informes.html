@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es-PY">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informes · NovaTrack</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E5BD8'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  /* Paleta categórica validada (validate_palette.js, modo claro: todas las
+     comprobaciones en PASS). El orden es fijo: una serie conserva su color
+     aunque se filtren las demás. */
+  .viz { --s1:#2E5BD8; --s2:#B45309; --s3:#0f8f66; --s4:#6A4A8F; --s-otros:#8A91A0; }
+  .viz svg { display: block; width: 100%; overflow: visible; }
+  .viz text { font-family: inherit; }
+  .ax { font-size: 9.5px; fill: var(--ink-3); }
+  .ax-line { stroke: var(--line); stroke-width: 1; }
+  .grid-l { stroke: var(--line-2); stroke-width: 1; }
+  .viz-tip {
+    position: fixed; z-index: 850; pointer-events: none;
+    background: #10162B; color: #fff; border-radius: 5px;
+    padding: 7px 9px; font-size: 11.5px; line-height: 1.4;
+    box-shadow: var(--sh-3); max-width: 240px; opacity: 0; transition: opacity .1s;
+  }
+  .viz-tip b { font-size: 12px; }
+  .viz-tip .k { color: #A9B3D0; }
+  .hit { fill: transparent; cursor: crosshair; }
+  .hero { font-size: 30px; font-weight: 800; letter-spacing: -1px; line-height: 1.05; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand" id="brand"></div>
+  <div class="topbar" id="topbar"></div>
+  <nav class="nav" id="nav"></nav>
+  <main class="main">
+    <div id="head"></div>
+    <div class="content"><div id="cuerpo"></div></div>
+  </main>
+</div>
+<div class="viz-tip" id="tip"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+boot('informes');
+
+const CAT = ['#2E5BD8', '#B45309', '#0f8f66', '#6A4A8F'];
+const OTROS = '#8A91A0';
+let periodo = 30;
+
+/* ============================================================
+   Agregaciones
+   ============================================================ */
+const hoy = parseISO(isoToday());
+function ultimosDias(n) {
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(hoy); d.setDate(hoy.getDate() - i);
+    const iso = fmtISO(d);
+    const s = SERVICIOS.filter(x => x.fecha === iso);
+    out.push({ d, iso, n: s.length, srv: s, usd: s.filter(x => x.estado === 'cerrada').reduce((a, x) => a + x.montoUsd, 0) });
+  }
+  return out;
+}
+function porEstado(lista) {
+  return ESTADO_ORDER.map(k => ({ k, label: ESTADOS[k].label, color: ESTADOS[k].color, n: lista.filter(s => s.estado === k).length }));
+}
+function porCategoria(lista) {
+  const m = {};
+  lista.forEach(s => { m[s.cat] = (m[s.cat] || 0) + 1; });
+  const arr = Object.entries(m).map(([k, n]) => ({ k, n })).sort((a, b) => b.n - a.n);
+  const top = arr.slice(0, 4);
+  const resto = arr.slice(4).reduce((a, x) => a + x.n, 0);
+  if (resto) top.push({ k: 'Otras categorías', n: resto, otros: true });
+  return top;
+}
+
+/* ============================================================
+   Tooltip
+   ============================================================ */
+const tip = document.getElementById('tip');
+function showTip(e, html) {
+  tip.innerHTML = html;
+  tip.style.opacity = '1';
+  const x = Math.min(window.innerWidth - 254, e.clientX + 12);
+  tip.style.left = x + 'px';
+  tip.style.top = Math.max(8, e.clientY - 12) + 'px';
+}
+const hideTip = () => { tip.style.opacity = '0'; };
+
+/* ============================================================
+   Gráfico 1 — línea: órdenes por día (una serie, sin leyenda)
+   ============================================================ */
+function chartLinea(dias) {
+  const W = 720, H = 190, P = { t: 12, r: 12, b: 22, l: 34 };
+  const max = Math.max(6, ...dias.map(d => d.n));
+  const x = i => P.l + i * (W - P.l - P.r) / Math.max(1, dias.length - 1);
+  const y = v => H - P.b - v / max * (H - P.t - P.b);
+  const pts = dias.map((d, i) => [x(i), y(d.n)]);
+  const linea = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const area = linea + ' L' + x(dias.length - 1).toFixed(1) + ',' + (H - P.b) + ' L' + P.l + ',' + (H - P.b) + ' Z';
+  const ticks = [0, Math.round(max / 2), max];
+
+  return '<div class="viz"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Órdenes por día">' +
+    ticks.map(t => '<line class="grid-l" x1="' + P.l + '" y1="' + y(t) + '" x2="' + (W - P.r) + '" y2="' + y(t) + '"/>' +
+      '<text class="ax" x="' + (P.l - 6) + '" y="' + (y(t) + 3) + '" text-anchor="end">' + t + '</text>').join('') +
+    '<defs><linearGradient id="gArea" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#2E5BD8" stop-opacity=".18"/><stop offset="100%" stop-color="#2E5BD8" stop-opacity="0"/></linearGradient></defs>' +
+    '<path d="' + area + '" fill="url(#gArea)"/>' +
+    '<path d="' + linea + '" fill="none" stroke="#2E5BD8" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+    (() => { const paso = Math.ceil(dias.length / 8); return dias.map((d, i) =>
+      (i % paso === 0 && i <= dias.length - 1 - Math.floor(paso / 2)) || i === dias.length - 1
+        ? '<text class="ax" x="' + x(i) + '" y="' + (H - 6) + '" text-anchor="middle">' + d.d.getDate() + ' ' + MES_S[d.d.getMonth()] + '</text>' : '').join(''); })() +
+    dias.map((d, i) => '<g class="pt"><circle cx="' + x(i).toFixed(1) + '" cy="' + y(d.n).toFixed(1) + '" r="3.2" fill="#fff" stroke="#2E5BD8" stroke-width="2" opacity="' + (i === dias.length - 1 ? 1 : 0) + '"/>' +
+      '<rect class="hit" x="' + (x(i) - 8) + '" y="' + P.t + '" width="16" height="' + (H - P.t - P.b) + '" ' +
+      'data-tip="' + esc('<b>' + d.n + ' órdenes</b><br><span class=\'k\'>' + fechaCorta(d.d) + '</span><br><span class=\'k\'>Facturable:</span> ' + usd(d.usd)) + '"/></g>').join('') +
+    '<line class="ax-line" x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '"/>' +
+    '</svg></div>';
+}
+
+/* ============================================================
+   Gráfico 2 — barras apiladas por estado (paleta de estado, con leyenda)
+   ============================================================ */
+function chartApilado(semanas) {
+  const W = 720, H = 210, P = { t: 12, r: 12, b: 34, l: 34 };
+  const max = Math.max(1, ...semanas.map(s => s.total));
+  const bw = Math.min(46, (W - P.l - P.r) / semanas.length - 14);
+  const x = i => P.l + i * (W - P.l - P.r) / semanas.length + ((W - P.l - P.r) / semanas.length - bw) / 2;
+  const h = v => v / max * (H - P.t - P.b);
+  const ticks = [0, Math.round(max / 2), max];
+
+  return '<div class="viz"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Órdenes por estado y semana">' +
+    ticks.map(t => '<line class="grid-l" x1="' + P.l + '" y1="' + (H - P.b - h(t)) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b - h(t)) + '"/>' +
+      '<text class="ax" x="' + (P.l - 6) + '" y="' + (H - P.b - h(t) + 3) + '" text-anchor="end">' + t + '</text>').join('') +
+    semanas.map((s, i) => {
+      let acc = 0;
+      return s.est.filter(e => e.n).map(e => {
+        const alto = h(e.n) - 2;                        /* 2 px de separación entre segmentos */
+        const yy = H - P.b - h(acc) - alto - 1;
+        acc += e.n;
+        return '<rect x="' + x(i).toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(1, alto).toFixed(1) + '" ' +
+          'rx="1.5" fill="' + e.color + '" ' +
+          'data-tip="' + esc('<b>' + e.n + ' órdenes</b><br><span class=\'k\'>' + e.label + '</span><br><span class=\'k\'>' + s.label + '</span>') + '"/>';
+      }).join('');
+    }).join('') +
+    semanas.map((s, i) => '<text class="ax" x="' + (x(i) + bw / 2).toFixed(1) + '" y="' + (H - P.b + 13) + '" text-anchor="middle">' + s.label + '</text>' +
+      '<text class="ax" x="' + (x(i) + bw / 2).toFixed(1) + '" y="' + (H - P.b + 25) + '" text-anchor="middle" font-weight="700" fill="#4A5164">' + s.total + '</text>').join('') +
+    '<line class="ax-line" x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '"/>' +
+    '</svg></div>' +
+    '<div class="chart-legend mt8">' + ESTADO_ORDER.map(k =>
+      '<span><i style="background:' + ESTADOS[k].color + '"></i>' + ESTADOS[k].label + '</span>').join('') + '</div>';
+}
+
+/* ============================================================
+   Gráfico 3 — dona: mezcla por categoría (≤5 segmentos, con etiquetas)
+   ============================================================ */
+function chartDona(cats, total) {
+  const R = 62, r = 40, cx = 80, cy = 80;
+  let ang = -Math.PI / 2;
+  const arcos = cats.map((c, i) => {
+    const frac = c.n / total;
+    const a0 = ang, a1 = ang + frac * Math.PI * 2 - 0.02;  /* separación entre segmentos */
+    ang += frac * Math.PI * 2;
+    const p = (a, rr) => [(cx + Math.cos(a) * rr).toFixed(2), (cy + Math.sin(a) * rr).toFixed(2)];
+    const large = (a1 - a0) > Math.PI ? 1 : 0;
+    const col = c.otros ? OTROS : CAT[i % CAT.length];
+    return '<path d="M' + p(a0, R) + ' A' + R + ',' + R + ' 0 ' + large + ' 1 ' + p(a1, R) +
+      ' L' + p(a1, r) + ' A' + r + ',' + r + ' 0 ' + large + ' 0 ' + p(a0, r) + ' Z" fill="' + col + '" ' +
+      'data-tip="' + esc('<b>' + c.n + ' órdenes</b><br><span class=\'k\'>' + c.k + '</span><br>' + (frac * 100).toFixed(1) + ' % del total') + '"/>';
+  }).join('');
+
+  return '<div class="row" style="align-items:center;gap:16px">' +
+    '<div class="viz" style="width:160px;flex:none"><svg viewBox="0 0 160 160" role="img" aria-label="Mezcla por categoría de servicio">' +
+    arcos +
+    '<text x="80" y="76" text-anchor="middle" font-size="21" font-weight="800" fill="#1A1F2E">' + total + '</text>' +
+    '<text x="80" y="91" text-anchor="middle" font-size="9" fill="#767D90" letter-spacing=".5">ÓRDENES</text>' +
+    '</svg></div>' +
+    '<div style="flex:1;min-width:0">' + cats.map((c, i) =>
+      '<div class="row" style="padding:3px 0;gap:7px">' +
+      '<i style="width:9px;height:9px;border-radius:2px;flex:none;background:' + (c.otros ? OTROS : CAT[i % CAT.length]) + '"></i>' +
+      '<span class="small truncate">' + esc(c.k) + '</span><span class="spacer"></span>' +
+      '<span class="small strong num">' + c.n + '</span>' +
+      '<span class="xsmall muted num" style="width:44px;text-align:right">' + (c.n / total * 100).toFixed(1) + ' %</span></div>').join('') +
+    '</div></div>';
+}
+
+/* ============================================================
+   Gráfico 4 — barras horizontales: top clientes (una serie, un color)
+   ============================================================ */
+function chartTopClientes(rows) {
+  const max = Math.max(...rows.map(r => r.usd));
+  return '<div class="viz">' + rows.map(r =>
+    '<div class="row" style="gap:8px;padding:3px 0" data-tip="' + esc('<b>' + usd(r.usd) + '</b><br><span class=\'k\'>' + pyg(toPyg(r.usd)) + '</span><br>' + r.n + ' órdenes cerradas') + '">' +
+      '<span class="small truncate" style="width:186px">' + esc(r.nombre) + '</span>' +
+      '<span style="flex:1;height:12px;background:var(--surface-3);border-radius:2px;overflow:hidden">' +
+        '<span style="display:block;height:100%;width:' + (r.usd / max * 100).toFixed(1) + '%;background:#2E5BD8;border-radius:2px"></span></span>' +
+      '<span class="small strong num" style="width:78px;text-align:right">' + usd(r.usd) + '</span>' +
+      '<span class="xsmall muted num" style="width:34px;text-align:right">' + r.n + '</span>' +
+    '</div>').join('') + '</div>';
+}
+
+/* ============================================================
+   Gráfico 5 — SLA por tipo (una serie + línea de referencia 95 %)
+   ============================================================ */
+function chartSla(rows) {
+  const W = 720, H = 200, P = { t: 14, r: 12, b: 58, l: 34 };
+  const bw = Math.min(40, (W - P.l - P.r) / rows.length - 12);
+  const x = i => P.l + i * (W - P.l - P.r) / rows.length + ((W - P.l - P.r) / rows.length - bw) / 2;
+  const y = v => H - P.b - (v / 100) * (H - P.t - P.b);
+  return '<div class="viz"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumplimiento de SLA por tipo de servicio">' +
+    [0, 50, 100].map(t => '<line class="grid-l" x1="' + P.l + '" y1="' + y(t) + '" x2="' + (W - P.r) + '" y2="' + y(t) + '"/>' +
+      '<text class="ax" x="' + (P.l - 6) + '" y="' + (y(t) + 3) + '" text-anchor="end">' + t + '%</text>').join('') +
+    '<line x1="' + P.l + '" y1="' + y(95) + '" x2="' + (W - P.r) + '" y2="' + y(95) + '" stroke="#B45309" stroke-width="1.4"/>' +
+    '<text class="ax" x="' + (P.l + 4) + '" y="' + (y(95) - 5) + '" fill="#B45309" font-weight="700">objetivo 95 %</text>' +
+    rows.map((r, i) =>
+      '<rect x="' + x(i).toFixed(1) + '" y="' + y(r.sla).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (H - P.b - y(r.sla)).toFixed(1) + '" rx="2" ' +
+      'fill="#2E5BD8"' +
+      ' data-tip="' + esc('<b>' + r.sla + ' % dentro de SLA</b><br><span class=\'k\'>' + r.nombre + '</span><br>' + r.n + ' órdenes · SLA ' + r.horas + ' h') + '"/>' +
+      '<text class="ax" x="' + (x(i) + bw / 2).toFixed(1) + '" y="' + (y(r.sla) - 5).toFixed(1) + '" text-anchor="middle" font-weight="700" ' +
+        'fill="' + (r.sla < 95 ? '#B45309' : '#4A5164') + '">' + (r.sla < 95 ? '▼ ' : '') + r.sla + '</text>' +
+      '<text class="ax" x="' + (x(i) + bw / 2).toFixed(1) + '" y="' + (H - P.b + 12) + '" text-anchor="end" transform="rotate(-40 ' + (x(i) + bw / 2).toFixed(1) + ' ' + (H - P.b + 12) + ')">' + esc(r.corto) + '</text>').join('') +
+    '<line class="ax-line" x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '"/>' +
+    '</svg></div>';
+}
+
+/* ============================================================
+   Render
+   ============================================================ */
+function render() {
+  const dias = ultimosDias(periodo);
+  const lista = dias.flatMap(d => d.srv);
+  const cerradas = lista.filter(s => s.estado === 'cerrada');
+  const mo = cerradas.reduce((a, s) => a + s.montoUsd, 0);
+  const gastos = lista.reduce((a, s) => a + s.gastosUsd, 0);
+  const est = porEstado(lista);
+  const cats = porCategoria(lista);
+  const slaOk = lista.filter(s => s.slaOk).length;
+
+  document.getElementById('head').innerHTML = pageHead({
+    crumbs: [{ t: 'Análisis' }, { t: 'Informes' }],
+    icon: 'chart',
+    titulo: 'Informes de operación',
+    meta: 'Últimos ' + periodo + ' días · ' + lista.length + ' órdenes · datos del tenant activo',
+    acciones:
+      '<div class="seg" id="segPer">' + [7, 30, 60].map(n =>
+        '<button class="' + (periodo === n ? 'on' : '') + '" data-p="' + n + '">' + n + ' días</button>').join('') + '</div>' +
+      '<button class="btn" id="bProg">' + icon('clock', 'ic-sm') + 'Programar envío</button>' +
+      '<button class="btn" id="bXls">' + icon('export', 'ic-sm') + 'Exportar</button>' +
+      '<button class="btn btn-primary" id="bPdfInf">' + icon('pdf', 'ic-sm') + 'Informe PDF</button>',
+    kpis:
+      kpi('Órdenes', lista.length, cerradas.length + ' cerradas') +
+      kpi('Facturado', money(mo, 'lg left'), 'mano de obra cerrada') +
+      kpi('Gastos', money(gastos, 'lg left'), (gastos / Math.max(1, mo) * 100).toFixed(1) + ' % sobre facturado') +
+      kpi('Margen bruto', money(mo - gastos, 'lg left'), 'antes de estructura') +
+      kpi('Ticket promedio', money(mo / Math.max(1, cerradas.length), 'lg left'), 'por orden cerrada') +
+      kpi('SLA cumplido', (slaOk / Math.max(1, lista.length) * 100).toFixed(1) + ' %', 'objetivo 95 %') +
+      kpi('Pendientes', est.find(e => e.k === 'pendiente').n, 'cierres con tareas abiertas'),
+  });
+
+  /* Semanas para el apilado */
+  const semanas = [];
+  for (let w = Math.ceil(periodo / 7) - 1; w >= 0; w--) {
+    const chunk = dias.slice(Math.max(0, dias.length - (w + 1) * 7), dias.length - w * 7);
+    if (!chunk.length) continue;
+    const srv = chunk.flatMap(c => c.srv);
+    semanas.push({
+      label: chunk[0].d.getDate() + '/' + pad(chunk[0].d.getMonth() + 1),
+      total: srv.length, est: porEstado(srv),
+    });
+  }
+
+  const topCli = Object.values(cerradas.reduce((a, s) => {
+    (a[s.clienteId] = a[s.clienteId] || { nombre: s.cliente, usd: 0, n: 0 });
+    a[s.clienteId].usd += s.montoUsd; a[s.clienteId].n++;
+    return a;
+  }, {})).sort((a, b) => b.usd - a.usd).slice(0, 10);
+
+  const slaTipos = TIPOS_SERVICIO.filter(t => t.activo).map(t => {
+    const l = lista.filter(s => s.tipoId === t.id);
+    return {
+      nombre: t.nombre, corto: t.nombre.length > 22 ? t.nombre.slice(0, 21) + '…' : t.nombre,
+      n: l.length, horas: t.sla,
+      sla: l.length ? Math.round(l.filter(s => s.slaOk).length / l.length * 100) : 100,
+    };
+  }).filter(r => r.n).slice(0, 10);
+
+  const gastosPorTipo = TIPOS_GASTO.map(tg => {
+    const items = lista.flatMap(s => s.gastos.filter(g => g.tipo === tg.nombre));
+    return { nombre: tg.nombre, n: items.length, usd: items.reduce((a, g) => a + g.usd, 0), tope: tg.tope, activo: tg.activo };
+  }).filter(r => r.n).sort((a, b) => b.usd - a.usd);
+
+  document.getElementById('cuerpo').innerHTML =
+    '<div class="grid g-2" style="align-items:start">' +
+      '<div class="card"><div class="card-head">' + icon('chart') + '<h3>Órdenes por día</h3>' +
+        '<span class="sub">últimos ' + periodo + ' días</span>' +
+        '<div class="right"><span class="xsmall muted">pasá el mouse sobre el gráfico</span></div></div>' +
+        '<div class="card-body">' + chartLinea(dias) + '</div></div>' +
+      '<div class="card"><div class="card-head">' + icon('layers') + '<h3>Órdenes por estado</h3>' +
+        '<span class="sub">agrupadas por semana</span></div>' +
+        '<div class="card-body">' + chartApilado(semanas) + '</div></div>' +
+    '</div>' +
+
+    '<div class="grid g-3 mt12" style="align-items:start">' +
+      '<div class="card"><div class="card-head">' + icon('gauge') + '<h3>Mezcla por categoría</h3></div>' +
+        '<div class="card-body">' + chartDona(cats, lista.length) + '</div></div>' +
+      '<div class="card" style="grid-column:span 2"><div class="card-head">' + icon('cliente') + '<h3>Top 10 clientes por facturación</h3>' +
+        '<span class="sub">mano de obra de órdenes cerradas</span></div>' +
+        '<div class="card-body">' + chartTopClientes(topCli) + '</div>' +
+        '<div class="card-foot">Los importes se muestran en USD; el equivalente en guaraníes aparece al pasar el mouse (cotización ' +
+          '<b class="fx-val"></b> Gs/USD).</div></div>' +
+    '</div>' +
+
+    '<div class="card mt12"><div class="card-head">' + icon('shield') + '<h3>Cumplimiento de SLA por tipo de servicio</h3>' +
+      '<span class="sub">porcentaje de órdenes atendidas dentro del plazo pactado</span>' +
+      '<div class="right"><button class="btn btn-sm" id="bTabla">Ver como tabla</button></div></div>' +
+      '<div class="card-body">' + chartSla(slaTipos) + '</div></div>' +
+
+    '<div class="grid g-2 mt12" style="align-items:start">' +
+      '<div class="card"><div class="card-head">' + icon('money') + '<h3>Gastos por tipo</h3>' +
+        '<span class="sub">rendiciones del período</span></div>' +
+        '<div class="tbl-wrap"><table class="tbl tbl-compact"><thead><tr>' +
+          '<th>Tipo de gasto</th><th class="num">Cant.</th><th class="num">Total</th><th class="num">Promedio</th><th class="num">Tope</th>' +
+        '</tr></thead><tbody>' +
+        gastosPorTipo.map(g => '<tr>' +
+          '<td>' + esc(g.nombre) + (g.activo ? '' : ' <span class="pill pill-neutral">inactivo</span>') + '</td>' +
+          '<td class="num">' + g.n + '</td>' +
+          '<td class="num">' + money(g.usd) + '</td>' +
+          '<td class="num">' + money(g.usd / g.n) + '</td>' +
+          '<td class="num">' + (g.usd / g.n > g.tope
+            ? '<span style="color:var(--err);font-weight:600">' + usd(g.tope) + '</span>'
+            : '<span class="muted">' + usd(g.tope) + '</span>') + '</td>' +
+        '</tr>').join('') +
+        '</tbody><tfoot><tr><td>Total</td><td class="num">' + gastosPorTipo.reduce((a, g) => a + g.n, 0) + '</td>' +
+        '<td class="num">' + money(gastosPorTipo.reduce((a, g) => a + g.usd, 0)) + '</td><td colspan="2"></td></tr></tfoot></table></div></div>' +
+
+      '<div class="card"><div class="card-head">' + icon('users') + '<h3>Productividad por colaborador</h3>' +
+        '<span class="sub">órdenes cerradas en el período</span></div>' +
+        '<div class="tbl-wrap"><table class="tbl tbl-compact"><thead><tr>' +
+          '<th>Colaborador</th><th class="num">Órdenes</th><th class="num">Horas</th><th class="num">Facturado</th><th class="num">SLA</th>' +
+        '</tr></thead><tbody>' +
+        COLABORADORES.filter(c => c.activo).map(c => {
+          const l = cerradas.filter(s => s.tecnicos.some(t => t.id === c.id));
+          return { c, n: l.length, usd: l.reduce((a, s) => a + s.montoUsd, 0), h: l.reduce((a, s) => a + s.dur, 0) / 60 };
+        }).filter(r => r.n).sort((a, b) => b.usd - a.usd).slice(0, 12).map(r => '<tr>' +
+          '<td><div class="who">' + avatar(r.c.nombre, 'av-sm') + '<span class="truncate">' + esc(r.c.nombre) + '</span></div></td>' +
+          '<td class="num">' + r.n + '</td>' +
+          '<td class="num">' + r.h.toFixed(1).replace('.0', '') + '</td>' +
+          '<td class="num">' + money(r.usd) + '</td>' +
+          '<td class="num"><span style="color:' + (r.c.sla >= 95 ? 'var(--ok)' : r.c.sla >= 85 ? 'var(--warn)' : 'var(--err)') + '" class="strong">' + r.c.sla + '%</span></td>' +
+        '</tr>').join('') +
+        '</tbody></table></div></div>' +
+    '</div>' +
+
+    '<div class="note mt12">' + icon('info') +
+    '<div>Los gráficos usan una paleta categórica validada para daltonismo y contraste, y la paleta de estados reservada ' +
+    '(rojo / naranja / verde / amarillo / gris) únicamente cuando el color <b>significa</b> un estado del servicio. ' +
+    'Toda serie tiene además su etiqueta o su tabla: nunca se codifica información solo con color.</div></div>';
+
+  /* Interacción */
+  document.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('mousemove', e => showTip(e, el.dataset.tip));
+    el.addEventListener('mouseleave', hideTip);
+  });
+  document.querySelectorAll('#segPer button').forEach(b => b.onclick = () => { periodo = +b.dataset.p; render(); });
+  document.getElementById('bXls').onclick = () =>
+    toastOk('Exportación generada', 'Informe de ' + periodo + ' días con ' + lista.length + ' órdenes en formato XLSX.', { code: 'REPORT_EXPORTED', accion: 'Descargar', onAccion: () => noMock('La descarga') });
+  document.getElementById('bPdfInf').onclick = () =>
+    toastInfo('Informe en preparación', 'El informe ejecutivo PDF se genera en segundo plano y llega por correo a ' + SESSION.user.email + '.', { code: 'REPORT_QUEUED' });
+  document.getElementById('bProg').onclick = () =>
+    toastErr('No se pudo programar el envío', 'Falta configurar el servidor SMTP del tenant. Sin SMTP no se pueden despachar informes automáticos.',
+      { code: 'SMTP_NOT_CONFIGURED', origen: 'Informes programados', sticky: true, accion: 'Configurar', onAccion: () => noMock('La configuración SMTP') });
+  document.getElementById('bTabla').onclick = () => modal({
+    titulo: 'SLA por tipo de servicio — vista de tabla', icon: 'list', size: 'wide',
+    foot: '<button class="btn" data-close>Cerrar</button>',
+    body: '<table class="tbl tbl-compact"><thead><tr><th>Tipo de servicio</th><th class="num">Órdenes</th><th class="num">SLA pactado</th><th class="num">Cumplimiento</th></tr></thead><tbody>' +
+      slaTipos.map(r => '<tr><td>' + esc(r.nombre) + '</td><td class="num">' + r.n + '</td><td class="num">' + r.horas + ' h</td>' +
+        '<td class="num"><b style="color:' + (r.sla >= 95 ? 'var(--ok)' : 'var(--warn)') + '">' + r.sla + ' %</b></td></tr>').join('') +
+      '</tbody></table>',
+  });
+  repriceAll();
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es-PY">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ingresar · NovaTrack</title>
+<meta name="description" content="NovaTrack — plataforma de gestión de servicio técnico en campo. Mockup F0.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E5BD8'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+
+<div class="login-page">
+
+  <!-- ===== Panel de marca ===== -->
+  <div class="login-art">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="brand-mark" style="width:32px;height:32px;font-size:15px">N</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;letter-spacing:-.2px">NovaTrack</div>
+        <div style="font-size:9.5px;color:#8E97B8;letter-spacing:.7px;text-transform:uppercase">by Noventra E.A.S.</div>
+      </div>
+    </div>
+
+    <div class="login-hero" style="margin-top:56px">
+      <h1>El campo, bajo control.</h1>
+      <p>Despachá servicios, seguí a tus cuadrillas en vivo y cerrá órdenes con evidencia geoestampada. Sin planillas, sin llamadas de seguimiento, sin sorpresas a fin de mes.</p>
+    </div>
+
+    <div class="login-feats">
+      <div class="lf">
+        <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        <div><h4>Agenda con estados en vivo</h4><p>Asignada, en camino, trabajando, con pendientes o cerrada. Un color, una verdad.</p></div>
+      </div>
+      <div class="lf">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>
+        <div><h4>Mapa de flota</h4><p>Posición de técnicos y sucursales georreferenciadas, con geocerca de check-in.</p></div>
+      </div>
+      <div class="lf">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M9 13h6M9 17h4"/></svg>
+        <div><h4>Orden de servicio en PDF</h4><p>Fotos, checklist, gastos y firma del cliente en un documento conformado.</p></div>
+      </div>
+      <div class="lf">
+        <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.6-1-1.8-1.5-3-1.5-1.7 0-3 .9-3 2s1.3 2 3 2 3 .9 3 2-1.3 2-3 2c-1.2 0-2.4-.5-3-1.5M12 6v12"/></svg>
+        <div><h4>Doble moneda</h4><p>Todo importe en USD y Guaraníes, con tipo de cambio editable por el administrador.</p></div>
+      </div>
+    </div>
+
+    <div class="login-stats">
+      <div class="login-stat"><b>500+</b><span>Clientes conectados</span></div>
+      <div class="login-stat"><b>24/7</b><span>Cuadrillas de guardia</span></div>
+      <div class="login-stat"><b>99,2 %</b><span>SLA cumplido</span></div>
+    </div>
+  </div>
+
+  <!-- ===== Panel de acceso ===== -->
+  <div class="login-panel">
+    <div class="login-brand">
+      <div class="brand-mark">N</div>
+      <div><div class="brand-name">NovaTrack</div><div class="brand-sub">Administración web</div></div>
+    </div>
+
+    <!-- Paso 1: credenciales -->
+    <div id="step1">
+      <h2>Ingresar a tu cuenta</h2>
+      <p class="lead">Usá tu correo corporativo. El acceso se registra con IP y dispositivo.</p>
+
+      <form id="loginForm" autocomplete="off">
+        <div class="field">
+          <label class="lbl" for="email">Correo corporativo <span class="req">*</span></label>
+          <input class="inp" type="email" id="email" value="mateo.rivas@noventra.com.py" placeholder="nombre@empresa.com.py">
+        </div>
+        <div class="field">
+          <label class="lbl" for="pass">Contraseña <span class="req">*</span></label>
+          <input class="inp" type="password" id="pass" value="demo1234" placeholder="••••••••">
+          <div class="hint" id="passHint">Probá con una contraseña incorrecta para ver el patrón de error.</div>
+        </div>
+        <div class="row mb12">
+          <label class="chk"><input type="checkbox" checked> <span>Mantener sesión iniciada</span></label>
+          <span class="spacer"></span>
+          <a href="#" id="olvide" class="small">Olvidé mi contraseña</a>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit" id="btnLogin">Continuar</button>
+      </form>
+
+      <div class="note mt16" style="font-size:11.5px">
+        <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></svg>
+        <div><b>Mockup F0 — sin autenticación real.</b> Cualquier contraseña distinta de <code>demo1234</code> dispara el toast de error, para mostrar el patrón.</div>
+      </div>
+    </div>
+
+    <!-- Paso 2: selección de tenant -->
+    <div id="step2" style="display:none">
+      <button class="btn btn-ghost btn-sm mb12" id="volver">
+        <svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg> Volver
+      </button>
+      <h2>Elegí la organización</h2>
+      <p class="lead">Tu usuario tiene acceso a 4 organizaciones. Todos los datos que veas quedan acotados a la que elijas.</p>
+      <div id="tenantList"></div>
+      <div class="note note-neutral mt16" style="font-size:11.5px">
+        <svg class="ic" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        <div>El aislamiento entre organizaciones se aplica en la base de datos (RLS), no en el navegador.</div>
+      </div>
+    </div>
+
+    <div class="login-foot">
+      NovaTrack v0.1 · Mockup F0 para aprobación visual<br>
+      Noventra E.A.S. — Asunción, Paraguay
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+
+/* Paso 1 — credenciales. Todo fallo se comunica: nunca silencio. */
+$('#loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const mail = $('#email').value.trim();
+  const pass = $('#pass').value;
+
+  if (!mail) {
+    $('#email').classList.add('err');
+    toastErr('Falta el correo', 'Ingresá tu correo corporativo para continuar.', { code: 'AUTH_EMAIL_REQUIRED', origen: 'Login' });
+    return;
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(mail)) {
+    $('#email').classList.add('err');
+    toastErr('Correo inválido', '“' + mail + '” no tiene un formato de correo válido.', { code: 'AUTH_EMAIL_FORMAT', origen: 'Login' });
+    return;
+  }
+  $('#email').classList.remove('err');
+
+  if (pass !== 'demo1234') {
+    $('#pass').classList.add('err');
+    $('#passHint').className = 'hint err';
+    $('#passHint').textContent = 'Credenciales incorrectas. Te quedan 4 intentos antes del bloqueo temporal.';
+    toastErr('No pudimos iniciar sesión',
+      'La contraseña no coincide con la registrada para ' + mail + '. Te quedan 4 intentos antes de un bloqueo de 15 minutos.',
+      { code: 'AUTH_INVALID_CREDENTIALS', origen: 'Login', accion: 'Recuperar contraseña', onAccion: () => noMock('La recuperación de contraseña') });
+    return;
+  }
+
+  $('#pass').classList.remove('err');
+  const btn = $('#btnLogin');
+  btn.textContent = 'Verificando…'; btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = 'Continuar'; btn.disabled = false;
+    $('#step1').style.display = 'none';
+    $('#step2').style.display = '';
+    toastOk('Identidad verificada', 'Bienvenido, ' + SESSION.user.nombre + '. Elegí la organización para continuar.', { code: 'AUTH_OK' });
+  }, 500);
+});
+
+$('#olvide').onclick = e => { e.preventDefault(); noMock('La recuperación de contraseña'); };
+
+/* Paso 2 — selección de tenant */
+$('#tenantList').innerHTML = TENANTS.map(t =>
+  '<button class="tenant-card' + (t.activo ? '' : ' off') + '" data-t="' + t.id + '">' +
+    '<span class="t-av" style="background:' + t.color + '">' + t.code + '</span>' +
+    '<span style="min-width:0;flex:1">' +
+      '<span class="t-n">' + t.name + '</span>' +
+      '<span class="t-m">RUC ' + t.ruc + ' · ' + t.ciudad + ' · ' + t.users + ' usuarios</span>' +
+    '</span>' +
+    (t.activo
+      ? '<span class="pill pill-info">' + t.plan + '</span>'
+      : '<span class="pill pill-err">Inactivo</span>') +
+  '</button>').join('');
+
+document.querySelectorAll('#tenantList .tenant-card').forEach(b => {
+  b.onclick = () => {
+    const t = TENANTS.find(x => x.id === b.dataset.t);
+    if (!t.activo) {
+      /* Bloqueo con motivo explícito — requisito del producto. */
+      toastErr('Acceso bloqueado a ' + t.name, t.motivo,
+        { code: 'TENANT_SUBSCRIPTION_EXPIRED', origen: 'Selección de organización', sticky: true,
+          accion: 'Contactar a soporte', onAccion: () => noMock('El contacto con soporte') });
+      return;
+    }
+    store.tenant = t.id;
+    toastOk('Ingresando a ' + t.name, 'Sesión iniciada como ' + SESSION.user.rol + '. Redirigiendo a la agenda del día…', { code: 'SESSION_START' });
+    setTimeout(() => location.href = 'agenda.html', 800);
+  };
+});
+
+$('#volver').onclick = () => { $('#step2').style.display = 'none'; $('#step1').style.display = ''; };
+</script>
+</body>
+</html>

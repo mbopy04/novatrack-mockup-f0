@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es-PY">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa en vivo · NovaTrack</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E5BD8'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .flota { max-height: calc(100vh - 340px); overflow-y: auto; }
+  .flota-item { display: flex; gap: 8px; padding: 7px 11px; border-bottom: 1px solid var(--line-2); cursor: pointer; align-items: center; }
+  .flota-item:hover { background: var(--surface-2); }
+  .flota-item.on { background: var(--accent-100); }
+  .map-tip { position: absolute; z-index: 8; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh-3); padding: 9px 11px; width: 248px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand" id="brand"></div>
+  <div class="topbar" id="topbar"></div>
+  <nav class="nav" id="nav"></nav>
+  <main class="main">
+    <div id="head"></div>
+    <div class="content tight">
+      <div class="grid g-side-main" style="align-items:start">
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M2 7h11v10H2z"/><path d="M13 10h4l4 4v3h-8z"/><circle cx="6" cy="18.5" r="2"/><circle cx="17" cy="18.5" r="2"/></svg>
+              <h3>Flota</h3><span class="sub" id="flotaSub"></span>
+              <div class="right"><button class="btn btn-sm btn-ico" id="bRefresh" title="Actualizar posiciones">
+                <svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></button></div>
+            </div>
+            <div class="card-body" style="padding:8px 11px">
+              <div class="f-search" style="max-width:none">
+                <svg class="ic ic-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                <input id="q" placeholder="Buscar técnico…">
+              </div>
+              <div class="row wrap mt8" id="chips"></div>
+            </div>
+            <div class="flota" id="flota"></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M12 2 2 8l10 6 10-6z"/><path d="m2 14 10 6 10-6M2 11l10 6 10-6"/></svg>
+              <h3>Capas</h3>
+            </div>
+            <div class="card-body" id="capas"></div>
+          </div>
+        </div>
+
+        <div class="map-shell" id="mapShell">
+          <svg class="map-svg" id="map" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid slice"></svg>
+          <div class="map-ctl tl" style="padding:0">
+            <button id="zIn" title="Acercar">+</button>
+            <button id="zOut" title="Alejar">−</button>
+            <button id="zFit" title="Encuadrar todo">
+              <svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg></button>
+          </div>
+          <div class="map-ctl tr map-legend" id="legend"></div>
+          <div class="map-ctl bl" style="padding:7px 10px">
+            <div class="xsmall muted" id="mapStamp"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+boot('mapa');
+
+/* ---------- Área metropolitana (Gran Asunción) ---------- */
+const BOX = { latMin: -25.46, latMax: -25.13, lngMin: -57.72, lngMax: -57.39 };
+const W = 1000, H = 640;
+const px = lng => (lng - BOX.lngMin) / (BOX.lngMax - BOX.lngMin) * W;
+const py = lat => (BOX.latMax - lat) / (BOX.latMax - BOX.latMin) * H;
+const dentro = o => o.lat > BOX.latMin && o.lat < BOX.latMax && o.lng > BOX.lngMin && o.lng < BOX.lngMax;
+
+const M = { q: '', estados: new Set(ESTADO_ORDER), sel: null, capas: { sucursales: true, tecnicos: true, rutas: true, geocercas: false, zonas: true } };
+const MAX_PINS = 240;   /* el mapa real agrupa por cercanía; acá se limita la muestra */
+
+const TECS = COLABORADORES.filter(c => c.activo && dentro(c));
+const SUCS_ALL = CLIENTES.flatMap(c => c.sucursales.filter(s => s.geo && dentro(s)).map(s => ({ ...s, cliente: c.nombre, clienteId: c.id })));
+const SUCS = SUCS_ALL.filter((s, i) => i % Math.max(1, Math.ceil(SUCS_ALL.length / MAX_PINS)) === 0);
+const hoy = isoToday();
+
+/* Destino actual de cada técnico en camino */
+function destinoDe(t) {
+  const s = SERVICIOS.find(x => x.fecha === hoy && x.tecnicos.some(y => y.id === t.id));
+  return s && dentro(s) ? s : null;
+}
+
+function renderHead() {
+  const enRuta = TECS.filter(t => t.estado === 'camino').length;
+  const enSitio = TECS.filter(t => t.estado === 'trabajando').length;
+  const sinSenal = TECS.filter(t => t.ultimoPing > 25).length;
+  document.getElementById('head').innerHTML = pageHead({
+    crumbs: [{ t: 'Operación' }, { t: 'Mapa en vivo' }],
+    icon: 'map',
+    titulo: 'Mapa en vivo',
+    meta: 'Gran Asunción · posiciones reportadas por la app Android cada 60 s con el equipo en movimiento',
+    acciones:
+      '<button class="btn" id="bRuta">' + icon('route', 'ic-sm') + 'Optimizar rutas del día</button>' +
+      '<button class="btn" id="bGeo">' + icon('pin', 'ic-sm') + 'Auditar geocercas</button>' +
+      '<a class="btn btn-primary" href="agenda.html">' + icon('agenda', 'ic-sm') + 'Ir a la agenda</a>',
+    kpis:
+      kpi('Técnicos en línea', TECS.length, 'de ' + COLABORADORES.filter(c => c.activo).length + ' activos') +
+      kpi('En ruta', enRuta, 'con GPS en movimiento', '<span class="kpi-dot" style="background:var(--st-camino)"></span>') +
+      kpi('En sitio', enSitio, 'check-in validado', '<span class="kpi-dot" style="background:var(--st-trabajando)"></span>') +
+      kpi('Sucursales', nfInt.format(SUCS_ALL.length), 'georreferenciadas · se muestran ' + SUCS.length) +
+      kpi('Sin señal', '<span style="color:' + (sinSenal ? 'var(--warn)' : 'inherit') + '">' + sinSenal + '</span>', 'sin ping hace > 25 min') +
+      kpi('Km recorridos hoy', nfInt.format(TECS.reduce((a, t) => a + Math.round(t.km / 22), 0)), 'flota completa'),
+  });
+  document.getElementById('bRuta').onclick = () =>
+    toastWarn('Optimización parcial', 'Se optimizaron 5 rutas. 2 técnicos quedaron fuera: sus órdenes tienen ventana horaria fija pactada con el cliente.',
+      { code: 'ROUTE_OPT_PARTIAL', origen: 'Motor de rutas', sticky: true, accion: 'Ver detalle', onAccion: () => noMock('El detalle de optimización') });
+  document.getElementById('bGeo').onclick = () => {
+    const fuera = 3;
+    toastErr('Check-ins fuera de geocerca', fuera + ' check-ins de hoy se registraron a más de 150 m de la sucursal declarada. Quedan marcados en las órdenes.',
+      { code: 'GEOFENCE_VIOLATION', origen: 'Auditoría de geocercas', sticky: true, accion: 'Ver órdenes', onAccion: () => location.href = 'agenda.html' });
+  };
+}
+
+/* ============================================================
+   Dibujo del mapa
+   ============================================================ */
+function renderMapa() {
+  const c = M.capas;
+  let g = '';
+
+  /* Fondo y trama urbana */
+  g += '<defs>' +
+    '<pattern id="manzanas" width="34" height="26" patternUnits="userSpaceOnUse">' +
+      '<rect width="34" height="26" fill="#EDF1F5"/>' +
+      '<rect x="1.5" y="1.5" width="31" height="23" fill="#E3E9F0"/>' +
+    '</pattern>' +
+    '<linearGradient id="rio" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0%" stop-color="#B7D2E6"/><stop offset="100%" stop-color="#9CC0DB"/></linearGradient>' +
+    '<filter id="som" x="-30%" y="-30%" width="160%" height="160%">' +
+      '<feDropShadow dx="0" dy="1" stdDeviation="1.4" flood-opacity=".35"/></filter>' +
+    '</defs>';
+
+  g += '<rect width="' + W + '" height="' + H + '" fill="url(#manzanas)"/>';
+
+  /* Río Paraguay + bahía */
+  g += '<path d="M0,150 C70,120 110,60 150,0 L0,0 Z" fill="url(#rio)"/>';
+  g += '<path d="M0,150 C80,170 150,140 190,90 C215,60 235,30 250,0 L150,0 C110,60 70,120 0,150 Z" fill="url(#rio)" opacity=".85"/>';
+  g += '<path d="M140,120 C200,140 240,120 268,86" stroke="#7FA8C8" stroke-width="1.2" fill="none" opacity=".7"/>';
+  g += '<text x="60" y="70" font-size="13" fill="#5E87A8" font-style="italic" font-family="Georgia,serif" transform="rotate(-38 60 70)">Río Paraguay</text>';
+
+  /* Zonas / municipios */
+  if (c.zonas) {
+    const zonas = [
+      { n: 'ASUNCIÓN', x: 250, y: 190, w: 210, h: 150, col: '#2E5BD8' },
+      { n: 'LAMBARÉ', x: 250, y: 345, w: 130, h: 110, col: '#6A4A8F' },
+      { n: 'FDO. DE LA MORA', x: 465, y: 235, w: 150, h: 120, col: '#0E7490' },
+      { n: 'SAN LORENZO', x: 545, y: 300, w: 170, h: 140, col: '#B45309' },
+      { n: 'LUQUE', x: 555, y: 120, w: 190, h: 150, col: '#15803D' },
+      { n: 'M. R. ALONSO', x: 380, y: 40, w: 165, h: 100, col: '#BE185D' },
+      { n: 'ÑEMBY', x: 400, y: 455, w: 150, h: 110, col: '#4338CA' },
+      { n: 'VILLA ELISA', x: 260, y: 460, w: 130, h: 110, col: '#0F766E' },
+      { n: 'CAPIATÁ', x: 730, y: 320, w: 180, h: 160, col: '#7C2D12' },
+      { n: 'LIMPIO', x: 560, y: 10, w: 170, h: 100, col: '#334155' },
+    ];
+    g += zonas.map(z =>
+      '<g><rect x="' + z.x + '" y="' + z.y + '" width="' + z.w + '" height="' + z.h + '" rx="6" ' +
+      'fill="' + z.col + '" fill-opacity=".055" stroke="' + z.col + '" stroke-opacity=".22" stroke-width="1" stroke-dasharray="4 3"/>' +
+      '<text x="' + (z.x + 8) + '" y="' + (z.y + 16) + '" font-size="9.5" font-weight="700" fill="' + z.col + '" fill-opacity=".6" letter-spacing="1.1">' + z.n + '</text></g>').join('');
+  }
+
+  /* Avenidas principales */
+  const vias = [
+    { d: 'M230,300 L1000,300', n: 'Avda. Mcal. López', w: 5 },
+    { d: 'M250,215 L720,150', n: 'Avda. España / Aviadores', w: 4.5 },
+    { d: 'M270,360 L1000,395', n: 'Avda. Eusebio Ayala — Ruta PY02', w: 5 },
+    { d: 'M300,180 L340,600', n: 'Avda. Félix Bogado', w: 3.5 },
+    { d: 'M480,60 L520,620', n: 'Avda. Von Polesky', w: 3 },
+    { d: 'M660,40 L700,600', n: 'Ruta PY01 — Acceso Sur', w: 4 },
+    { d: 'M250,120 L860,60', n: 'Ruta Transchaco', w: 4 },
+  ];
+  g += vias.map(v => '<path d="' + v.d + '" stroke="#FFFFFF" stroke-width="' + (v.w + 2.5) + '" fill="none" stroke-linecap="round"/>' +
+    '<path d="' + v.d + '" stroke="#D9C48A" stroke-width="' + v.w + '" fill="none" stroke-linecap="round" opacity=".85"/>').join('');
+  g += vias.map((v, i) => '<text font-size="8" fill="#8A8468" font-weight="600"><textPath href="#via' + i + '">' + v.n + '</textPath></text>').join('');
+  g += '<defs>' + vias.map((v, i) => '<path id="via' + i + '" d="' + v.d + '"/>').join('') + '</defs>';
+
+  /* Sucursales */
+  if (c.sucursales) {
+    g += SUCS.map(s => {
+      const x = px(s.lng), y = py(s.lat);
+      return '<g class="map-pin" data-suc="' + s.id + '">' +
+        (c.geocercas ? '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="9" fill="#2E5BD8" fill-opacity=".07" stroke="#2E5BD8" stroke-opacity=".22" stroke-width=".8" stroke-dasharray="2 2"/>' : '') +
+        '<rect x="' + (x - 3.6).toFixed(1) + '" y="' + (y - 3.6).toFixed(1) + '" width="7.2" height="7.2" rx="1.4" ' +
+        'fill="#FFFFFF" stroke="#1B2A6B" stroke-width="1.6"/>' +
+        '<title>' + esc(s.cliente + ' — ' + s.nombre + '\n' + s.dir + ', ' + s.ciudad + '\n' + s.equipos + ' equipos · ' + s.contrato) + '</title>' +
+        '</g>';
+    }).join('');
+  }
+
+  /* Rutas de los técnicos en camino */
+  if (c.rutas) {
+    g += TECS.filter(t => t.estado === 'camino' && M.estados.has('camino')).map(t => {
+      const d = destinoDe(t);
+      if (!d) return '';
+      const x1 = px(t.lng), y1 = py(t.lat), x2 = px(d.lng), y2 = py(d.lat);
+      const mx = (x1 + x2) / 2 + (y2 - y1) * 0.16, my = (y1 + y2) / 2 - (x2 - x1) * 0.16;
+      return '<path d="M' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' Q' + mx.toFixed(1) + ',' + my.toFixed(1) + ' ' + x2.toFixed(1) + ',' + y2.toFixed(1) + '" ' +
+        'stroke="' + ESTADOS.camino.color + '" stroke-width="2" fill="none" stroke-dasharray="6 4" opacity=".75"/>' +
+        '<circle cx="' + x2.toFixed(1) + '" cy="' + y2.toFixed(1) + '" r="4" fill="none" stroke="' + ESTADOS.camino.color + '" stroke-width="1.6"/>';
+    }).join('');
+  }
+
+  /* Técnicos */
+  if (c.tecnicos) {
+    g += TECS.filter(t => M.estados.has(t.estado) && (!M.q || t.nombre.toLowerCase().includes(M.q.toLowerCase()))).map(t => {
+      const x = px(t.lng), y = py(t.lat), col = ESTADOS[t.estado].color;
+      const sel = M.sel === t.id;
+      return '<g class="map-pin" data-tec="' + t.id + '" style="cursor:pointer">' +
+        (t.estado === 'trabajando' ? '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="8" fill="' + col + '" class="pulse"/>' : '') +
+        (sel ? '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="17" fill="none" stroke="' + col + '" stroke-width="2" stroke-dasharray="3 3"/>' : '') +
+        '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (sel ? 12 : 10) + '" fill="' + col + '" stroke="#fff" stroke-width="2" filter="url(#som)"/>' +
+        '<text x="' + x.toFixed(1) + '" y="' + (y + 3.2).toFixed(1) + '" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff" font-family="Inter,Arial">' + initials(t.nombre) + '</text>' +
+        (t.ultimoPing > 25 ? '<circle cx="' + (x + 8).toFixed(1) + '" cy="' + (y - 8).toFixed(1) + '" r="4" fill="#CA8A04" stroke="#fff" stroke-width="1.4"/>' +
+          '<text x="' + (x + 8).toFixed(1) + '" y="' + (y - 5.6).toFixed(1) + '" text-anchor="middle" font-size="6.5" font-weight="700" fill="#fff">!</text>' : '') +
+        '<title>' + esc(t.nombre + ' — ' + TEC_LABEL[t.estado] + '\n' + t.esp + ' · ' + t.vehiculo + '\nÚltimo ping: hace ' + t.ultimoPing + ' min · batería ' + t.bateria + '%') + '</title>' +
+        '</g>';
+    }).join('');
+  }
+
+  /* Escala */
+  g += '<g transform="translate(' + (W - 140) + ',' + (H - 26) + ')">' +
+    '<rect x="-6" y="-13" width="132" height="24" rx="4" fill="#fff" fill-opacity=".85"/>' +
+    '<line x1="0" y1="0" x2="100" y2="0" stroke="#4A5164" stroke-width="1.6"/>' +
+    '<line x1="0" y1="-4" x2="0" y2="4" stroke="#4A5164" stroke-width="1.6"/>' +
+    '<line x1="50" y1="-3" x2="50" y2="3" stroke="#4A5164" stroke-width="1.2"/>' +
+    '<line x1="100" y1="-4" x2="100" y2="4" stroke="#4A5164" stroke-width="1.6"/>' +
+    '<text x="50" y="-6" text-anchor="middle" font-size="8.5" fill="#4A5164" font-weight="600">3,3 km</text></g>';
+
+  document.getElementById('map').innerHTML = g;
+
+  document.querySelectorAll('[data-tec]').forEach(el => el.onclick = () => {
+    M.sel = el.dataset.tec; renderMapa(); renderFlota(); detalleTec(COLABORADORES.find(t => t.id === el.dataset.tec));
+  });
+  document.querySelectorAll('[data-suc]').forEach(el => el.onclick = () => {
+    const s = SUCS.find(x => x.id === el.dataset.suc);
+    modal({
+      titulo: s.nombre, icon: 'building',
+      foot: '<button class="btn" data-close>Cerrar</button>' +
+        '<a class="btn" href="cliente.html?id=' + s.clienteId + '">Ver cliente</a>' +
+        '<a class="btn btn-primary" href="servicio-nuevo.html">Agendar servicio</a>',
+      body: '<dl class="dl">' +
+        '<dt>Cliente</dt><dd>' + esc(s.cliente) + '</dd>' +
+        '<dt>Dirección</dt><dd>' + esc(s.dir) + ', ' + esc(s.ciudad) + '</dd>' +
+        '<dt>Coordenadas</dt><dd class="mono">' + s.lat + ', ' + s.lng + '</dd>' +
+        '<dt>Geocerca</dt><dd>150 m — el check-in fuera del radio queda marcado</dd>' +
+        '<dt>Equipos</dt><dd>' + s.equipos + '</dd>' +
+        '<dt>Contrato</dt><dd>' + esc(s.contrato) + '</dd>' +
+        '<dt>Contacto</dt><dd>' + esc(s.contacto) + ' · ' + esc(s.tel) + '</dd></dl>',
+    });
+  });
+}
+
+/* ---------- Panel de flota ---------- */
+function renderFlota() {
+  const l = TECS.filter(t => M.estados.has(t.estado) && (!M.q || t.nombre.toLowerCase().includes(M.q.toLowerCase())));
+  document.getElementById('flotaSub').textContent = l.length + ' en línea';
+  document.getElementById('flota').innerHTML = l.length ? l.map(t => {
+    const d = destinoDe(t);
+    return '<div class="flota-item' + (M.sel === t.id ? ' on' : '') + '" data-t="' + t.id + '">' +
+      '<span style="width:8px;height:8px;border-radius:50%;background:' + ESTADOS[t.estado].color + ';flex:none"></span>' +
+      avatar(t.nombre, 'av-sm') +
+      '<div style="min-width:0;flex:1">' +
+        '<div class="truncate strong" style="font-size:12px">' + esc(t.nombre) + '</div>' +
+        '<div class="xsmall muted truncate">' + (d ? esc(d.cliente) + ' · ' + esc(d.ciudad) : esc(t.esp) + ' · sin orden en curso') + '</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div class="xsmall ' + (t.ultimoPing > 25 ? '' : 'muted') + '" style="' + (t.ultimoPing > 25 ? 'color:var(--warn);font-weight:600' : '') + '">' + t.ultimoPing + '′</div>' +
+        '<div class="xsmall muted-2">' + t.bateria + '%</div>' +
+      '</div></div>';
+  }).join('') : '<div class="empty">' + icon('search') + '<h4>Sin técnicos</h4><div class="small">Ningún técnico coincide con los filtros.</div></div>';
+
+  document.querySelectorAll('[data-t]').forEach(el => el.onclick = () => {
+    M.sel = el.dataset.t; renderMapa(); renderFlota(); detalleTec(COLABORADORES.find(t => t.id === el.dataset.t));
+  });
+}
+
+function detalleTec(t) {
+  const d = destinoDe(t);
+  modal({
+    titulo: t.nombre, icon: 'user', size: 'wide',
+    foot: '<button class="btn left" id="bLlamar">' + icon('phone', 'ic-sm') + 'Llamar</button>' +
+      '<button class="btn" data-close>Cerrar</button>' +
+      '<button class="btn btn-primary" id="bPush">' + icon('bell', 'ic-sm') + 'Enviar mensaje push</button>',
+    body:
+      '<div class="row wrap mb12">' + pillTec(t.estado) + '<span class="tag">' + esc(t.rol) + '</span>' +
+      '<span class="tag">' + esc(t.esp) + '</span>' +
+      (t.cuadrilla ? '<span class="pill pill-violet">' + esc(t.cuadrilla) + '</span>' : '') +
+      '<span class="spacer"></span>' +
+      (t.ultimoPing > 25 ? '<span class="pill pill-warn">Sin señal hace ' + t.ultimoPing + ' min</span>' : '<span class="pill pill-ok">GPS activo</span>') + '</div>' +
+      '<div class="grid g-2">' +
+        '<dl class="dl">' +
+          '<dt>Posición</dt><dd class="mono xsmall">' + t.lat + ', ' + t.lng + '</dd>' +
+          '<dt>Zona</dt><dd>' + esc(t.ciudad) + '</dd>' +
+          '<dt>Vehículo</dt><dd>' + esc(t.vehiculo) + '</dd>' +
+          '<dt>Batería</dt><dd>' + t.bateria + ' %</dd>' +
+          '<dt>Último ping</dt><dd>hace ' + t.ultimoPing + ' min</dd>' +
+        '</dl>' +
+        '<dl class="dl">' +
+          '<dt>Orden en curso</dt><dd>' + (d ? '<span class="mono">' + d.id + '</span>' : '<span class="muted">ninguna</span>') + '</dd>' +
+          '<dt>Cliente</dt><dd>' + (d ? esc(d.cliente) : '—') + '</dd>' +
+          '<dt>Sucursal</dt><dd>' + (d ? esc(d.sucursal) + ', ' + esc(d.ciudad) : '—') + '</dd>' +
+          '<dt>Ventana</dt><dd>' + (d ? hhmm(d.hIni, d.mIni) + ' – ' + addMin(d.hIni, d.mIni, d.dur) : '—') + '</dd>' +
+          '<dt>Órdenes hoy</dt><dd>' + SERVICIOS.filter(s => s.fecha === hoy && s.tecnicos.some(x => x.id === t.id)).length + '</dd>' +
+        '</dl>' +
+      '</div>' +
+      (t.ultimoPing > 25 ? '<div class="note note-warn mt12">' + icon('alert') +
+        '<div><b>Sin reporte de posición.</b> El dispositivo no envía ubicación hace ' + t.ultimoPing + ' minutos. Puede estar sin datos móviles o con la app cerrada.</div></div>' : ''),
+  });
+  document.getElementById('bLlamar').onclick = () => toastInfo('Llamando a ' + t.nombre, 'Marcando ' + t.tel + ' desde la central.', { code: 'CALL_INITIATED' });
+  document.getElementById('bPush').onclick = () => {
+    if (t.ultimoPing > 25) {
+      toastErr('No se pudo entregar el push', t.nombre + ' no reporta hace ' + t.ultimoPing + ' min. El mensaje quedó encolado y se entregará cuando el dispositivo vuelva a conectarse.',
+        { code: 'PUSH_DEVICE_OFFLINE', origen: 'Mensajería', sticky: true });
+      return;
+    }
+    toastOk('Push enviado', 'Mensaje entregado al dispositivo de ' + t.nombre + '. Acuse de lectura pendiente.', { code: 'PUSH_DELIVERED' });
+  };
+}
+
+/* ---------- Controles ---------- */
+function renderControles() {
+  document.getElementById('chips').innerHTML = ESTADO_ORDER.map(k =>
+    '<button class="chip' + (M.estados.has(k) ? ' on' : '') + '" data-est="' + k + '">' +
+    '<span class="dot" style="background:' + ESTADOS[k].color + '"></span>' + TEC_LABEL[k] + '</button>').join('');
+  document.querySelectorAll('[data-est]').forEach(b => b.onclick = () => {
+    const k = b.dataset.est;
+    if (M.estados.has(k)) M.estados.delete(k); else M.estados.add(k);
+    renderMapa(); renderFlota(); renderControles();
+  });
+
+  document.getElementById('capas').innerHTML = [
+    ['tecnicos', 'Técnicos', 'Posición reportada por la app'],
+    ['sucursales', 'Sucursales', 'Puntos georreferenciados del cliente'],
+    ['geocercas', 'Geocercas', 'Radio de 150 m para el check-in (denso)'],
+    ['rutas', 'Rutas en curso', 'Trayecto estimado al destino'],
+    ['zonas', 'Municipios', 'Límites de zona de cobertura'],
+  ].map(([k, t, s]) =>
+    '<div class="row" style="padding:4px 0"><label class="sw"><input type="checkbox" data-capa="' + k + '"' + (M.capas[k] ? ' checked' : '') + '><span class="track"></span></label>' +
+    '<div><div class="small strong">' + t + '</div><div class="xsmall muted">' + s + '</div></div></div>').join('');
+  document.querySelectorAll('[data-capa]').forEach(ch => ch.onchange = () => { M.capas[ch.dataset.capa] = ch.checked; renderMapa(); });
+
+  document.getElementById('legend').innerHTML =
+    '<div class="pop-title" style="margin-bottom:6px">Referencias</div>' +
+    ESTADO_ORDER.map(k => '<div class="legend-item" style="margin-bottom:4px">' +
+      '<span style="width:11px;height:11px;border-radius:50%;background:' + ESTADOS[k].color + ';border:1.5px solid #fff;box-shadow:0 0 0 1px ' + ESTADOS[k].color + '33"></span>' +
+      TEC_LABEL[k] + '</div>').join('') +
+    '<div class="hr" style="margin:6px 0"></div>' +
+    '<div class="legend-item"><span style="width:9px;height:9px;background:#fff;border:1.6px solid #1B2A6B;border-radius:2px"></span>Sucursal</div>' +
+    '<div class="legend-item mt4"><span style="width:14px;border-top:2px dashed ' + ESTADOS.camino.color + '"></span>Ruta en curso</div>';
+
+  document.getElementById('mapStamp').innerHTML =
+    'Actualizado ' + new Date().toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' }) +
+    ' · ' + TECS.length + ' equipos · ' + SUCS.length + ' de ' + SUCS_ALL.length + ' sucursales en pantalla';
+}
+
+document.getElementById('q').oninput = e => { M.q = e.target.value; renderMapa(); renderFlota(); };
+document.getElementById('bRefresh').onclick = () => {
+  renderMapa(); renderControles();
+  toastOk('Posiciones actualizadas', TECS.length + ' equipos reportaron. 2 dispositivos siguen sin señal.', { code: 'FLEET_REFRESHED' });
+};
+let zoom = 1;
+const aplicarZoom = () => {
+  const m = document.getElementById('map');
+  const w = W / zoom, h = H / zoom;
+  m.setAttribute('viewBox', ((W - w) / 2) + ' ' + ((H - h) / 2) + ' ' + w + ' ' + h);
+};
+document.getElementById('zIn').onclick = () => {
+  if (zoom >= 3) { toastWarn('Zoom máximo alcanzado', 'El mockup no incluye tiles de mayor detalle. En producción el mapa usa tiles vectoriales hasta nivel de calle.', { code: 'MAP_MAX_ZOOM' }); return; }
+  zoom = Math.min(3, zoom * 1.35); aplicarZoom();
+};
+document.getElementById('zOut').onclick = () => { zoom = Math.max(1, zoom / 1.35); aplicarZoom(); };
+document.getElementById('zFit').onclick = () => { zoom = 1; aplicarZoom(); M.sel = null; renderMapa(); renderFlota(); };
+
+renderHead();
+renderControles();
+renderMapa();
+renderFlota();
+repriceAll();
+</script>
+</body>
+</html>

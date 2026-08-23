@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es-PY">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patrones de UI · NovaTrack</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E5BD8'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .swatch { border-radius: var(--r); height: 56px; display: flex; align-items: flex-end; padding: 6px 8px; color: #fff; font-size: 10.5px; font-weight: 700; }
+  .demo { background: var(--surface-2); border: 1px dashed var(--line); border-radius: var(--r); padding: 12px; }
+  .toast-static { position: static; box-shadow: var(--sh-2); animation: none; margin-bottom: 8px; }
+  code.k { background: var(--surface-3); border: 1px solid var(--line-2); border-radius: 3px; padding: 1px 4px; font-size: 11px; font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand" id="brand"></div>
+  <div class="topbar" id="topbar"></div>
+  <nav class="nav" id="nav"></nav>
+  <main class="main">
+    <div id="head"></div>
+    <div class="content"><div id="cuerpo"></div></div>
+  </main>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+boot('patrones');
+
+document.getElementById('head').innerHTML = pageHead({
+  crumbs: [{ t: 'Sistema' }, { t: 'Patrones de UI' }],
+  icon: 'palette',
+  titulo: 'Patrones de interfaz',
+  meta: 'Las reglas visuales que se aplican en todo NovaTrack. Esta página es parte del mockup F0: sirve para aprobar el lenguaje visual, no es una pantalla del producto.',
+  acciones: '<a class="btn" href="agenda.html">' + icon('chevL', 'ic-sm') + 'Volver a la agenda</a>',
+});
+
+/* ---------- Toast de ejemplo estático (mismo marcado que el real) ---------- */
+function toastEjemplo(tipo, titulo, msg, code, origen, accion) {
+  return '<div class="toast toast-' + tipo + ' toast-static">' +
+    '<span class="t-ico">' + icon(TOAST_ICON[tipo], 'ic-lg') + '</span>' +
+    '<div class="t-body">' +
+      '<div class="t-title">' + esc(titulo) + '</div>' +
+      '<div class="t-msg">' + esc(msg) + '</div>' +
+      '<div class="t-meta"><code>' + code + '</code><span>·</span>14:32:07<span>·</span>' + esc(origen) + '</div>' +
+      (accion ? '<div class="t-act"><button class="btn btn-sm">' + accion + '</button></div>' : '') +
+    '</div>' +
+    '<button class="t-x">' + icon('x', 'ic-sm') + '</button></div>';
+}
+
+document.getElementById('cuerpo').innerHTML =
+
+/* ============================================================
+   1 · Toasts
+   ============================================================ */
+'<div class="card"><div class="card-head">' + icon('alert') +
+  '<h2>1 · Toasts — prohibido el fallo silencioso</h2>' +
+  '<span class="sub">Regla del producto: todo error, bloqueo o redirect muestra el motivo</span></div>' +
+  '<div class="card-body">' +
+    '<div class="note note-err mb12">' + icon('ban') +
+    '<div><b>Regla dura.</b> Ninguna acción del usuario puede terminar sin respuesta visible. ' +
+    'Si algo falla, se bloquea o redirige, aparece un toast con: <b>qué pasó</b>, <b>por qué</b>, ' +
+    'un <b>código</b> rastreable en los logs y, cuando existe, <b>la acción para resolverlo</b>.</div></div>' +
+
+    '<div class="grid g-2" style="align-items:start">' +
+      '<div>' +
+        '<div class="lbl">Anatomía del toast</div>' +
+        toastEjemplo('err', 'No se pudo crear la orden',
+          'Supermercados Stock S.A. está suspendido: 2 facturas vencidas hace más de 60 días. Bloqueado para nuevos servicios.',
+          'CUSTOMER_BLOCKED_AR', 'Validación del alta', 'Ver estado de cuenta') +
+        '<div class="grid g-2 mt8" style="gap:6px">' +
+          '<div class="xsmall"><b>Título</b><div class="muted">Qué pasó, en una línea.</div></div>' +
+          '<div class="xsmall"><b>Cuerpo</b><div class="muted">El motivo concreto, con el dato que lo causó.</div></div>' +
+          '<div class="xsmall"><b>Código</b><div class="muted">Rastreable en logs y soporte.</div></div>' +
+          '<div class="xsmall"><b>Acción</b><div class="muted">El camino de salida, si existe.</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="lbl">Las cuatro variantes</div>' +
+        toastEjemplo('err', 'Error / bloqueo', 'Algo no se pudo hacer. Persistente hasta que el usuario lo cierre si es crítico.', 'ERROR_CODE', 'Origen') +
+        toastEjemplo('warn', 'Advertencia', 'Se hizo, pero con una consecuencia que hay que conocer.', 'WARNING_CODE', 'Origen') +
+        toastEjemplo('ok', 'Confirmación', 'La acción se completó. Se cierra sola a los 5 segundos.', 'SUCCESS_CODE', 'Origen') +
+        toastEjemplo('info', 'Información', 'Contexto útil, sin consecuencia negativa.', 'INFO_CODE', 'Origen') +
+      '</div>' +
+    '</div>' +
+
+    '<div class="hr"></div>' +
+    '<div class="lbl">Probalos en vivo</div>' +
+    '<div class="row wrap">' +
+      '<button class="btn btn-danger" id="t1">Error de validación</button>' +
+      '<button class="btn" id="t2">Bloqueo por permisos</button>' +
+      '<button class="btn" id="t3">Advertencia con consecuencia</button>' +
+      '<button class="btn" id="t4">Confirmación</button>' +
+      '<button class="btn" id="t5">Redirect avisado</button>' +
+      '<button class="btn" id="t6">Sesión expirada</button>' +
+      '<button class="btn" id="t7">Sin conexión</button>' +
+      '<button class="btn" id="t8">Varios errores a la vez</button>' +
+    '</div>' +
+
+    '<div class="hr"></div>' +
+    '<div class="lbl">Casos cubiertos en el mockup</div>' +
+    '<div class="tbl-wrap"><table class="tbl tbl-compact"><thead><tr>' +
+      '<th>Situación</th><th>Dónde ocurre</th><th>Código</th><th>Variante</th></tr></thead><tbody>' +
+      [['Contraseña incorrecta', 'Login', 'AUTH_INVALID_CREDENTIALS', 'err'],
+       ['Organización con suscripción vencida', 'Selección de tenant', 'TENANT_SUBSCRIPTION_EXPIRED', 'err'],
+       ['Cliente suspendido por deuda', 'Alta de servicio · Clientes', 'CUSTOMER_BLOCKED_AR', 'err'],
+       ['Técnico fuera de jornada u ocupado', 'Asignación', 'TECH_UNAVAILABLE', 'err'],
+       ['Cuadrilla con menos de 2 o más de 4', 'Asignación', 'CREW_MIN_SIZE / CREW_MAX_SIZE', 'err'],
+       ['Cotización fuera de rango', 'Tipo de cambio', 'FX_OUT_OF_RANGE', 'err'],
+       ['Catálogo en uso que se intenta borrar', 'Catálogos', 'CATALOG_ITEM_IN_USE', 'err'],
+       ['Documento ya conformado por el cliente', 'Orden de servicio', 'DOC_IMMUTABLE_AFTER_SIGNATURE', 'err'],
+       ['Push a dispositivo sin señal', 'Mapa en vivo', 'PUSH_DEVICE_OFFLINE', 'err'],
+       ['SMTP sin configurar', 'Informes programados', 'SMTP_NOT_CONFIGURED', 'err'],
+       ['Auto-asignación parcial', 'Agenda', 'AUTOASSIGN_PARTIAL', 'warn'],
+       ['Jornada guardada con conflictos', 'Colaboradores', 'SHIFT_SAVED_WITH_CONFLICTS', 'warn'],
+       ['Sucursal sin coordenadas', 'Clientes · Mapa', 'BRANCH_NOT_GEOCODED', 'warn'],
+       ['Check-in fuera de geocerca', 'Mapa en vivo', 'GEOFENCE_VIOLATION', 'err'],
+       ['Filtro que dejaría la vista vacía', 'Agenda', 'FILTER_EMPTY_STATE', 'warn'],
+       ['Cambio de organización', 'Topbar', 'TENANT_SWITCH', 'ok'],
+       ['Orden creada y despachada', 'Alta de servicio', 'ORDER_CREATED', 'ok']]
+      .map(([q, d, c, v]) => '<tr><td class="cell-strong">' + esc(q) + '</td><td>' + esc(d) + '</td>' +
+        '<td class="cell-mono">' + c + '</td>' +
+        '<td><span class="pill pill-' + (v === 'err' ? 'err' : v === 'warn' ? 'warn' : 'ok') + '">' +
+        (v === 'err' ? 'Error' : v === 'warn' ? 'Advertencia' : 'Confirmación') + '</span></td></tr>').join('') +
+    '</tbody></table></div>' +
+  '</div></div>' +
+
+/* ============================================================
+   2 · Estados del servicio
+   ============================================================ */
+'<div class="card"><div class="card-head">' + icon('layers') +
+  '<h2>2 · Estados del servicio — un color, un significado</h2>' +
+  '<span class="sub">El mismo código de color en agenda, tablero, mapa e informes</span></div>' +
+  '<div class="card-body">' +
+    '<div class="grid g-4">' + ESTADO_ORDER.map(k =>
+      '<div><div class="swatch" style="background:' + ESTADOS[k].color + '">' + ESTADOS[k].color + '</div>' +
+      '<div class="mt8">' + pill(k) + '</div>' +
+      '<div class="xsmall muted mt4">' + ESTADOS[k].desc + '</div></div>').join('') + '</div>' +
+    '<div class="note mt12">' + icon('info') +
+    '<div>Los estados son <b>de estado</b>, no de identidad: nunca se reutilizan como colores de serie en un gráfico, ' +
+    'y siempre van acompañados de su etiqueta. Nadie tiene que distinguir naranja de rojo para entender la pantalla.</div></div>' +
+    '<div class="lbl mt16">Transiciones</div>' +
+    '<div class="row wrap" style="gap:6px">' +
+      ['Asignada', 'En camino', 'Trabajando', 'Finalizada c/ pendientes', 'Cerrada'].map((t, i) =>
+        (i ? '<span class="muted">' + icon('arrowR', 'ic-sm') + '</span>' : '') +
+        '<span class="pill pill-' + ESTADO_ORDER[i] + '"><span class="dot"></span>' + t + '</span>').join('') +
+    '</div>' +
+    '<div class="hint mt8">Las transiciones las dispara la app del técnico (salida, check-in, check-out), no el administrador. ' +
+    'El administrador solo puede reasignar o cancelar, y ambas acciones piden motivo.</div>' +
+  '</div></div>' +
+
+/* ============================================================
+   3 · Marca y color
+   ============================================================ */
+'<div class="card"><div class="card-head">' + icon('palette') + '<h2>3 · Marca Noventra</h2></div>' +
+  '<div class="card-body"><div class="grid g-4">' +
+    [['#1B2A6B', 'Navy', 'Barra superior, encabezados de documento'],
+     ['#2E5BD8', 'Accent', 'Acción primaria, selección, series de datos'],
+     ['#6A4A8F', 'Violeta', 'Cuadrillas, categorías secundarias'],
+     ['#0C1435', 'Navy 900', 'Menú lateral']]
+    .map(([c, n, u]) => '<div><div class="swatch" style="background:' + c + '">' + c + '</div>' +
+      '<div class="strong small mt4">' + n + '</div><div class="xsmall muted">' + u + '</div></div>').join('') +
+  '</div>' +
+  '<div class="lbl mt16">Superficies y texto</div>' +
+  '<div class="grid g-4">' +
+    [['#FFFFFF', 'Superficie'], ['#F1F3F7', 'Fondo'], ['#DDE1EA', 'Bordes'], ['#1A1F2E', 'Texto principal']]
+    .map(([c, n]) => '<div><div class="swatch" style="background:' + c + ';color:' + (c === '#1A1F2E' ? '#fff' : '#4A5164') + ';border:1px solid var(--line)">' + c + '</div>' +
+      '<div class="xsmall muted mt4">' + n + '</div></div>').join('') +
+  '</div></div></div>' +
+
+/* ============================================================
+   4 · Doble moneda
+   ============================================================ */
+'<div class="card"><div class="card-head">' + icon('money') + '<h2>4 · Doble moneda USD / Guaraníes</h2>' +
+  '<span class="sub">Toda cifra monetaria se muestra en las dos monedas</span></div>' +
+  '<div class="card-body"><div class="grid g-3" style="align-items:start">' +
+    '<div><div class="lbl">En tabla (alineado a la derecha)</div><div class="demo">' +
+      '<table class="tbl tbl-compact"><tbody>' +
+      '<tr><td>Mano de obra</td><td class="num">' + money(320) + '</td></tr>' +
+      '<tr><td>Repuestos</td><td class="num">' + money(124.7) + '</td></tr>' +
+      '<tr><td>Gastos en ruta</td><td class="num">' + money(38.4) + '</td></tr>' +
+      '</tbody><tfoot><tr><td>Total</td><td class="num">' + money(483.1) + '</td></tr></tfoot></table></div></div>' +
+    '<div><div class="lbl">En línea</div><div class="demo">' +
+      '<div class="mb8">' + moneyRow(1250) + '</div>' +
+      '<div class="mb8">' + moneyRow(85) + '</div>' +
+      '<div>' + moneyRow(9) + '</div></div></div>' +
+    '<div><div class="lbl">Como indicador</div><div class="demo">' +
+      '<div class="kpi-label">Facturado del mes</div>' + money(18420.55, 'lg left') +
+      '<div class="hint mt8">La cotización se edita desde la barra superior (<b class="fx-val"></b> Gs/USD) ' +
+      'y recalcula todo lo visible al instante.</div>' +
+      '<button class="btn btn-sm mt8" id="bFx">Editar cotización</button></div></div>' +
+  '</div>' +
+  '<div class="note note-warn mt12">' + icon('alert') +
+  '<div>El valor se guarda en su <b>moneda de origen</b>. La conversión es de presentación. ' +
+  'Cada documento emitido congela la cotización con la que se calculó.</div></div>' +
+  '</div></div>' +
+
+/* ============================================================
+   5 · Componentes
+   ============================================================ */
+'<div class="card"><div class="card-head">' + icon('grid') + '<h2>5 · Componentes</h2></div>' +
+  '<div class="card-body">' +
+    '<div class="grid g-3" style="align-items:start">' +
+      '<div><div class="lbl">Botones</div><div class="demo">' +
+        '<div class="row wrap mb8"><button class="btn btn-primary">Primario</button>' +
+        '<button class="btn">Secundario</button><button class="btn btn-navy">Navy</button>' +
+        '<button class="btn btn-danger">Destructivo</button><button class="btn btn-ghost">Fantasma</button></div>' +
+        '<div class="row wrap"><button class="btn btn-sm">Pequeño</button>' +
+        '<button class="btn btn-lg btn-primary">Grande</button>' +
+        '<button class="btn" disabled>Deshabilitado</button></div></div></div>' +
+
+      '<div><div class="lbl">Campos</div><div class="demo">' +
+        '<div class="field"><label class="lbl">Campo normal <span class="req">*</span></label><input class="inp" value="Texto de ejemplo"></div>' +
+        '<div class="field"><label class="lbl">Campo con error</label><input class="inp err" value="valor-invalido">' +
+        '<div class="hint err">El motivo del error, siempre visible junto al campo.</div></div>' +
+        '<div class="row"><label class="sw"><input type="checkbox" checked><span class="track"></span></label>' +
+        '<span class="small">Interruptor</span><span class="spacer"></span>' +
+        '<label class="chk"><input type="checkbox" checked><span>Casilla</span></label></div></div></div>' +
+
+      '<div><div class="lbl">Etiquetas y chips</div><div class="demo">' +
+        '<div class="row wrap mb8">' + ESTADO_ORDER.map(k => pill(k)).join('') + '</div>' +
+        '<div class="row wrap mb8"><span class="pill pill-info">Info</span><span class="pill pill-violet">Cuadrilla</span>' +
+        '<span class="pill pill-ok">Activo</span><span class="pill pill-warn">Pendiente</span><span class="pill pill-err">Vencido</span></div>' +
+        '<div class="row wrap"><span class="chip on">Filtro activo</span><span class="chip">Filtro</span>' +
+        '<span class="tag">Etiqueta</span></div></div></div>' +
+    '</div>' +
+
+    '<div class="grid g-3 mt12" style="align-items:start">' +
+      '<div><div class="lbl">Avatares y personas</div><div class="demo">' +
+        '<div class="row mb8">' + avatar('Óscar Benítez', 'av-lg') +
+        '<div><div class="strong small">Óscar Benítez</div><div class="xsmall muted">Técnico Senior · Climatización</div></div></div>' +
+        '<div class="row"><span class="av-stack">' + ['Marcos Duarte', 'Luis Zárate', 'Diego Aquino'].map(n => avatar(n, 'av-sm')).join('') +
+        '<span class="av av-sm av-more">+2</span></span><span class="xsmall muted">Cuadrilla Norte</span></div></div></div>' +
+
+      '<div><div class="lbl">Mensajes en bloque</div><div class="demo">' +
+        '<div class="note mb8">' + icon('info') + '<div>Información contextual.</div></div>' +
+        '<div class="note note-warn mb8">' + icon('alert') + '<div>Advertencia con consecuencia.</div></div>' +
+        '<div class="note note-err">' + icon('ban') + '<div>Bloqueo con su motivo explícito.</div></div></div></div>' +
+
+      '<div><div class="lbl">Estado vacío</div><div class="demo">' +
+        '<div class="empty" style="padding:20px">' + icon('search') +
+        '<h4>Sin resultados</h4><div class="small">Explica siempre por qué está vacío y qué hacer.</div>' +
+        '<button class="btn btn-sm mt8">Limpiar filtros</button></div></div></div>' +
+    '</div>' +
+
+    '<div class="lbl mt16">Diálogos</div>' +
+    '<div class="row wrap"><button class="btn" id="mConfirm">Confirmación</button>' +
+    '<button class="btn" id="mDestruct">Acción destructiva</button>' +
+    '<button class="btn" id="mForm">Formulario</button></div>' +
+  '</div></div>' +
+
+/* ============================================================
+   6 · Responsive y densidad
+   ============================================================ */
+'<div class="card"><div class="card-head">' + icon('gauge') + '<h2>6 · Densidad y responsive</h2></div>' +
+  '<div class="card-body"><div class="grid g-2">' +
+    '<div><dl class="dl">' +
+      '<dt>Tipografía base</dt><dd>13 px · interlineado 1,45</dd>' +
+      '<dt>Alto de fila</dt><dd>28–32 px (tabla densa tipo ERP)</dd>' +
+      '<dt>Alto de control</dt><dd>30 px estándar · 25 px compacto</dd>' +
+      '<dt>Cifras</dt><dd>Tabulares, alineadas a la derecha</dd>' +
+      '<dt>Menú lateral</dt><dd>232 px · colapsa bajo 900 px</dd>' +
+      '<dt>Puntos de quiebre</dt><dd>1180 · 1024 · 900 · 600 px</dd>' +
+    '</dl></div>' +
+    '<div><div class="note note-neutral">' + icon('info') +
+    '<div>En móvil el menú pasa a ser un panel deslizante, las grillas se apilan en una columna, ' +
+    'las tablas conservan scroll horizontal (no se recortan columnas) y los toasts ocupan el ancho de la pantalla. ' +
+    'Probá achicando la ventana del navegador.</div></div>' +
+    '<div class="note mt12">' + icon('print') +
+    '<div>La orden de servicio tiene hoja de estilo de impresión: se imprime el documento, sin menú ni barras.</div></div></div>' +
+  '</div></div></div>';
+
+/* ---------- Interacciones ---------- */
+const T = {
+  t1: () => toastErr('No se pudo guardar', 'El campo “Descripción de la falla” es obligatorio y quedó vacío.', { code: 'DESC_REQUIRED', origen: 'Alta de servicio' }),
+  t2: () => toastErr('Acción bloqueada', 'Tu rol (Supervisor) no puede anular órdenes ya facturadas. Pedile la anulación a un Administrador.', { code: 'RBAC_FORBIDDEN', origen: 'Permisos', sticky: true, accion: 'Solicitar autorización', onAccion: () => toastOk('Solicitud enviada', 'Se notificó a los 2 administradores del tenant.', { code: 'APPROVAL_REQUESTED' }) }),
+  t3: () => toastWarn('Guardado con advertencia', 'Se redujo la jornada de Óscar Benítez. 3 órdenes ya asignadas quedan fuera de horario.', { code: 'SHIFT_SAVED_WITH_CONFLICTS', origen: 'Colaboradores', sticky: true, accion: 'Ver órdenes', onAccion: () => location.href = 'agenda.html' }),
+  t4: () => toastOk('Orden despachada', 'OS-4915 asignada a la Cuadrilla Norte. Push entregado a 4 dispositivos.', { code: 'ORDER_CREATED', origen: SESSION.user.nombre }),
+  t5: () => toastInfo('Te llevamos a la agenda', 'La orden ya estaba cerrada, así que se abrió la agenda del día en su lugar.', { code: 'REDIRECT_ORDER_CLOSED', origen: 'Navegación', accion: 'Ir ahora', onAccion: () => location.href = 'agenda.html' }),
+  t6: () => toastErr('Tu sesión expiró', 'Estuviste 30 minutos sin actividad. Volvé a ingresar; el borrador de la orden quedó guardado.', { code: 'SESSION_EXPIRED', origen: 'Autenticación', sticky: true, accion: 'Ingresar de nuevo', onAccion: () => location.href = 'index.html' }),
+  t7: () => toastWarn('Sin conexión con el servidor', 'Los cambios se están guardando localmente y se sincronizarán cuando vuelva la conexión. Último intento hace 12 s.', { code: 'NETWORK_OFFLINE', origen: 'Sincronización', sticky: true }),
+  t8: () => {
+    [['CREW_MIN_SIZE', 'La cuadrilla tiene 1 integrante. El mínimo es 2.'],
+     ['DATE_IN_PAST', 'La fecha 18/08/2026 ya pasó. No se puede agendar hacia atrás.'],
+     ['CUSTOMER_BLOCKED_AR', 'Grupo Servitec del Este está suspendido por facturas vencidas.']]
+      .forEach(([c, m], i) => setTimeout(() => toastErr('No se pudo crear la orden', m, { code: c, origen: 'Validación del alta', sticky: true }), i * 240));
+  },
+};
+Object.entries(T).forEach(([id, fn]) => document.getElementById(id).onclick = fn);
+
+document.getElementById('bFx').onclick = () => document.getElementById('fxBtn').click();
+
+document.getElementById('mConfirm').onclick = () => modal({
+  titulo: 'Confirmar reasignación', icon: 'users',
+  body: '<p style="margin-top:0">Vas a reasignar <b>OS-4931</b> de Derlis Cáceres a la <b>Cuadrilla Norte</b>.</p>' +
+    '<div class="note note-neutral">' + icon('info') + '<div>Se notifica por push a los 4 integrantes y al técnico anterior. La reasignación queda en la auditoría de la orden.</div></div>' +
+    '<div class="field mt12"><label class="lbl">Motivo <span class="req">*</span></label>' +
+    '<textarea class="inp" rows="2" placeholder="El motivo se guarda en el historial de la orden."></textarea></div>',
+  onOk: () => toastOk('Orden reasignada', 'OS-4931 pasó a la Cuadrilla Norte.', { code: 'ORDER_REASSIGNED' }),
+});
+document.getElementById('mDestruct').onclick = () => modal({
+  titulo: 'Cancelar la orden OS-4931', icon: 'ban',
+  foot: '<button class="btn" data-close>Volver</button><button class="btn btn-danger" data-ok>Sí, cancelar la orden</button>',
+  body: '<div class="note note-err">' + icon('alert') +
+    '<div><b>Esta acción no se puede deshacer.</b> La orden pasa a “Cancelada”, se libera la agenda del técnico y se notifica al cliente.</div></div>' +
+    '<div class="field mt12"><label class="lbl">Motivo de cancelación <span class="req">*</span></label>' +
+    '<select class="inp"><option>El cliente reprogramó</option><option>Falta de repuestos</option><option>Error de carga</option><option>Otro</option></select></div>',
+  onOk: () => toastOk('Orden cancelada', 'OS-4931 se canceló por “El cliente reprogramó”. Se liberaron 3 h en la agenda de Derlis Cáceres.', { code: 'ORDER_CANCELLED' }),
+});
+document.getElementById('mForm').onclick = () => modal({
+  titulo: 'Formulario de ejemplo', icon: 'edit', size: 'wide',
+  body: '<div class="grid g-2">' +
+    '<div class="field"><label class="lbl">Campo obligatorio <span class="req">*</span></label><input class="inp" placeholder="Escribí algo…"></div>' +
+    '<div class="field"><label class="lbl">Selección</label><select class="inp"><option>Opción A</option><option>Opción B</option></select></div>' +
+    '</div><div class="field"><label class="lbl">Texto largo</label><textarea class="inp" rows="3"></textarea></div>',
+  onOk: b => {
+    if (!b.querySelector('input').value.trim()) {
+      toastErr('Falta un campo obligatorio', 'Completá “Campo obligatorio” para continuar.', { code: 'FORM_REQUIRED_FIELD', origen: 'Formulario de ejemplo' });
+      return false;
+    }
+    toastOk('Guardado', 'El formulario se guardó correctamente.', { code: 'FORM_SAVED' });
+  },
+});
+
+repriceAll();
+</script>
+</body>
+</html>

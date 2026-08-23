@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es-PY">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orden de servicio — PDF · NovaTrack</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E5BD8'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<div class="app">
+  <div class="brand" id="brand"></div>
+  <div class="topbar" id="topbar"></div>
+  <nav class="nav" id="nav"></nav>
+  <main class="main">
+    <div id="head"></div>
+    <div class="content">
+      <div class="grid g-main-side" style="align-items:start">
+        <div class="pdf-stage" id="stage"></div>
+        <div id="side"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+boot('pdf');
+
+/* Orden de ejemplo: una cerrada, con evidencia completa. */
+const OS =
+  SERVICIOS.find(s => s.estado === 'cerrada' && s.tipoId === 'TS-05' && s.gastos.length >= 2 && s.fotos >= 5) ||
+  SERVICIOS.find(s => s.estado === 'cerrada' && s.tipoId === 'TS-05') ||
+  SERVICIOS.find(s => s.estado === 'cerrada' && s.montoUsd > 0) || SERVICIOS[0];
+const CLI = CLIENTES.find(c => c.id === OS.clienteId);
+const TS = TIPOS_SERVICIO.find(t => t.id === OS.tipoId);
+const F = parseISO(OS.fecha);
+const hIni = hhmm(OS.hIni, OS.mIni), hFin = addMin(OS.hIni, OS.mIni, OS.dur);
+
+const CHECKLIST_FULL = [
+  ['Corte de energía y bloqueo del tablero (LOTO)', true],
+  ['Medición de presiones de alta y baja', true],
+  ['Verificación de carga de refrigerante R-404A', true],
+  ['Limpieza de condensador y evaporador', true],
+  ['Control de amperaje del compresor', true],
+  ['Revisión de aislación de cañerías', true],
+  ['Prueba de estanqueidad con detector electrónico', true],
+  ['Verificación del sistema de desescarche', true],
+  ['Control de termostato y calibración', true],
+  ['Revisión de burletes y cierre de puerta', true],
+  ['Registro de temperatura de cámara en régimen', true],
+  ['Ajuste de bornes del contactor', true],
+  ['Limpieza del área de trabajo', true],
+  ['Prueba funcional de 30 min en régimen', true],
+  ['Conformidad del responsable de sucursal', true],
+];
+/* El checklist impreso siempre coincide con el que define el tipo de servicio. */
+const CHECKLIST = CHECKLIST_FULL.slice(0, Math.min(CHECKLIST_FULL.length, OS.checklistTotal));
+
+const REPUESTOS = [
+  { cod: 'RP-1042', desc: 'Contactor tripolar 25 A — Schneider LC1D25', cant: 1, unit: 42.50 },
+  { cod: 'RP-2287', desc: 'Gas refrigerante R-404A (kg)', cant: 2.5, unit: 28.00 },
+  { cod: 'RP-3110', desc: 'Filtro secador 083 soldable', cant: 1, unit: 11.20 },
+  { cod: 'RP-0455', desc: 'Burlete magnético puerta cámara (m)', cant: 3, unit: 9.80 },
+];
+
+function renderHead() {
+  document.getElementById('head').innerHTML = pageHead({
+    crumbs: [{ t: 'Análisis' }, { t: 'Orden de servicio' }, { t: OS.id }],
+    icon: 'pdf',
+    titulo: 'Orden de servicio ' + OS.id,
+    meta: 'Documento generado automáticamente al cerrar la orden · versión 3 · conformada digitalmente por el cliente',
+    acciones:
+      '<button class="btn" id="bMail">' + icon('mail', 'ic-sm') + 'Enviar al cliente</button>' +
+      '<button class="btn" id="bPrint">' + icon('print', 'ic-sm') + 'Imprimir</button>' +
+      '<button class="btn" id="bFirma">' + icon('sign', 'ic-sm') + 'Ver firma</button>' +
+      '<button class="btn btn-primary" id="bPdf">' + icon('down', 'ic-sm') + 'Descargar PDF</button>',
+    kpis:
+      kpi('Estado', pill(OS.estado), 'cerrada el ' + fechaCorta(F)) +
+      kpi('Duración real', (OS.dur / 60).toFixed(1).replace('.0', '') + ' h', hIni + ' – ' + hFin) +
+      kpi('Checklist', CHECKLIST.length + '/' + CHECKLIST.length, '100 % completado') +
+      kpi('Evidencia', OS.fotos + ' fotos', 'geoestampadas') +
+      kpi('Mano de obra', money(OS.montoUsd, 'lg left'), TS ? TS.id : '') +
+      kpi('Repuestos', money(REPUESTOS.reduce((a, r) => a + r.cant * r.unit, 0), 'lg left'), REPUESTOS.length + ' ítems') +
+      kpi('Gastos', money(OS.gastosUsd, 'lg left'), OS.gastos.length + ' rendiciones'),
+  });
+  document.getElementById('bPdf').onclick = () =>
+    toastOk('PDF generado', OS.id + '.pdf (2 páginas, 480 KB) listo para descargar.', { code: 'PDF_RENDERED', accion: 'Descargar', onAccion: () => noMock('La descarga del PDF') });
+  document.getElementById('bPrint').onclick = () => window.print();
+  document.getElementById('bMail').onclick = () => {
+    if (!CLI.email) {
+      toastErr('No se pudo enviar', CLI.nombre + ' no tiene correo de contacto cargado.', { code: 'CUSTOMER_NO_EMAIL', origen: 'Envío de orden' });
+      return;
+    }
+    toastOk('Orden enviada', 'Se envió ' + OS.id + '.pdf a ' + CLI.email + ' con copia al ejecutivo de cuenta.', { code: 'ORDER_EMAILED' });
+  };
+  document.getElementById('bFirma').onclick = () => modal({
+    titulo: 'Conformidad del cliente', icon: 'sign', foot: '<button class="btn" data-close>Cerrar</button>',
+    body: '<div style="background:#fff;border:1px solid var(--line);border-radius:5px;padding:14px;text-align:center">' +
+      '<svg viewBox="0 0 300 90" style="width:100%;height:110px">' +
+      '<path d="M20,62 C40,20 52,72 70,48 C88,24 96,70 116,50 C132,34 140,64 158,44 C176,24 186,66 206,46 C222,30 236,58 262,40" ' +
+      'stroke="#1B2A6B" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+      '<path d="M60,74 L240,74" stroke="#C8CEDA" stroke-width="1"/></svg>' +
+      '<div class="small strong mt8">' + esc(OS.contacto) + '</div>' +
+      '<div class="xsmall muted">' + esc(OS.sucursal) + ' · ' + esc(CLI.nombre) + '</div></div>' +
+      '<dl class="dl mt12">' +
+      '<dt>Firmado el</dt><dd>' + fechaCorta(F) + ' a las ' + hFin + '</dd>' +
+      '<dt>Dispositivo</dt><dd class="mono xsmall">Android 14 · NovaTrack 0.9.2</dd>' +
+      '<dt>Coordenadas</dt><dd class="mono xsmall">' + OS.lat + ', ' + OS.lng + '</dd>' +
+      '<dt>Hash</dt><dd class="mono xsmall">a3f9…c17d (SHA-256 del PDF + firma)</dd>' +
+      '</dl>',
+  });
+}
+
+/* ============================================================
+   Documento PDF (2 páginas A4)
+   ============================================================ */
+function pdfHtml() {
+  const totalRep = REPUESTOS.reduce((a, r) => a + r.cant * r.unit, 0);
+  const totalGas = OS.gastosUsd;
+  const total = OS.montoUsd + totalRep + totalGas;
+  const iva = total * 0.10;
+
+  const cabecera = pag =>
+    '<div class="pdf-hd">' +
+      '<div class="pdf-logo">N</div>' +
+      '<div>' +
+        '<div class="pdf-title">ORDEN DE SERVICIO TÉCNICO</div>' +
+        '<div style="font-size:10px;color:#5A6272">Noventra E.A.S. · RUC 80098765-4 · Avda. Aviadores del Chaco 1234, Asunción</div>' +
+        '<div style="font-size:10px;color:#5A6272">servicios@noventra.com.py · +595 21 620-4000</div>' +
+      '</div>' +
+      '<div class="pdf-num">' +
+        '<div style="font-size:8.5px;color:#5A6272;letter-spacing:1px">N.º DE ORDEN</div>' +
+        '<div class="n">' + OS.id + '</div>' +
+        '<div style="font-size:9px;color:#5A6272">Página ' + pag + ' de 2</div>' +
+      '</div>' +
+    '</div>';
+
+  const pie = '<div class="pdf-foot">' +
+    '<span>NovaTrack · documento generado el ' + fechaCorta(F) + ' ' + hFin + '</span>' +
+    '<span style="margin-left:auto">Verificable en novatrack.noventra.com.py/v/' + OS.id.toLowerCase() + '</span></div>';
+
+  /* ---------- Página 1 ---------- */
+  const p1 =
+    '<div class="pdf-page">' + cabecera(1) +
+    '<div class="pdf-sect"><h4>Datos del cliente</h4><div class="pdf-grid">' +
+      '<div class="pdf-f"><span class="k">Razón social</span><span class="v">' + esc(CLI.nombre) + '</span></div>' +
+      '<div class="pdf-f"><span class="k">RUC</span><span class="v">' + CLI.ruc + '</span></div>' +
+      '<div class="pdf-f"><span class="k">Sucursal</span><span class="v">' + esc(OS.sucursal) + '</span></div>' +
+      '<div class="pdf-f"><span class="k">Ciudad</span><span class="v">' + esc(OS.ciudad) + '</span></div>' +
+      '<div class="pdf-f"><span class="k">Dirección</span><span class="v">' + esc(OS.dir) + '</span></div>' +
+      '<div class="pdf-f"><span class="k">Contacto</span><span class="v">' + esc(OS.contacto) + ' · ' + esc(OS.tel) + '</span></div>' +
+    '</div></div>' +
+
+    '<div class="pdf-sect"><h4>Datos del servicio</h4><div class="pdf-grid">' +
+      '<div class="pdf-f"><span class="k">Tipo</span><span class="v">' + esc(OS.tipo) + ' (' + OS.tipoId + ')</span></div>' +
+      '<div class="pdf-f"><span class="k">Prioridad</span><span class="v">' + (OS.prioridad === 'urgente' ? 'Urgente' : OS.prioridad === 'alta' ? 'Alta' : 'Normal') + '</span></div>' +
+      '<div class="pdf-f"><span class="k">Fecha</span><span class="v">' + fechaCorta(F) + '</span></div>' +
+      '<div class="pdf-f"><span class="k">SLA contratado</span><span class="v">' + OS.sla + ' h · ' + (OS.slaOk ? 'CUMPLIDO' : 'INCUMPLIDO') + '</span></div>' +
+      '<div class="pdf-f"><span class="k">Check-in</span><span class="v">' + hIni + '</span></div>' +
+      '<div class="pdf-f"><span class="k">Check-out</span><span class="v">' + hFin + '</span></div>' +
+      '<div class="pdf-f"><span class="k">Duración</span><span class="v">' + (OS.dur / 60).toFixed(1).replace('.0', '') + ' h</span></div>' +
+      '<div class="pdf-f"><span class="k">Kilometraje</span><span class="v">' + OS.km + ' km</span></div>' +
+    '</div></div>' +
+
+    '<div class="pdf-sect"><h4>' + (OS.cuadrilla ? 'Cuadrilla asignada' : 'Técnico asignado') + '</h4>' +
+      '<table class="pdf-tbl"><thead><tr><th>Nombre</th><th>Rol</th><th>Legajo</th><th>Check-in geoestampado</th></tr></thead><tbody>' +
+      OS.tecnicos.map((t, i) => {
+        const c = COLABORADORES.find(x => x.id === t.id) || {};
+        return '<tr><td>' + esc(t.nombre) + '</td><td>' + esc(t.rol) + (i === 0 && OS.cuadrilla ? ' (jefe de cuadrilla)' : '') + '</td>' +
+          '<td>' + (c.legajo || '—') + '</td>' +
+          '<td class="pdf-geo">' + OS.lat + ', ' + OS.lng + ' · ' + hIni + '</td></tr>';
+      }).join('') +
+      '</tbody></table>' +
+      (OS.cuadrilla ? '<div style="font-size:9px;color:#5A6272;margin-top:3px">Cuadrilla: ' + esc(OS.cuadrilla) + '</div>' : '') +
+    '</div>' +
+
+    '<div class="pdf-sect"><h4>Trabajo solicitado</h4>' +
+      '<div style="font-size:10.5px;line-height:1.5">' + esc(OS.obs || 'Mantenimiento correctivo según reporte del cliente.') + '</div></div>' +
+
+    '<div class="pdf-sect"><h4>Checklist de ejecución (' + CHECKLIST.length + '/' + CHECKLIST.length + ')</h4>' +
+      '<div style="columns:2;column-gap:22px;font-size:10px">' +
+      CHECKLIST.map(([t, ok]) => '<div style="break-inside:avoid;padding:1.5px 0">' +
+        '<span style="color:#16A34A;font-weight:700">✓</span> ' + esc(t) + '</div>').join('') +
+      '</div></div>' +
+
+    '<div class="pdf-sect"><h4>Repuestos y materiales</h4>' +
+      '<table class="pdf-tbl"><thead><tr><th>Código</th><th>Descripción</th><th class="num">Cant.</th>' +
+      '<th class="num">Unitario USD</th><th class="num">Unitario Gs.</th><th class="num">Total USD</th></tr></thead><tbody>' +
+      REPUESTOS.map(r => '<tr><td>' + r.cod + '</td><td>' + esc(r.desc) + '</td>' +
+        '<td class="num">' + nf1.format(r.cant) + '</td>' +
+        '<td class="num">' + usd(r.unit) + '</td>' +
+        '<td class="num" data-pyg-only="' + r.unit + '">' + pyg(toPyg(r.unit)) + '</td>' +
+        '<td class="num">' + usd(r.cant * r.unit) + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td colspan="5">Subtotal repuestos</td><td class="num">' + usd(totalRep) + '</td></tr></tfoot></table></div>' +
+    pie + '</div>';
+
+  /* ---------- Página 2 ---------- */
+  const p2 =
+    '<div class="pdf-page">' + cabecera(2) +
+
+    '<div class="pdf-sect"><h4>Gastos rendidos en ruta</h4>' +
+      (OS.gastos.length
+        ? '<table class="pdf-tbl"><thead><tr><th>Tipo de gasto</th><th>Comprobante</th><th class="num">USD</th><th class="num">Guaraníes</th></tr></thead><tbody>' +
+          OS.gastos.map(g => '<tr><td>' + esc(g.tipo) + '</td><td>' + (g.comprobante || 'sin comprobante') + '</td>' +
+            '<td class="num">' + usd(g.usd) + '</td><td class="num" data-pyg-only="' + g.usd + '">' + pyg(toPyg(g.usd)) + '</td></tr>').join('') +
+          '</tbody><tfoot><tr><td colspan="2">Subtotal gastos</td><td class="num">' + usd(totalGas) + '</td>' +
+          '<td class="num" data-pyg-only="' + totalGas + '">' + pyg(toPyg(totalGas)) + '</td></tr></tfoot></table>'
+        : '<div style="font-size:10px;color:#5A6272">Sin gastos rendidos para esta orden.</div>') +
+    '</div>' +
+
+    '<div class="pdf-sect"><h4>Resumen económico</h4>' +
+      '<table class="pdf-tbl"><thead><tr><th>Concepto</th><th class="num">USD</th><th class="num">Guaraníes</th></tr></thead><tbody>' +
+      '<tr><td>Mano de obra — ' + esc(OS.tipo) + '</td><td class="num">' + usd(OS.montoUsd) + '</td><td class="num" data-pyg-only="' + OS.montoUsd + '">' + pyg(toPyg(OS.montoUsd)) + '</td></tr>' +
+      '<tr><td>Repuestos y materiales</td><td class="num">' + usd(totalRep) + '</td><td class="num" data-pyg-only="' + totalRep + '">' + pyg(toPyg(totalRep)) + '</td></tr>' +
+      '<tr><td>Gastos en ruta</td><td class="num">' + usd(totalGas) + '</td><td class="num" data-pyg-only="' + totalGas + '">' + pyg(toPyg(totalGas)) + '</td></tr>' +
+      '<tr><td>IVA 10 %</td><td class="num">' + usd(iva) + '</td><td class="num" data-pyg-only="' + iva + '">' + pyg(toPyg(iva)) + '</td></tr>' +
+      '</tbody><tfoot><tr><td>TOTAL</td><td class="num">' + usd(total + iva) + '</td>' +
+      '<td class="num" data-pyg-only="' + (total + iva) + '">' + pyg(toPyg(total + iva)) + '</td></tr></tfoot></table>' +
+      '<div style="font-size:8.5px;color:#5A6272;margin-top:4px">Tipo de cambio aplicado: <b class="fx-val"></b> Gs/USD · vigente al ' + fechaCorta(F) + '. ' +
+      'La facturación se emite en ' + (CLI.moneda === 'USD' ? 'dólares (USD)' : 'guaraníes (PYG)') + ' según contrato.</div>' +
+    '</div>' +
+
+    '<div class="pdf-sect"><h4>Evidencia fotográfica geoestampada</h4>' +
+      '<div class="pdf-photos">' +
+      ['Antes — cámara N.º 2', 'Antes — tablero de control', 'Durante — medición de presiones',
+       'Durante — reemplazo de contactor', 'Después — cámara en régimen', 'Después — registro de temperatura'].map((t, i) =>
+        '<div class="pdf-photo"><div>' +
+          '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#97A0B4" stroke-width="1.5" style="margin-bottom:3px">' +
+          '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
+          '<div><b>' + t + '</b></div>' +
+          '<div class="pdf-geo">' + (OS.lat + i * 0.00004).toFixed(6) + ', ' + (OS.lng - i * 0.00003).toFixed(6) + '</div>' +
+          '<div class="pdf-geo">' + addMin(OS.hIni, OS.mIni, Math.round(OS.dur / 6 * i)) + '</div>' +
+        '</div></div>').join('') +
+      '</div>' +
+      '<div style="font-size:8.5px;color:#5A6272;margin-top:5px">Cada imagen incluye coordenadas, fecha, hora y hash de integridad. ' +
+      'Las fotos se capturan dentro de la app; no se admite carga desde la galería.</div>' +
+    '</div>' +
+
+    (OS.pendientes ? '<div class="pdf-sect"><h4>Pendientes declarados</h4>' +
+      '<div style="font-size:10.5px;border-left:3px solid #CA8A04;padding-left:8px">' + esc(OS.pendientes) + '</div></div>' : '') +
+
+    '<div class="pdf-sect"><h4>Observaciones del técnico</h4>' +
+      '<div style="font-size:10.5px;line-height:1.5;min-height:44px;border:1px solid #D5DAE6;border-radius:3px;padding:7px">' +
+      'Se reemplazó el contactor tripolar por falla de bobina. Se recargó el circuito con 2,5 kg de R-404A tras verificar estanqueidad. ' +
+      'La cámara alcanzó −18 °C en 42 minutos, dentro de parámetros. Se recomienda reemplazar el burlete de la puerta en el próximo preventivo.' +
+      '</div></div>' +
+
+    '<div class="pdf-sign">' +
+      '<div class="pdf-sign-box">' +
+        '<svg viewBox="0 0 220 60" style="width:100%;height:52px">' +
+        '<path d="M18,44 C34,14 44,52 58,32 C72,14 82,50 98,34 C112,20 122,46 140,30 C156,16 168,42 196,26" stroke="#14181F" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>' +
+        '<div class="pdf-sign-line">' + esc(OS.tecnicos[0].nombre) + '<br><span style="color:#5A6272">Técnico responsable · Noventra E.A.S.</span></div>' +
+      '</div>' +
+      '<div class="pdf-sign-box">' +
+        '<svg viewBox="0 0 220 60" style="width:100%;height:52px">' +
+        '<path d="M14,40 C30,22 40,50 56,30 C70,12 84,46 100,28 C116,12 128,44 148,28 C164,16 178,38 202,24" stroke="#14181F" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>' +
+        '<div class="pdf-sign-line">' + esc(OS.contacto) + '<br><span style="color:#5A6272">Conformidad del cliente · ' + esc(OS.sucursal) + '</span></div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="font-size:8.5px;color:#5A6272;text-align:center;margin-top:10px">' +
+      'Firmado digitalmente en el dispositivo del técnico el ' + fechaCorta(F) + ' a las ' + hFin +
+      ' · coordenadas ' + OS.lat + ', ' + OS.lng + ' · hash SHA-256 a3f9…c17d</div>' +
+    pie + '</div>';
+
+  return p1 + p2;
+}
+
+/* ---------- Panel lateral ---------- */
+function renderSide() {
+  document.getElementById('side').innerHTML =
+    '<div class="card"><div class="card-head">' + icon('file') + '<h3>Documento</h3></div>' +
+      '<div class="card-body"><dl class="dl">' +
+        '<dt>Plantilla</dt><dd>Orden de servicio A4 — v3</dd>' +
+        '<dt>Idioma</dt><dd>Español (PY)</dd>' +
+        '<dt>Páginas</dt><dd>2</dd>' +
+        '<dt>Generado</dt><dd>' + fechaCorta(F) + ' ' + hFin + '</dd>' +
+        '<dt>Estado</dt><dd><span class="pill pill-ok">Conformado</span></dd>' +
+        '<dt>Envío</dt><dd>' + esc(CLI.email) + '</dd>' +
+      '</dl>' +
+      '<div class="hr"></div>' +
+      '<div class="lbl">Incluir en el PDF</div>' +
+      ['Checklist completo', 'Fotos geoestampadas', 'Repuestos y materiales', 'Gastos en ruta', 'Resumen económico', 'Firmas digitales']
+        .map((t, i) => '<div class="row" style="padding:3px 0"><label class="sw"><input type="checkbox" checked data-sec="' + i + '"><span class="track"></span></label>' +
+          '<span class="small">' + t + '</span></div>').join('') +
+      '</div></div>' +
+
+    '<div class="card"><div class="card-head">' + icon('clock') + '<h3>Trazabilidad de la orden</h3></div>' +
+      '<div class="card-body"><div class="tl">' +
+        [['Creada y asignada', hhmm(OS.hIni - 2, 0), 'Mateo Rivas despachó la orden al técnico.', 'done'],
+         ['Push entregado', hhmm(OS.hIni - 2, 3), 'Acuse de recepción en el dispositivo.', 'done'],
+         ['En camino', hhmm(OS.hIni - 1, 40), 'Salida registrada. GPS activo.', 'done'],
+         ['Check-in en sitio', hIni, 'Dentro de la geocerca (32 m de la sucursal).', 'done'],
+         ['Checklist completado', addMin(OS.hIni, OS.mIni, OS.dur - 25), CHECKLIST.length + ' de ' + CHECKLIST.length + ' puntos.', 'done'],
+         ['Check-out y firma', hFin, 'Conformidad de ' + OS.contacto + '.', 'done'],
+         ['PDF generado', hFin, 'Enviado al cliente y archivado.', 'active']]
+        .map(([t, h, d, cls]) => '<div class="tl-item ' + cls + '">' +
+          '<div class="tl-time">' + h + '</div><div class="tl-title">' + t + '</div><div class="tl-txt">' + esc(d) + '</div></div>').join('') +
+      '</div></div></div>' +
+
+    '<div class="card"><div class="card-head">' + icon('money') + '<h3>Conversión de moneda</h3></div>' +
+      '<div class="card-body">' +
+      '<div class="note note-neutral">' + icon('info') +
+      '<div>El documento imprime <b>ambas monedas</b>. La cotización aplicada queda fija en el PDF emitido, ' +
+      'aunque después cambie el tipo de cambio del sistema.</div></div>' +
+      '<div class="row mt8"><span class="small">Cotización del documento</span><span class="spacer"></span>' +
+      '<span class="strong num"><b class="fx-val"></b> Gs/USD</span></div>' +
+      '<button class="btn btn-sm btn-block mt8" id="bRecalcular">Recalcular con cotización de hoy</button>' +
+      '</div></div>';
+
+  document.querySelectorAll('[data-sec]').forEach(ch => ch.onchange = () => {
+    if (!ch.checked) toastWarn('Sección excluida', 'La sección quedó fuera del PDF. Las órdenes sin evidencia fotográfica no son válidas para reclamos de garantía.', { code: 'PDF_SECTION_REMOVED' });
+  });
+  document.getElementById('bRecalcular').onclick = () =>
+    toastErr('Recálculo bloqueado', 'La orden ' + OS.id + ' ya fue conformada por el cliente. El tipo de cambio del documento no puede modificarse: hay que emitir una nota de crédito.',
+      { code: 'DOC_IMMUTABLE_AFTER_SIGNATURE', origen: 'Orden de servicio', sticky: true });
+}
+
+renderHead();
+document.getElementById('stage').innerHTML = pdfHtml();
+renderSide();
+repriceAll();
+</script>
+</body>
+</html>
