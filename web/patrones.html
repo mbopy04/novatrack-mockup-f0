@@ -18,6 +18,9 @@
   .anat { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px 12px; margin-top: 8px; }
   .anat b { font-size: var(--fs-xs); color: var(--n-800); }
   .anat span { font-size: var(--fs-xs); color: var(--n-500); display: block; line-height: 1.4; }
+  /* Caja de borde sólido: la de .demo es punteada y competiría con el badge
+     punteado de «Sin asignar», que es justamente la señal que hay que leer. */
+  .statebox { background: var(--n-000); border: 1px solid var(--n-200); border-radius: var(--r-md); padding: 12px; }
   .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .flow svg { color: var(--n-400); flex: 0 0 auto; }
   .cbar { height: 34px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: space-between; padding: 0 9px; font-size: var(--fs-xs); font-weight: 700; color: #fff; font-family: var(--mono); }
@@ -129,6 +132,165 @@
           <div class="flow" id="transiciones"></div>
           <div class="field__hint" style="margin-top:8px">Las transiciones las dispara la app del técnico (salida, check-in, check-out),
             no el administrador. El administrador solo puede <b>reasignar</b> o <b>cancelar</b>, y las dos acciones piden motivo.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 2b · ESTADOS QUE AGREGA LA OPERACIÓN (PARA APROBAR) ============ -->
+    <div class="card sec-anchor" id="s-estados-nuevos">
+      <div class="card__head">
+        <span style="color:var(--accent)" id="h2c"></span>
+        <div><div class="card__title">2b · Dos estados que la operación agrega — para tu aprobación</div>
+          <div class="card__sub">Los cinco de arriba no se tocan: mismo color, mismo significado</div></div>
+        <div class="spacer"></div>
+        <span class="badge badge--warn"><i class="badge__dot"></i>Pendiente de aprobación</span>
+      </div>
+      <div class="card__body stack">
+
+        <div class="banner banner--info">
+          <span class="banner__icon" id="h2d"></span>
+          <div><strong>Los dos ya existen en pantallas que aprobaste. Lo que les falta es color.</strong>
+            No son estados nuevos que alguien inventó: aparecen escritos en la agenda y en el diálogo de cancelación
+            del mockup que ya miraste. Hoy no tienen entrada en el contrato, así que cada pantalla los resuelve por su
+            cuenta — y la agenda terminó pintando lo que no tiene dueño con el <b>mismo rojo</b> que lo que sí lo tiene.</div>
+        </div>
+
+        <div class="grid grid--2" style="align-items:start">
+
+          <div class="statebox">
+            <div class="row" style="gap:8px;align-items:center">
+              <span class="badge badge--sin-asignar"><i class="badge__dot"></i><span class="badge__label">Sin asignar</span></span>
+              <span class="u-xs u-muted">— todavía no tiene dueño</span>
+            </div>
+            <div class="u-sm" style="margin-top:9px;line-height:1.5">
+              La orden existe y corre el reloj del SLA, pero ningún técnico la tomó. Es la cola que alimenta
+              la consola de asignación.
+            </div>
+            <div class="lbl" style="margin-top:11px">Dónde ya aparece</div>
+            <div class="u-xs u-muted" style="line-height:1.55">
+              <b>agenda.html</b> — el KPI «Sin asignar · 4 · 2 vencen hoy» y el panel lateral
+              «Sin asignar · Arrastrá al técnico», con su botón «Asignar automáticamente por cercanía».
+            </div>
+            <div class="banner banner--warn" style="margin-top:10px;padding:8px 10px">
+              <span class="banner__icon" id="h2e"></span>
+              <div><strong>Hoy se pinta de rojo, y el rojo ya significa otra cosa</strong>
+                Ese KPI usa el rojo de <em>Asignada</em>. Un despachador que barre la pantalla no distingue
+                «nadie la tomó» de «alguien la tomó y todavía no salió», que son dos problemas distintos con
+                dos culpables distintos.</div>
+            </div>
+          </div>
+
+          <div class="statebox">
+            <div class="row" style="gap:8px;align-items:center">
+              <span class="badge badge--cancelada"><i class="badge__dot"></i><span class="badge__label">Cancelada</span></span>
+              <span class="u-xs u-muted">— terminada, no facturable</span>
+            </div>
+            <div class="u-sm" style="margin-top:9px;line-height:1.5">
+              La orden se dio de baja con motivo registrado. Terminal como <em>Cerrada</em>, pero no se factura
+              y no cuenta en el cumplimiento del técnico.
+            </div>
+            <div class="lbl" style="margin-top:11px">Dónde ya aparece</div>
+            <div class="u-xs u-muted" style="line-height:1.55">
+              <b>patrones.html</b> §5 — el diálogo destructivo dice literal «La orden pasa a <em>Cancelada</em>,
+              se libera la agenda del técnico y se notifica al cliente».
+              <b>despacho.html</b> — «desde el tablero se reasigna o se cancela».
+            </div>
+            <div class="banner banner--warn" style="margin-top:10px;padding:8px 10px">
+              <span class="banner__icon" id="h2f"></span>
+              <div><strong>Hoy cae en Cerrada, y Cerrada quiere decir facturable</strong>
+                Sin estado propio, una orden cancelada se cuenta como cerrada. El informe de facturación
+                la suma y el cumplimiento del técnico la premia.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="banner banner--info">
+          <span class="banner__icon" id="h2g"></span>
+          <div><strong>Ninguno de los dos estrena color: el contrato sigue teniendo cinco</strong>
+            La regla de arriba es «un color, un significado», y los cinco hues buenos ya están tomados.
+            Meter un sexto obligaría a elegir entre un violeta que en esta marca significa <em>cuadrilla</em> o un
+            verde-azulado a un paso del verde de <em>Trabajando</em> — que es exactamente el error que estamos
+            corrigiendo. Así que estos dos se distinguen por <b>forma</b>, no por color, y hay una razón para que
+            así sea: los dos son <em>ausencias</em> — falta un dueño, falta el trabajo — y una ausencia no es un
+            paso más del recorrido rojo → naranja → verde → amarillo → gris.
+            <b>Sin asignar</b> es un badge hueco de borde punteado y punto sin rellenar: nada pasó todavía.
+            <b>Cancelada</b> es el gris terminal de <em>Cerrada</em> con la etiqueta tachada y una cruz en lugar
+            del punto: llegó al final, pero anulada.</div>
+        </div>
+
+        <div>
+          <div class="lbl">El recorrido completo, con los dos agregados</div>
+          <div class="flow" id="transiciones-2"></div>
+          <div class="field__hint" style="margin-top:8px">
+            <b>Sin asignar</b> entra antes de todo y sale por la consola de asignación.
+            <b>Cancelada</b> se puede alcanzar desde cualquier estado no terminal, siempre con motivo.
+          </div>
+        </div>
+
+        <div>
+          <div class="lbl">Lo que la implementación agregó y no te propongo aprobar</div>
+          <div class="table-wrap">
+            <table class="dt dt--zebra">
+              <thead><tr><th style="width:150px">Estado</th><th style="width:110px">Qué hago</th><th>Por qué</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="u-mono u-xs">pausada</span></td>
+                  <td><span class="badge badge--danger"><i class="badge__dot"></i>No lo agrego</span></td>
+                  <td>El modelo que aprobaste ya resuelve este caso, y lo resuelve distinto. En la app del técnico
+                    el botón <b>«No puedo terminar»</b> lleva a <em>Finalizada c/ pendientes</em> con motivo del catálogo
+                    (falta de repuesto, requiere presupuesto, sin acceso) y <b>genera la revisita</b>. Agregar
+                    <span class="u-mono u-xs">pausada</span> daría dos maneras de decir lo mismo y dejaría órdenes
+                    estacionadas sin revisita agendada. Si la operación real necesita la pausa corta —el repuesto llega
+                    en una hora y el técnico no se mueve— es una decisión de proceso y la pregunto aparte.</td>
+                </tr>
+                <tr>
+                  <td><span class="u-mono u-xs">en_sitio</span> + <span class="u-mono u-xs">en_proceso</span></td>
+                  <td><span class="badge badge--danger"><i class="badge__dot"></i>Los uno</span></td>
+                  <td>La implementación parte <em>Trabajando</em> en dos. El contrato define <em>Trabajando</em> como
+                    «hizo check-in dentro de la geocerca», que es justo lo que separa a los dos, y el despachador no
+                    puede hacer nada distinto con uno que con el otro: en ambos el técnico ya está ahí. El minuto en que
+                    arrancó la tarea va en la línea de tiempo de la orden, que ya lo muestra, no en un color del tablero.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="lbl">Si preferís que «Sin asignar» sí tenga color propio</div>
+          <div class="demo">
+            <div class="row row--wrap" style="gap:10px;align-items:center">
+              <span class="badge" style="background:#e7f1f5;color:#155e75;border-color:#bcd9e3"><i class="badge__dot"></i>Sin asignar</span>
+              <span class="u-xs u-muted">verde-azulado <span class="u-mono">#155E75</span> · 6,4:1</span>
+            </div>
+            <div class="u-xs u-muted" style="margin-top:9px;line-height:1.55">
+              Es una alternativa razonable y como badge se distingue bien del verde — mirá los dos abajo.
+              La muestro para que decidas viendo, no leyendo. Lo que me hace no recomendarla son dos cosas.
+              Una: es un <b>sexto color</b> en un contrato cuya regla es «un color, un significado», y el sexto
+              siempre es el más difícil de justificar. La otra es más concreta: el estado no vive sólo en el badge.
+              En las barras de columna del tablero, en los segmentos de carga de la agenda y en los gráficos de
+              informes, el borde, el punto y la etiqueta desaparecen y —como dice la sección de abajo— <b>la única
+              señal que queda es el color</b>. Ahí, un verde-azulado y un verde oscuro sí compiten.
+            </div>
+            <div class="row row--wrap" style="gap:8px;margin-top:10px;align-items:center">
+              <span class="badge" style="background:#e7f1f5;color:#155e75;border-color:#bcd9e3"><i class="badge__dot"></i>Sin asignar</span>
+              <span class="badge badge--trabajando"><i class="badge__dot"></i>Trabajando</span>
+              <span class="u-xs u-muted">— como badge se distinguen</span>
+            </div>
+            <div class="row row--wrap" style="gap:14px;margin-top:12px;align-items:flex-end">
+              <div>
+                <div class="barchart" style="height:56px;width:150px">
+                  <div style="height:60%;background:#155E75"></div>
+                  <div style="height:92%;background:var(--st-trabajando)"></div>
+                  <div style="height:46%;background:#155E75"></div>
+                  <div style="height:74%;background:var(--st-trabajando)"></div>
+                </div>
+                <div class="u-xs u-muted" style="margin-top:5px">— sin la etiqueta, no tanto</div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -416,6 +578,7 @@ NT.boot({ active: "patrones" });
 
 /* --- Iconos de encabezado --- */
 [["ci","chevleft",14],["h1","alert",18],["h1b","alert",16],["h2","layers",18],["h2b","info",16],
+ ["h2c","layers",18],["h2d","info",16],["h2e","alert",16],["h2f","alert",16],["h2g","info",16],
  ["h3","settings",18],["h3b","alert",16],["h4","money",18],["h4b","alert",16],["h5","file",18],["h6","chart",18],
  ["b1","info",16],["b2","alert",16],["b3","xcircle",16],["b4","info",16],["b5","printer",16],
  ["e1","search",26],["chipx","x",11]].forEach(function (r) {
@@ -527,6 +690,19 @@ document.getElementById("transiciones").innerHTML = ST.map(function (s, i) {
   return (i ? NT.icon("chevright", 14) : "") +
     '<span class="badge badge--' + s[0] + '"><i class="badge__dot"></i>' + s[2] + "</span>";
 }).join("");
+
+/* --- 2b · Los dos que agrega la operación (NOVAA-18, sin aprobar todavía) --- */
+function stBadge(mod, label) {
+  return '<span class="badge badge--' + mod + '"><i class="badge__dot"></i>' +
+    '<span class="badge__label">' + label + "</span></span>";
+}
+document.getElementById("transiciones-2").innerHTML =
+  stBadge("sin-asignar", "Sin asignar") +
+  ST.map(function (s) {
+    return NT.icon("chevright", 14) + stBadge(s[0], s[2]);
+  }).join("") +
+  '<span class="u-xs u-muted" style="margin:0 4px 0 10px">y desde cualquiera no terminal →</span>' +
+  stBadge("cancelada", "Cancelada");
 
 /* --- 3 · Marca --- */
 document.getElementById("marca-grid").innerHTML = [

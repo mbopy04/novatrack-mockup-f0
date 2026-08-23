@@ -373,6 +373,31 @@ table { border-collapse: collapse; width: 100%; }
 .badge--trabajando { background: var(--ok-050); color: var(--st-trabajando); border-color: #bfe3d0; }
 .badge--pendientes { background: #fbf5da; color: #8a6d12;              border-color: #ecdca2; }
 .badge--cerrada    { background: var(--n-100); color: var(--st-cerrada); border-color: var(--n-200); }
+
+/* Los dos estados que la operación agrega (NOVAA-18). No estrenan color: el
+   contrato sigue teniendo cinco hues. Se distinguen por FORMA, porque los dos
+   son ausencias — uno de dueño, otro de trabajo — y una ausencia no es un paso
+   más del recorrido rojo → naranja → verde → amarillo → gris. */
+.badge--sin-asignar {
+  background: var(--n-000); color: var(--n-600);
+  border-color: var(--n-300); border-style: dashed;
+}
+.badge--sin-asignar .badge__dot {
+  background: transparent; box-shadow: inset 0 0 0 1.5px currentColor;
+}
+.badge--cancelada  { background: var(--n-100); color: var(--n-500); border-color: var(--n-200); }
+.badge--cancelada .badge__label { text-decoration: line-through; text-decoration-thickness: 1px; }
+.badge--cancelada .badge__dot {
+  background: transparent; position: relative; width: 7px; height: 7px; flex: 0 0 7px;
+}
+.badge--cancelada .badge__dot::before,
+.badge--cancelada .badge__dot::after {
+  content: ""; position: absolute; inset: 45% -1px auto -1px; height: 1.5px;
+  background: currentColor; border-radius: 1px;
+}
+.badge--cancelada .badge__dot::before { transform: rotate(45deg); }
+.badge--cancelada .badge__dot::after  { transform: rotate(-45deg); }
+
 .badge--neutral    { background: var(--n-100); color: var(--n-600);     border-color: var(--n-200); }
 .badge--info       { background: var(--accent-050); color: var(--accent-600); border-color: #cddafa; }
 .badge--violet     { background: var(--violet-050); color: var(--violet); border-color: #ddd0ea; }
