@@ -25,7 +25,11 @@
 boot('clientes');
 
 const params = new URLSearchParams(location.search);
-const C = CLIENTES.find(c => c.id === params.get('id')) || CLIENTES[0];
+/* Sin ?id se abre el cliente activo con más sucursales: es el caso que hay que revisar
+   (paginación de sucursales, distribución geográfica, faltantes de coordenadas). */
+const porDefecto = CLIENTES.filter(c => c.estado === 'activo')
+  .slice().sort((a, b) => b.nSuc - a.nSuc)[0];
+const C = CLIENTES.find(c => c.id === params.get('id')) || porDefecto;
 const SRV = SERVICIOS.filter(s => s.clienteId === C.id);
 let tab = 'sucursales';
 let sucPage = 1;

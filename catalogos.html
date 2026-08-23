@@ -76,7 +76,8 @@ function tabServicios() {
     '<div class="right"><button class="btn btn-sm btn-primary" id="bNS">' + icon('plus', 'ic-sm') + 'Nuevo tipo</button></div></div>' +
     cats.map(cat =>
       '<div><div style="padding:7px 13px;background:var(--surface-2);border-bottom:1px solid var(--line-2);border-top:1px solid var(--line-2)">' +
-        '<span class="lbl mb0">' + esc(cat) + '</span> <span class="xsmall muted">' + TIPOS_SERVICIO.filter(t => t.cat === cat).length + ' tipos</span></div>' +
+        '<span class="lbl mb0">' + esc(cat) + '</span> <span class="xsmall muted">' + TIPOS_SERVICIO.filter(t => t.cat === cat).length +
+        (TIPOS_SERVICIO.filter(t => t.cat === cat).length === 1 ? ' tipo' : ' tipos') + '</span></div>' +
       '<div class="tbl-wrap"><table class="tbl tbl-compact"><thead><tr>' +
         '<th style="width:64px">Código</th><th>Nombre</th><th class="num">Duración</th><th class="num">SLA</th>' +
         '<th class="num">Precio de lista</th><th class="c">Checklist</th><th class="c">Foto</th><th class="c">Firma</th>' +

@@ -501,7 +501,7 @@ select.inp {
 /* checkbox / radio / switch */
 .chk { display: inline-flex; align-items: flex-start; gap: 7px; cursor: pointer; font-size: 12.5px; line-height: 1.35; }
 .chk input { width: 14px; height: 14px; margin: 1px 0 0; accent-color: var(--accent); cursor: pointer; flex: none; }
-.sw { position: relative; width: 32px; height: 18px; flex: none; cursor: pointer; }
+.sw { position: relative; display: inline-block; width: 32px; height: 18px; flex: none; cursor: pointer; vertical-align: middle; }
 .sw input { position: absolute; opacity: 0; width: 0; height: 0; }
 .sw .track { position: absolute; inset: 0; background: #C4CAD8; border-radius: 9px; transition: background .15s; }
 .sw .track::after {
