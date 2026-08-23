@@ -29,6 +29,11 @@
   .note p { margin: 0 0 9px; font-size: 13px; opacity: .82; line-height: 1.65; }
   .note p:last-child { margin-bottom: 0; }
   .note code { font-family: var(--mono); font-size: 12px; background: rgba(0,0,0,.26); padding: 1px 5px; border-radius: 3px; }
+  .nuevo {
+    font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em;
+    background: rgba(46,91,216,.34); border: 1px solid rgba(123,163,240,.5);
+    border-radius: 999px; padding: 2px 7px; opacity: .95;
+  }
   .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
   .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px;
     background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.14); font-size: 12px; font-weight: 600; }
@@ -57,7 +62,7 @@
   </div>
 
   <!-- WEB ADMIN -->
-  <div class="sec-t">Web Admin · 9 pantallas</div>
+  <div class="sec-t">Web Admin · 11 pantallas</div>
   <div class="cards">
     <a class="c" href="web/login.html"><div class="c__n">01</div>
       <div class="c__t">Login y selección de tenant</div>
@@ -65,34 +70,37 @@
     <a class="c" href="web/agenda.html"><div class="c__n">02</div>
       <div class="c__t">Agenda · día / semana / mes</div>
       <div class="c__m">Vista de recurso por técnico, estados por color, sin asignar, carga y alertas.</div></a>
-    <a class="c" href="web/servicio-nuevo.html"><div class="c__n">03</div>
+    <a class="c" href="web/despacho.html"><div class="c__n">03</div>
+      <div class="c__t">Tablero de despacho <span class="nuevo">nueva</span></div>
+      <div class="c__m">Las órdenes del día en cinco columnas por estado. Avanzan solas con lo que reporta la app del técnico.</div></a>
+    <a class="c" href="web/servicio-nuevo.html"><div class="c__n">04</div>
       <div class="c__t">Crear y asignar servicio</div>
       <div class="c__m">A técnico individual o a cuadrilla de 2 a 4, con validación de capacidad.</div></a>
-    <a class="c" href="web/clientes.html"><div class="c__n">04</div>
+    <a class="c" href="web/clientes.html"><div class="c__n">05</div>
       <div class="c__t">Clientes · listado paginado</div>
       <div class="c__m">312 clientes, 25 por página, filtros y acciones masivas.</div></a>
-    <a class="c" href="web/cliente-detalle.html"><div class="c__n">05</div>
+    <a class="c" href="web/cliente-detalle.html"><div class="c__n">06</div>
       <div class="c__t">Ficha de cliente</div>
       <div class="c__m">Sucursales georreferenciadas, radio de tolerancia, servicios y facturación.</div></a>
-    <a class="c" href="web/colaboradores.html"><div class="c__n">06</div>
+    <a class="c" href="web/colaboradores.html"><div class="c__n">07</div>
       <div class="c__t">Colaboradores y jornadas</div>
       <div class="c__m">Jornada laboral configurable por día, excepciones y cuadrillas.</div></a>
-    <a class="c" href="web/mapa.html"><div class="c__n">07</div>
+    <a class="c" href="web/mapa.html"><div class="c__n">08</div>
       <div class="c__t">Mapa en vivo</div>
       <div class="c__m">Técnicos y sucursales, recorrido del día y el hueco de GPS mostrado como hueco.</div></a>
-    <a class="c" href="web/informes.html"><div class="c__n">08</div>
+    <a class="c" href="web/informes.html"><div class="c__n">09</div>
       <div class="c__t">Informes</div>
       <div class="c__m">Estados por mes, tiempo de cierre, composición facturada y rankings.</div></a>
-    <a class="c" href="web/orden-pdf.html"><div class="c__n">09</div>
+    <a class="c" href="web/orden-pdf.html"><div class="c__n">10</div>
       <div class="c__t">PDF de orden de servicio</div>
       <div class="c__m">A4, dos páginas: geoestampas, fotos, materiales, gastos y firmas.</div></a>
-    <a class="c" href="web/catalogos.html"><div class="c__n">10</div>
+    <a class="c" href="web/catalogos.html"><div class="c__n">11</div>
       <div class="c__t">Catálogos administrables</div>
       <div class="c__m">Tipos de gasto y de servicio, estados, prioridades, motivos y unidades.</div></a>
   </div>
 
   <!-- APP -->
-  <div class="sec-t">App del técnico (Android) · 11 pantallas en viewport de teléfono</div>
+  <div class="sec-t">App del técnico (Android) · 12 pantallas en viewport de teléfono</div>
   <div class="cards">
     <a class="c" href="app/login.html"><div class="c__n">01</div>
       <div class="c__t">Login del técnico</div>
@@ -100,47 +108,69 @@
     <a class="c" href="app/consentimiento.html"><div class="c__n">02</div>
       <div class="c__t">Consentimiento de tracking</div>
       <div class="c__m">Qué se registra, qué no, y firma en canvas. Primer ingreso.</div></a>
-    <a class="c" href="app/servicios.html"><div class="c__n">03</div>
-      <div class="c__t">Push → servicios del día</div>
-      <div class="c__m">Banner de notificación simulado y listado por estado.</div></a>
-    <a class="c" href="app/detalle.html"><div class="c__n">04</div>
+    <a class="c" href="app/push.html"><div class="c__n">03</div>
+      <div class="c__t">Notificación push <span class="nuevo">nueva</span></div>
+      <div class="c__m">El punto de entrada al servicio: la notificación sobre la pantalla bloqueada, sin datos del cliente.</div></a>
+    <a class="c" href="app/servicios.html"><div class="c__n">04</div>
+      <div class="c__t">Servicios del día</div>
+      <div class="c__m">Listado por estado, y el push que también llega con la app abierta.</div></a>
+    <a class="c" href="app/detalle.html"><div class="c__n">05</div>
       <div class="c__t">Detalle del servicio</div>
       <div class="c__m">Cliente, sucursal, contacto, problema reportado e historial.</div></a>
-    <a class="c" href="app/estados.html"><div class="c__n">05</div>
+    <a class="c" href="app/estados.html"><div class="c__n">06</div>
       <div class="c__t">Máquina de estados de campo</div>
       <div class="c__m">En camino → check-in → trabajando → check-out, con el sello que va a quedar.</div></a>
-    <a class="c" href="app/camara.html"><div class="c__n">06</div>
+    <a class="c" href="app/camara.html"><div class="c__n">07</div>
       <div class="c__t">Cámara y compresión</div>
       <div class="c__m">Captura, preview y barra de compresión en el dispositivo.</div></a>
-    <a class="c" href="app/reporte.html"><div class="c__n">07</div>
+    <a class="c" href="app/reporte.html"><div class="c__n">08</div>
       <div class="c__t">Formulario y reporte</div>
       <div class="c__m">Mediciones, diagnóstico, materiales y motivo de pendiente.</div></a>
-    <a class="c" href="app/firmas.html"><div class="c__n">08</div>
+    <a class="c" href="app/firmas.html"><div class="c__n">09</div>
       <div class="c__t">Firmas en canvas</div>
       <div class="c__m">Técnico y cliente, cada una sellada con ubicación y hora.</div></a>
-    <a class="c" href="app/gastos.html"><div class="c__n">09</div>
+    <a class="c" href="app/gastos.html"><div class="c__n">10</div>
       <div class="c__t">Gastos</div>
       <div class="c__m">Comprobante obligatorio, topes por tipo y doble moneda.</div></a>
-    <a class="c" href="app/offline.html"><div class="c__n">10</div>
+    <a class="c" href="app/offline.html"><div class="c__n">11</div>
       <div class="c__t">Offline y cola de envío</div>
       <div class="c__m">Banner sin conexión, cola con contador y confirmación al sincronizar.</div></a>
-    <a class="c" href="app/privacidad.html"><div class="c__n">11</div>
+    <a class="c" href="app/privacidad.html"><div class="c__n">12</div>
       <div class="c__t">Mi privacidad</div>
       <div class="c__m">Qué se registra del técnico y en qué franja horaria exacta.</div></a>
+  </div>
+
+  <!-- SISTEMA -->
+  <div class="sec-t">Sistema de diseño · 1 pantalla</div>
+  <div class="cards">
+    <a class="c" href="web/patrones.html"><div class="c__n">01</div>
+      <div class="c__t">Patrones de UI <span class="nuevo">nueva</span></div>
+      <div class="c__m">La referencia del lenguaje visual: toasts con motivo, estados, marca, doble moneda,
+        componentes y densidad. No es una pantalla del producto — es contra qué se comparan las demás.</div></a>
   </div>
 
   <!-- Notas -->
   <div class="sec-t">Para leer antes de aprobar</div>
 
   <div class="note">
-    <strong>Una decisión de color que necesita tu visto bueno</strong>
+    <strong>Las tres pantallas nuevas</strong>
+    <p>El mockup se armó en dos corridas en paralelo y quedaron <b>dos linajes</b>. El que publiqué primero no incluía tres
+      pantallas que ya existían en el otro: <b>Tablero de despacho</b>, <b>Patrones de UI</b> y <b>Notificación push</b>.
+      Están portadas al lenguaje visual de este linaje y sumadas acá — el mockup pasa de 21 a <b>24 pantallas</b>.
+      <b>Son las tres que necesitan tu mirada;</b> el resto ya lo aprobaste y no cambió.</p>
+    <p>Lo único que se tocó de las pantallas ya aprobadas es la numeración de la app, que corre un lugar para dejarle
+      el 03 al push.</p>
+  </div>
+
+  <div class="note">
+    <strong>Los dos amarillos, como quedaron</strong>
     <p>El amarillo del contrato de estados, <code>#C9A227</code>, llega a <b>2,42:1</b> de contraste sobre blanco —por debajo
       del piso de 3:1 para una marca de gráfico— y contra el naranja queda a ΔE 11,3, difícil de distinguir incluso con visión
       de color completa.</p>
-    <p>Lo resolví así: en los <b>rellenos de gráfico</b> uso un paso más oscuro de la misma familia ámbar, <code>#A16207</code>,
-      que sí pasa los chequeos. En los <b>badges</b> de la agenda mantuve el amarillo del contrato, porque ahí va sobre fondo
-      tintado, con borde y texto. Y en todos lados el estado se muestra con punto + etiqueta, nunca por color solo.
-      <b>Si preferís un único valor para ambos usos, decímelo y unifico.</b></p>
+    <p>Como confirmaste, quedan <b>separados</b>: en los <b>rellenos de gráfico</b> va un paso más oscuro de la misma familia
+      ámbar, <code>#A16207</code> (4,92:1), y en los <b>badges</b> se mantiene el amarillo del contrato, porque ahí va sobre
+      fondo tintado, con borde y con texto. Y en todos lados el estado se muestra con punto + etiqueta, nunca por color solo.
+      La regla está documentada y comparable lado a lado en <a href="web/patrones.html" style="color:#fff">Patrones de UI</a>.</p>
   </div>
 
   <div class="note" style="background:rgba(46,91,216,.16);border-color:rgba(123,163,240,.3)">
@@ -153,11 +183,11 @@
   </div>
 
   <div class="note" style="background:rgba(217,115,22,.15);border-color:rgba(217,115,22,.35)">
-    <strong>Dónde lo vas a revisar (regla 9)</strong>
-    <p>Sé que no revisás en localhost. El mockup es estático, así que se sirve desde cualquier hosting; <b>no necesita el VPS
-      de producción de NovaTrack ni comparte nada con él</b>, así que no queda atado a las definiciones de infraestructura que
-      están pendientes de tu lado.</p>
-    <p><b>Necesito que me confirmes dónde lo publico</b> y lo dejo accesible por URL.</p>
+    <strong>Dónde lo estás revisando (regla 9)</strong>
+    <p>Sé que no revisás en localhost. Esto está servido por GitHub Pages, estático; <b>no toca el VPS de producción de
+      NovaTrack ni comparte nada con él</b>, así que no queda atado a las definiciones de infraestructura pendientes de tu lado.</p>
+    <p>El repo es público porque Pages sobre repo privado exige plan pago, así que lleva <code>noindex</code> en todas las
+      páginas y <code>robots.txt</code> con <code>Disallow: /</code>. Es <b>descartable</b>: se borra cuando F0 quede aprobado.</p>
   </div>
 
   <footer>

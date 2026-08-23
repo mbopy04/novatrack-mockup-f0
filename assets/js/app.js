@@ -10,6 +10,7 @@
   A.SCREENS = [
     ["login.html",         "Login"],
     ["consentimiento.html","Consentimiento"],
+    ["push.html",          "Push"],
     ["servicios.html",     "Mis servicios"],
     ["detalle.html",       "Detalle"],
     ["estados.html",       "Estados de campo"],

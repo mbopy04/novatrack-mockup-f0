@@ -149,6 +149,7 @@
   var NAV = [
     { g: "Operación", items: [
       { k: "agenda",    t: "Agenda",              i: "calendar", h: "agenda.html",       c: "18" },
+      { k: "despacho",  t: "Despacho",            i: "truck",    h: "despacho.html",     c: "14" },
       { k: "nuevo",     t: "Nuevo servicio",      i: "plus",     h: "servicio-nuevo.html" },
       { k: "mapa",      t: "Mapa en vivo",        i: "map",      h: "mapa.html",         c: "7" }
     ]},
@@ -160,6 +161,9 @@
     { g: "Análisis", items: [
       { k: "informes",  t: "Informes",            i: "chart",    h: "informes.html" },
       { k: "orden",     t: "Orden de servicio",   i: "file",     h: "orden-pdf.html" }
+    ]},
+    { g: "Sistema", items: [
+      { k: "patrones",  t: "Patrones de UI",      i: "settings", h: "patrones.html" }
     ]}
   ];
 

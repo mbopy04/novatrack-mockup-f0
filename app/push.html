@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Notificación push</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+  /* ---- Pantalla bloqueada ---- */
+  .lock {
+    flex: 1 1 auto; display: flex; flex-direction: column; padding: 20px 13px 16px;
+    background: linear-gradient(165deg, #101a3d 0%, var(--navy) 46%, #46356e 100%);
+    color: #fff; overflow-y: auto;
+  }
+  .lock__clock { text-align: center; margin: 8px 0 2px; }
+  .lock__h { font-size: 60px; font-weight: 300; letter-spacing: -.035em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .lock__d { margin-top: 6px; font-size: 13px; color: rgba(255,255,255,.72); }
+  .lock__hint {
+    margin-top: 13px; padding: 9px 11px; border-radius: 10px;
+    border: 1px dashed rgba(255,255,255,.3); font-size: 11.5px; line-height: 1.5; color: rgba(255,255,255,.78);
+  }
+  .lock__hint b { color: #fff; font-weight: 650; }
+  .lock__foot { margin-top: auto; padding-top: 14px; text-align: center; font-size: 11.5px; color: rgba(255,255,255,.6); }
+
+  /* ---- Tarjeta de notificación ---- */
+  .notif {
+    display: block; margin-top: 18px; border-radius: 15px; overflow: hidden;
+    background: rgba(255,255,255,.96); color: var(--n-900);
+    box-shadow: 0 10px 30px rgba(0,0,0,.34); animation: notif-in .35s ease-out; text-decoration: none;
+  }
+  .notif:hover { text-decoration: none; }
+  @keyframes notif-in { from { transform: translateY(-16px); opacity: 0; } }
+  .notif__head {
+    display: flex; align-items: center; gap: 7px; padding: 8px 12px 0;
+    font-size: 11px; font-weight: 700; color: var(--n-500);
+  }
+  .notif__ic {
+    display: grid; place-items: center; width: 18px; height: 18px; border-radius: 5px;
+    background: var(--navy); color: #fff; font-size: 8.5px; font-weight: 800;
+  }
+  .notif__b { padding: 4px 12px 12px; }
+  .notif__t { margin: 2px 0 3px; font-size: 15.5px; font-weight: 700; letter-spacing: -.015em; color: var(--n-900); }
+  .notif__m { margin: 0; font-size: 13px; line-height: 1.45; color: var(--n-700); }
+  .notif__meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .notif__acts { display: flex; border-top: 1px solid var(--n-200); }
+  .notif__acts > * {
+    flex: 1; min-height: 46px; border: 0; border-right: 1px solid var(--n-200); background: transparent;
+    font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--accent-600);
+    cursor: pointer; display: grid; place-items: center;
+  }
+  .notif__acts > *:last-child { border-right: 0; color: var(--n-600); }
+  .notif.is-gone { animation: notif-out .22s ease-in forwards; }
+  @keyframes notif-out { to { transform: translateY(-14px); opacity: 0; } }
+
+  .lock__again {
+    align-self: center; margin-top: 14px; background: rgba(255,255,255,.14); color: #fff;
+    border: 1px solid rgba(255,255,255,.24); border-radius: 999px; padding: 7px 15px;
+    font-family: inherit; font-size: 12px; font-weight: 650; cursor: pointer;
+  }
+</style>
+</head>
+<body class="appmock">
+<div data-screen>
+  <div class="lock">
+
+    <div class="lock__clock">
+      <div class="lock__h">14:32</div>
+      <div class="lock__d">Sábado 22 de agosto · Asunción</div>
+    </div>
+
+    <a class="notif" href="servicios.html" id="notif">
+      <div class="notif__head"><span class="notif__ic">N</span>NovaTrack · ahora</div>
+      <div class="notif__b">
+        <div class="notif__t">Nuevo servicio asignado</div>
+        <p class="notif__m"><b>Frigochaco — Cámara 4.</b> Cámara de congelado con cortes intermitentes.</p>
+        <div class="notif__meta">
+          <span class="badge badge--danger"><i class="badge__dot"></i>Urgente · SLA 4 h</span>
+          <span class="badge badge--info">Ventana 14:00 – 16:30</span>
+          <span class="badge badge--neutral">OS-2026-0863</span>
+        </div>
+      </div>
+      <div class="notif__acts">
+        <span>Ver servicio</span>
+        <button type="button" id="descartar">Descartar</button>
+      </div>
+    </a>
+
+    <button class="lock__again" id="again" hidden>Volver a mostrar la notificación</button>
+
+    <div class="lock__hint">
+      La notificación <b>no trae datos del cliente</b> más allá del nombre de la sucursal. La dirección, el contacto y
+      el historial se descargan recién cuando el técnico abre la orden y está autenticado.
+    </div>
+
+    <div class="lock__foot">Deslizá para desbloquear</div>
+  </div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({
+  label: "3 · Notificación push sobre la pantalla bloqueada",
+  time: "14:32",
+  bat: "47",
+  note: "Mockup F0 · el push es el punto de entrada del técnico al servicio"
+});
+
+var notif  = document.getElementById("notif");
+var again  = document.getElementById("again");
+
+document.getElementById("descartar").addEventListener("click", function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  notif.classList.add("is-gone");
+  setTimeout(function () { notif.hidden = true; again.hidden = false; }, 220);
+  A.toast({
+    kind: "warn",
+    title: "El servicio sigue asignado a vos",
+    msg: "Descartar la notificación no rechaza el trabajo. Para rechazarlo hay que abrir la orden y dar un motivo.",
+    reason: "PUSH_DISMISSED · OS-2026-0863 · asignación intacta",
+    sticky: true
+  });
+});
+
+again.addEventListener("click", function () {
+  notif.classList.remove("is-gone");
+  notif.hidden = false;
+  again.hidden = true;
+  A.toast({ kind: "info", title: "Push reenviado", msg: "El servidor reintenta la entrega mientras la orden siga asignada y sin abrir." });
+});
+
+/* Aviso de lo que pasa si el teléfono está sin señal — el mismo caso que cubre la pantalla de offline. */
+setTimeout(function () {
+  A.toast({
+    kind: "info",
+    title: "Si el teléfono está sin señal",
+    msg: "El push queda encolado en el servidor y el despacho lo ve como “no entregado”. La orden no se pierde: aparece igual al abrir la app.",
+    reason: "PUSH_DEVICE_OFFLINE · reintento cada 60 s",
+    ms: 8000
+  });
+}, 2600);
+</script>
+</body>
+</html>

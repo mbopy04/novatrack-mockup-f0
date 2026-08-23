@@ -13,12 +13,13 @@ Repo **descartable**: existe sólo para servir esta revisión. Se puede borrar u
 
 ## Qué incluye
 
-### Web Admin — 10 pantallas (`web/`)
+### Web Admin — 11 pantallas (`web/`)
 
 | Archivo | Qué cubre |
 |---|---|
 | `login.html` | Ingreso + selección de tenant. La empresa suspendida devuelve el motivo y no deja entrar. |
 | `agenda.html` | Día / semana / mes. Día es vista de recurso (técnico × hora) con franjas fuera de jornada y línea de «ahora». |
+| `despacho.html` | Tablero operativo del día: las órdenes en cinco columnas por estado, con filtros, SLA y facturable cerrado. Avanza con los eventos que reporta la app. |
 | `servicio-nuevo.html` | Alta en 4 pasos. Técnico individual o cuadrilla de 2 a 4, con validación de capacidad. |
 | `clientes.html` | Listado paginado 25/página sobre 312 clientes, filtros y selección múltiple. |
 | `cliente-detalle.html` | Ficha con sucursales georreferenciadas: mapa, coordenadas, radio de tolerancia. |
@@ -28,9 +29,18 @@ Repo **descartable**: existe sólo para servir esta revisión. Se puede borrar u
 | `orden-pdf.html` | PDF de orden de servicio en A4, 2 páginas, con `@media print` real. |
 | `catalogos.html` | Tipos de gasto, tipos de servicio y el contrato de estados. |
 
-### App del técnico (Android) — 11 pantallas (`app/`)
+### App del técnico (Android) — 12 pantallas (`app/`)
 
-`login` · `servicios` · `detalle` · `estados` · `camara` · `firmas` · `gastos` · `reporte` · `offline` · `consentimiento` · `privacidad`
+`login` · `consentimiento` · `push` · `servicios` · `detalle` · `estados` · `camara` · `reporte` · `firmas` · `gastos` · `offline` · `privacidad`
+
+`push.html` es el punto de entrada del técnico al servicio: la notificación sobre la pantalla bloqueada,
+sin datos del cliente más allá del nombre de la sucursal.
+
+### Sistema de diseño — 1 pantalla
+
+`web/patrones.html` — la referencia del lenguaje visual: anatomía del toast con motivo y código, contrato de
+estados, marca, la regla de los dos amarillos, doble moneda, inventario de componentes y métricas de densidad.
+No es una pantalla del producto: es contra qué se comparan las demás.
 
 ---
 

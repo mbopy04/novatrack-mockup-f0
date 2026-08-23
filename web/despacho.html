@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Tablero de despacho</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  /* ---- Leyenda de estados (mismo patrón que la agenda) ---- */
+  .legend { display: flex; align-items: center; gap: 11px; flex-wrap: wrap; font-size: var(--fs-xs); color: var(--n-600); }
+  .legend b { display: inline-flex; align-items: center; gap: 5px; font-weight: 550; }
+  .legend i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  /* ---- Tablero ---- */
+  .board { display: grid; grid-template-columns: repeat(5, minmax(206px, 1fr)); gap: 10px; align-items: start; }
+  .col__h {
+    position: relative; display: flex; align-items: center; gap: 7px; padding: 9px 10px 8px;
+    background: var(--n-000); border: 1px solid var(--n-200); border-bottom: 0;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    /* Fijo, para que un rótulo de dos líneas no desalinee su columna del resto. */
+    min-height: 42px; box-sizing: border-box;
+  }
+  .col__bar { position: absolute; left: -1px; right: -1px; top: -1px; height: 3px; border-radius: var(--r-lg) var(--r-lg) 0 0; }
+  .col__t { font-size: var(--fs-sm); font-weight: 650; color: var(--n-800); }
+  .col__b {
+    background: var(--n-050); border: 1px solid var(--n-200); border-radius: 0 0 var(--r-lg) var(--r-lg);
+    padding: 7px; min-height: 210px; max-height: calc(100vh - 322px); overflow-y: auto;
+  }
+
+  /* ---- Tarjeta del tablero ---- */
+  .kc {
+    background: var(--n-000); border: 1px solid var(--n-200); border-left: 3px solid var(--n-300);
+    border-radius: var(--r-md); padding: 8px 9px; margin-bottom: 7px;
+    box-shadow: var(--sh-1); cursor: pointer; transition: box-shadow .12s, transform .1s;
+  }
+  .kc:hover { box-shadow: var(--sh-2); transform: translateY(-1px); }
+  .kc--asignada   { border-left-color: var(--st-asignada); }
+  .kc--camino     { border-left-color: var(--st-camino); }
+  .kc--trabajando { border-left-color: var(--st-trabajando); }
+  .kc--pendientes { border-left-color: var(--st-pendientes); }
+  .kc--cerrada    { border-left-color: var(--st-cerrada); }
+  .kc.is-new { animation: kc-in .5s ease-out; box-shadow: 0 0 0 2px var(--accent-050), var(--sh-2); }
+  @keyframes kc-in { from { opacity: 0; transform: translateY(-9px); } }
+  .kc__top { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+  .kc__os { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--n-600); }
+  .kc__cli { font-size: var(--fs-sm); font-weight: 650; color: var(--n-900); line-height: 1.3; }
+  .kc__suc, .kc__tipo { font-size: 10.5px; color: var(--n-500); line-height: 1.35; }
+  .kc__pend { font-size: 10.5px; color: #8a6d12; margin-top: 4px; line-height: 1.35; }
+  .kc__f {
+    display: flex; align-items: center; gap: 5px; margin-top: 7px; padding-top: 6px;
+    border-top: 1px solid var(--n-100); font-size: 10px; color: var(--n-500);
+  }
+  .kc .u-trunc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+  @media (max-width: 1240px) { .board { grid-template-columns: repeat(2, minmax(0,1fr)); } .col__b { max-height: none; } }
+  @media (max-width: 680px)  { .board { grid-template-columns: minmax(0,1fr); } }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><span>Operación</span><span class="sep">/</span><span>Tablero de despacho</span></div>
+      <div class="subbar__title">Tablero de despacho</div>
+      <div class="subbar__meta">Vista operativa del día · las tarjetas avanzan solas con los eventos que reporta la app del técnico</div>
+    </div>
+    <div class="subbar__right">
+      <input class="input" type="date" id="f-dia" value="2026-08-22" style="width:152px">
+      <button class="btn" id="refresh"><span id="ri"></span>Actualizar</button>
+      <a class="btn" href="agenda.html"><span id="ai"></span>Ver agenda</a>
+      <a class="btn btn--primary" href="servicio-nuevo.html"><span id="pi"></span>Nuevo servicio</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="grid grid--4 u-mb-1" style="margin-bottom:12px">
+      <div class="kpi">
+        <div class="kpi__label">Órdenes del día</div>
+        <div class="kpi__value" id="k-total">—</div>
+        <div class="kpi__delta flat" id="k-total-d"></div>
+      </div>
+      <div class="kpi kpi--ok">
+        <div class="kpi__label">En curso ahora</div>
+        <div class="kpi__value" id="k-curso">—</div>
+        <div class="kpi__delta flat">en camino + trabajando</div>
+      </div>
+      <div class="kpi kpi--warn">
+        <div class="kpi__label">Requieren atención</div>
+        <div class="kpi__value" id="k-atencion">—</div>
+        <div class="kpi__delta down" id="k-atencion-d"></div>
+      </div>
+      <div class="kpi kpi--violet">
+        <div class="kpi__label">Facturable cerrado</div>
+        <div class="kpi__value" style="font-size:19px" id="k-money"></div>
+        <div class="kpi__delta flat" id="k-money-d"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <span class="u-xs u-muted u-cap">Día</span>
+        <span class="u-sm u-strong" id="dia-label">sábado 22 de agosto de 2026</span>
+        <select class="select" style="width:196px" id="f-tec"><option value="">Todos los colaboradores</option></select>
+        <button class="chip" id="f-urg" style="cursor:pointer">Solo urgentes</button>
+        <button class="btn btn--sm btn--ghost" id="clr">Limpiar</button>
+        <div class="spacer"></div>
+        <div class="legend">
+          <b><i style="background:var(--st-asignada)"></i>Asignada</b>
+          <b><i style="background:var(--st-camino)"></i>En camino</b>
+          <b><i style="background:var(--st-trabajando)"></i>Trabajando</b>
+          <b><i style="background:var(--st-pendientes)"></i>Finalizada c/ pendientes</b>
+          <b><i style="background:var(--st-cerrada)"></i>Cerrada</b>
+        </div>
+      </div>
+
+      <div class="card__body">
+        <div class="board" id="board"></div>
+      </div>
+
+      <div class="card__foot">
+        <span class="u-xs u-muted">El administrador no cambia estados desde acá: los dispara la app del técnico.
+          Desde el tablero se <b>reasigna</b> o se <b>cancela</b>, y las dos acciones piden motivo.</span>
+        <div class="spacer"></div>
+        <span class="u-xs u-muted" id="foot-count"></span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "despacho" });
+document.getElementById("ri").innerHTML = NT.icon("refresh", 14);
+document.getElementById("ai").innerHTML = NT.icon("calendar", 14);
+document.getElementById("pi").innerHTML = NT.icon("plus", 14);
+
+/* Mismo roster y mismos números de orden que la agenda, para que las dos vistas cuenten lo mismo. */
+var TECS = [
+  { n: "Rubén Benítez",   c: "var(--navy)",   ini: "RB" },
+  { n: "Marcos Cáceres",  c: "var(--violet)", ini: "MC" },
+  { n: "Cuadrilla Alfa",  c: "var(--accent)", ini: "α", crew: ["MD","LZ","DA"] },
+  { n: "Diego Ayala",     c: "#0f766e",       ini: "DA" },
+  { n: "Luis Fretes",     c: "#9a3412",       ini: "LF" },
+  { n: "Cuadrilla Beta",  c: "#6d28d9",       ini: "β", crew: ["GM","AC"] },
+  { n: "Óscar Duarte",    c: "#155e75",       ini: "OD" },
+  { n: "Nadia Rolón",     c: "#be123c",       ini: "NR" }
+];
+
+var ST_ORDER = ["asignada", "camino", "trabajando", "pendientes", "cerrada"];
+var ST_LABEL = { asignada:"Asignada", camino:"En camino", trabajando:"Trabajando", pendientes:"Finalizada c/ pendientes", cerrada:"Cerrada" };
+
+var OS = [
+  { t:0, st:"cerrada",    os:"OS-2026-0830", cli:"Supermercado Stock",       suc:"Suc. Villa Morra",        tipo:"Correctivo · Refrigeración",  h:"08:00", usd:412,  ck:[8,8]  },
+  { t:0, st:"asignada",   os:"OS-2026-0841", cli:"Frigorífico Guaraní",      suc:"Planta 2",                tipo:"Preventivo · Refrigeración",  h:"11:00", usd:280,  ck:[0,6]  },
+  { t:0, st:"asignada",   os:"OS-2026-0849", cli:"Farmacenter",              suc:"Suc. Aviadores",          tipo:"Correctivo · Climatización",  h:"14:00", usd:190,  ck:[0,5]  },
+  { t:1, st:"cerrada",    os:"OS-2026-0828", cli:"Shopping del Sol",         suc:"Cámara 3",                tipo:"Correctivo · Refrigeración",  h:"07:30", usd:365,  ck:[7,7]  },
+  { t:1, st:"trabajando", os:"OS-2026-0838", cli:"Supermercado Stock",       suc:"Suc. Centro",             tipo:"Correctivo · Refrigeración",  h:"10:00", usd:520,  ck:[4,9]  },
+  { t:1, st:"asignada",   os:"OS-2026-0852", cli:"Hotel Guaraní",            suc:"Cocina central",          tipo:"Preventivo · Climatización",  h:"15:00", usd:230,  ck:[0,6]  },
+  { t:1, st:"asignada",   os:"OS-2026-0863", cli:"Frigochaco",               suc:"Cámara 4",                tipo:"Correctivo · Refrigeración",  h:"14:00", usd:340,  ck:[0,7], urg:true, sla:false, nueva:true },
+  { t:2, st:"trabajando", os:"OS-2026-0833", cli:"Frigorífico Guaraní",      suc:"Túnel de congelado",      tipo:"Instalación · Cámara",        h:"08:00", usd:1840, ck:[9,14] },
+  { t:2, st:"asignada",   os:"OS-2026-0855", cli:"Agrofértil",               suc:"Depósito San Lorenzo",    tipo:"Instalación · Cámara",        h:"15:00", usd:1260, ck:[0,14] },
+  { t:3, st:"cerrada",    os:"OS-2026-0827", cli:"Copetrol",                 suc:"Estación Ñemby",          tipo:"Preventivo · Electricidad",   h:"07:30", usd:145,  ck:[5,5]  },
+  { t:3, st:"pendientes", os:"OS-2026-0835", cli:"Copetrol",                 suc:"Estación Itá",            tipo:"Correctivo · Electricidad",   h:"09:30", usd:210,  ck:[6,8], pend:"Falta el repuesto: contactor 3P 40 A" },
+  { t:3, st:"camino",     os:"OS-2026-0844", cli:"Copetrol",                 suc:"Estación Capiatá",        tipo:"Preventivo · Electricidad",   h:"13:00", usd:160,  ck:[0,5]  },
+  { t:4, st:"cerrada",    os:"OS-2026-0831", cli:"Banco Continental",        suc:"Casa Matriz",             tipo:"Preventivo · Climatización",  h:"08:00", usd:298,  ck:[6,6]  },
+  { t:4, st:"trabajando", os:"OS-2026-0840", cli:"Banco Continental",        suc:"Suc. Mcal. López",        tipo:"Correctivo · Climatización",  h:"12:00", usd:275,  ck:[3,7]  },
+  { t:4, st:"asignada",   os:"OS-2026-0857", cli:"Torres del Paraguay",      suc:"Piso 12",                 tipo:"Correctivo · Climatización",  h:"16:00", usd:180,  ck:[0,5]  },
+  { t:5, st:"trabajando", os:"OS-2026-0834", cli:"Municipalidad de Asunción",suc:"Depósito central",        tipo:"Mantenimiento · Instalación", h:"08:00", usd:640,  ck:[7,12] },
+  { t:5, st:"pendientes", os:"OS-2026-0843", cli:"Colegio San José",         suc:"Aulas B",                 tipo:"Correctivo · Climatización",  h:"14:00", usd:225,  ck:[5,7], pend:"El cliente no autorizó cortar el suministro" },
+  { t:6, st:"camino",     os:"OS-2026-0846", cli:"Frigochaco",               suc:"Cámara 1",                tipo:"Correctivo · Refrigeración",  h:"10:00", usd:390,  ck:[0,8], sla:false },
+  { t:7, st:"cerrada",    os:"OS-2026-0829", cli:"Sanatorio Migone",         suc:"Quirófano 2",             tipo:"Preventivo · Climatización",  h:"09:00", usd:305,  ck:[9,9]  },
+  { t:7, st:"camino",     os:"OS-2026-0847", cli:"Sanatorio Migone",         suc:"Farmacia",                tipo:"Correctivo · Refrigeración",  h:"13:00", usd:255,  ck:[0,6], urg:true }
+];
+
+/* La OS-2026-0863 es la que dispara la notificación push de la app: llega al tablero recién al actualizar. */
+var F = { tec: "", urg: false, nuevaVisible: false };
+
+document.getElementById("f-tec").innerHTML = '<option value="">Todos los colaboradores</option>' +
+  TECS.map(function (t, i) { return '<option value="' + i + '">' + t.n + "</option>"; }).join("");
+
+function visibles() {
+  return OS.filter(function (o) {
+    if (o.nueva && !F.nuevaVisible) return false;
+    if (F.tec !== "" && String(o.t) !== F.tec) return false;
+    if (F.urg && !o.urg) return false;
+    return true;
+  });
+}
+
+function avatarOf(o) {
+  var t = TECS[o.t];
+  if (t.crew) {
+    return '<span class="stack-av">' + t.crew.map(function (ini) {
+      return '<span class="av" style="background:' + t.c + '">' + ini + "</span>";
+    }).join("") + "</span>";
+  }
+  return '<span class="stack-av"><span class="av" style="background:' + t.c + '">' + t.ini + "</span></span>";
+}
+
+function card(o) {
+  var t = TECS[o.t];
+  return '<div class="kc kc--' + o.st + (o.nueva ? " is-new" : "") + '" data-os="' + o.os + '">' +
+    '<div class="kc__top"><span class="kc__os">' + o.os + "</span>" +
+      (o.urg ? '<span class="badge badge--danger" style="height:17px;font-size:9px">Urgente</span>' : "") +
+      '<span class="spacer"></span><span style="font-size:10px;color:var(--n-500)">' + o.h + "</span></div>" +
+    '<div class="kc__cli u-trunc">' + o.cli + "</div>" +
+    '<div class="kc__suc u-trunc">' + o.suc + "</div>" +
+    '<div class="kc__tipo u-trunc">' + o.tipo + "</div>" +
+    (o.pend ? '<div class="kc__pend">⚠ ' + o.pend + "</div>" : "") +
+    '<div class="kc__f">' + avatarOf(o) +
+      '<span class="u-trunc">' + (t.crew ? t.n : t.n.split(" ")[0]) + "</span>" +
+      '<span class="spacer"></span>' +
+      '<span class="u-nowrap">' + o.ck[0] + "/" + o.ck[1] + "</span>" +
+      (o.sla === false ? '<span class="badge badge--danger" style="height:16px;font-size:9px">SLA</span>' : "") +
+    "</div></div>";
+}
+
+function render() {
+  var l = visibles();
+
+  var board = "";
+  ST_ORDER.forEach(function (k) {
+    var col = l.filter(function (o) { return o.st === k; });
+    var usdCol = col.reduce(function (a, o) { return a + o.usd; }, 0);
+    board += "<div>" +
+      '<div class="col__h"><span class="col__bar" style="background:var(--st-' + k + ')"></span>' +
+        '<span class="col__t">' + ST_LABEL[k] + "</span>" +
+        '<span class="badge badge--neutral">' + col.length + "</span>" +
+        '<span class="spacer"></span>' +
+        '<span class="u-xs u-muted u-nowrap">USD ' + NT.num(usdCol) + "</span>" +
+      "</div>" +
+      '<div class="col__b">' +
+        (col.length ? col.map(card).join("")
+          : '<div class="empty" style="padding:22px 8px"><div class="u-sm u-muted">Sin órdenes en este estado</div></div>') +
+      "</div></div>";
+  });
+  document.getElementById("board").innerHTML = board;
+
+  var enCurso   = l.filter(function (o) { return o.st === "camino" || o.st === "trabajando"; }).length;
+  var abiertas  = l.filter(function (o) { return o.st !== "cerrada"; }).length;
+  var atencion  = l.filter(function (o) { return o.st === "pendientes" || o.sla === false; }).length;
+  var cerradas  = l.filter(function (o) { return o.st === "cerrada"; });
+  var facturado = cerradas.reduce(function (a, o) { return a + o.usd; }, 0);
+
+  document.getElementById("k-total").textContent    = l.length;
+  document.getElementById("k-total-d").textContent  = abiertas + " abiertas · " + cerradas.length + " cerradas";
+  document.getElementById("k-curso").textContent    = enCurso;
+  document.getElementById("k-atencion").textContent = atencion;
+  document.getElementById("k-atencion-d").textContent =
+    l.filter(function (o) { return o.st === "pendientes"; }).length + " con pendientes · " +
+    l.filter(function (o) { return o.sla === false; }).length + " fuera de SLA";
+  document.getElementById("k-money").innerHTML      = NT.money(facturado);
+  document.getElementById("k-money-d").textContent  = cerradas.length + " órdenes conformadas y firmadas";
+  document.getElementById("foot-count").textContent = l.length + " de " + OS.length + " órdenes visibles";
+
+  NT.paintFx();
+}
+render();
+
+/* Abrir una tarjeta: en el mockup lleva al PDF de la orden, que es la vista de detalle publicada. */
+document.getElementById("board").addEventListener("click", function (e) {
+  var c = e.target.closest("[data-os]");
+  if (!c) return;
+  NT.toast({
+    kind: "info",
+    title: c.dataset.os,
+    msg: "Se abre la orden con su línea de tiempo, fotos geoestampadas, materiales, gastos y firmas.",
+    action: "Abrir la orden"
+  }).querySelector(".toast__actions button").addEventListener("click", function () {
+    location.href = "orden-pdf.html";
+  });
+});
+
+document.getElementById("f-tec").addEventListener("change", function (e) { F.tec = e.target.value; render(); });
+document.getElementById("f-urg").addEventListener("click", function () {
+  F.urg = !F.urg;
+  this.classList.toggle("chip--filter", F.urg);
+  render();
+  if (F.urg && !visibles().length) {
+    NT.toast({ kind: "warn", title: "El filtro deja el tablero vacío",
+      msg: "Ninguna orden urgente coincide con el colaborador elegido. Se mantiene el filtro para que veas por qué está vacío.",
+      reason: "FILTER_EMPTY_STATE · urgente=1 · colaborador=" + (F.tec === "" ? "todos" : TECS[F.tec].n) });
+  }
+});
+document.getElementById("clr").addEventListener("click", function () {
+  F.tec = ""; F.urg = false;
+  document.getElementById("f-tec").value = "";
+  document.getElementById("f-urg").classList.remove("chip--filter");
+  render();
+  NT.toast({ kind: "ok", title: "Filtros limpiados", msg: "El tablero muestra las " + visibles().length + " órdenes del día." });
+});
+
+document.getElementById("refresh").addEventListener("click", function () {
+  if (!F.nuevaVisible) {
+    F.nuevaVisible = true;
+    render();
+    NT.toast({ kind: "ok", title: "Orden nueva en el tablero",
+      msg: "OS-2026-0863 — Frigochaco, Cámara 4. Urgente, SLA de 4 h. El push ya se entregó al dispositivo de Marcos Cáceres.",
+      reason: "BOARD_REFRESHED · +1 orden · push entregado" });
+    return;
+  }
+  render();
+  NT.toast({ kind: "ok", title: "Tablero actualizado", msg: visibles().length + " órdenes sincronizadas con los eventos que reporta la app." });
+});
+
+document.getElementById("f-dia").addEventListener("change", function (e) {
+  var d = e.target.value;
+  if (d === "2026-08-22") { render(); return; }
+  NT.toast({ kind: "info", title: "El mockup muestra un día fijo",
+    msg: "El tablero usa el sábado 22 de agosto de 2026 para que los datos de ejemplo sean coherentes con la agenda, el mapa y los informes.",
+    reason: "MOCKUP_FIXED_DAY · solicitado=" + d });
+  e.target.value = "2026-08-22";
+});
+</script>
+</body>
+</html>
