@@ -150,6 +150,7 @@
     { g: "Operación", items: [
       { k: "agenda",    t: "Agenda",              i: "calendar", h: "agenda.html",       c: "18" },
       { k: "despacho",  t: "Despacho",            i: "truck",    h: "despacho.html",     c: "14" },
+      { k: "asignacion",t: "Asignación",          i: "users",    h: "asignacion.html",   c: "8" },
       { k: "nuevo",     t: "Nuevo servicio",      i: "plus",     h: "servicio-nuevo.html" },
       { k: "mapa",      t: "Mapa en vivo",        i: "map",      h: "mapa.html",         c: "7" }
     ]},

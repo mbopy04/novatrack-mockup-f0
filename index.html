@@ -54,15 +54,17 @@
   </p>
 
   <div class="pills">
+    <span class="pill"><i style="background:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)"></i>Sin asignar</span>
     <span class="pill"><i style="background:var(--st-asignada)"></i>Asignada</span>
     <span class="pill"><i style="background:var(--st-camino)"></i>En camino</span>
     <span class="pill"><i style="background:var(--st-trabajando)"></i>Trabajando</span>
     <span class="pill"><i style="background:var(--st-pendientes)"></i>Finalizada c/ pendientes</span>
     <span class="pill"><i style="background:var(--st-cerrada)"></i>Cerrada</span>
+    <span class="pill" style="text-decoration:line-through;text-decoration-thickness:1px"><i style="background:var(--st-cerrada);opacity:.55"></i>Cancelada</span>
   </div>
 
   <!-- WEB ADMIN -->
-  <div class="sec-t">Web Admin · 11 pantallas</div>
+  <div class="sec-t">Web Admin · 12 pantallas</div>
   <div class="cards">
     <a class="c" href="web/login.html"><div class="c__n">01</div>
       <div class="c__t">Login y selección de tenant</div>
@@ -73,28 +75,31 @@
     <a class="c" href="web/despacho.html"><div class="c__n">03</div>
       <div class="c__t">Tablero de despacho <span class="nuevo">nueva</span></div>
       <div class="c__m">Las órdenes del día en cinco columnas por estado. Avanzan solas con lo que reporta la app del técnico.</div></a>
-    <a class="c" href="web/servicio-nuevo.html"><div class="c__n">04</div>
+    <a class="c" href="web/asignacion.html"><div class="c__n">04</div>
+      <div class="c__t">Consola de asignación <span class="nuevo">nueva</span></div>
+      <div class="c__m">La cola de órdenes sin dueño y, para cada una, quién puede tomarla: distancia, habilidad, carga y presencia, con el puntaje a la vista.</div></a>
+    <a class="c" href="web/servicio-nuevo.html"><div class="c__n">05</div>
       <div class="c__t">Crear y asignar servicio</div>
       <div class="c__m">A técnico individual o a cuadrilla de 2 a 4, con validación de capacidad.</div></a>
-    <a class="c" href="web/clientes.html"><div class="c__n">05</div>
+    <a class="c" href="web/clientes.html"><div class="c__n">06</div>
       <div class="c__t">Clientes · listado paginado</div>
       <div class="c__m">312 clientes, 25 por página, filtros y acciones masivas.</div></a>
-    <a class="c" href="web/cliente-detalle.html"><div class="c__n">06</div>
+    <a class="c" href="web/cliente-detalle.html"><div class="c__n">07</div>
       <div class="c__t">Ficha de cliente</div>
       <div class="c__m">Sucursales georreferenciadas, radio de tolerancia, servicios y facturación.</div></a>
-    <a class="c" href="web/colaboradores.html"><div class="c__n">07</div>
+    <a class="c" href="web/colaboradores.html"><div class="c__n">08</div>
       <div class="c__t">Colaboradores y jornadas</div>
       <div class="c__m">Jornada laboral configurable por día, excepciones y cuadrillas.</div></a>
-    <a class="c" href="web/mapa.html"><div class="c__n">08</div>
+    <a class="c" href="web/mapa.html"><div class="c__n">09</div>
       <div class="c__t">Mapa en vivo</div>
       <div class="c__m">Técnicos y sucursales, recorrido del día y el hueco de GPS mostrado como hueco.</div></a>
-    <a class="c" href="web/informes.html"><div class="c__n">09</div>
+    <a class="c" href="web/informes.html"><div class="c__n">10</div>
       <div class="c__t">Informes</div>
       <div class="c__m">Estados por mes, tiempo de cierre, composición facturada y rankings.</div></a>
-    <a class="c" href="web/orden-pdf.html"><div class="c__n">10</div>
+    <a class="c" href="web/orden-pdf.html"><div class="c__n">11</div>
       <div class="c__t">PDF de orden de servicio</div>
       <div class="c__m">A4, dos páginas: geoestampas, fotos, materiales, gastos y firmas.</div></a>
-    <a class="c" href="web/catalogos.html"><div class="c__n">11</div>
+    <a class="c" href="web/catalogos.html"><div class="c__n">12</div>
       <div class="c__t">Catálogos administrables</div>
       <div class="c__m">Tipos de gasto y de servicio, estados, prioridades, motivos y unidades.</div></a>
   </div>
@@ -148,27 +153,32 @@
       <div class="c__m">La referencia del lenguaje visual: toasts con motivo, estados, marca, doble moneda,
         componentes y densidad. No es una pantalla del producto — es contra qué se comparan las demás.</div></a>
     <a class="c" href="web/patrones.html#s-estados-nuevos"><div class="c__n">01·2b</div>
-      <div class="c__t">Los dos estados nuevos <span class="nuevo">esperando tu ok</span></div>
-      <div class="c__m">La leyenda ampliada que pediste ver antes de que se codifique nada. Tus 5 estados quedan
-        intactos; entran <b>Sin asignar</b> y <b>Cancelada</b>, y ninguno estrena color.</div></a>
+      <div class="c__t">Los dos estados nuevos <span class="nuevo">aprobado</span></div>
+      <div class="c__m">La leyenda ampliada, ya aprobada. Tus 5 estados quedaron intactos; entran
+        <b>Sin asignar</b> y <b>Cancelada</b>, y ninguno estrenó color. Queda la alternativa que se descartó,
+        para poder auditar la decisión.</div></a>
   </div>
 
   <!-- Notas -->
   <div class="sec-t">Para leer antes de aprobar</div>
 
-  <div class="note" style="background:rgba(46,91,216,.18);border-color:rgba(123,163,240,.34)">
-    <strong>Lo único que espera decisión tuya: la leyenda ampliada de estados</strong>
-    <p>Elegiste «ampliar, conservando los significados que aprobé» y pediste ver la leyenda maquetada antes de que se
-      escriba código. Está en
+  <div class="note" style="background:rgba(46,91,216,.16);border-color:rgba(123,163,240,.3)">
+    <strong>Lo nuevo de esta vuelta: la consola de asignación (NOVAA-18)</strong>
+    <p>Aprobaste la leyenda ampliada, así que el contrato de estados quedó en <b>7</b>. Tus <b>5 quedaron exactos</b>
+      —mismos nombres, mismos significados, los mismos cinco hexadecimales— y el verde vuelve a querer decir
+      «trabajando». Los dos que entraron ya están pintados en todo el mockup: <b>Sin asignar</b> con borde punteado y
+      punto hueco, <b>Cancelada</b> tachada y con cruz. Ninguno estrenó color, como quedamos. La leyenda y el
+      razonamiento completo siguen en
       <a href="web/patrones.html#s-estados-nuevos" style="color:#fff;text-decoration:underline">Patrones de UI · §2b</a>.</p>
-    <p>Tus <b>5 estados quedan exactos</b> —mismos nombres, mismos significados, los mismos cinco hexadecimales— y el
-      verde vuelve a querer decir «trabajando». Entran dos: <b>Sin asignar</b> y <b>Cancelada</b>, y entran porque
-      <b>ya están escritos en pantallas que aprobaste</b> —el KPI «Sin asignar» de la agenda, el diálogo «La orden pasa a
-      Cancelada»— y lo único que les falta es entrada en el contrato. Ninguno estrena color: se distinguen por forma,
-      porque los dos son ausencias, no pasos del recorrido.</p>
-    <p>Ahí mismo está por qué <b>no</b> te propongo <code>pausada</code> ni partir <em>Trabajando</em> en dos, y una
-      alternativa con color propio para «Sin asignar» maquetada al lado, por si preferís decidirlo mirando.</p>
-    <p>Las 24 pantallas ya aprobadas no cambian con esto.</p>
+    <p>Con eso resuelto quedó a la vista un hueco: <b>en el mockup no había dónde asignar</b>. El tablero de despacho es
+      sólo monitoreo —las tarjetas avanzan con lo que reporta la app— y crear un servicio ya asigna, pero para las
+      órdenes que quedan en la cola no había pantalla. Ahora está:
+      <a href="web/asignacion.html" style="color:#fff;text-decoration:underline">Consola de asignación</a>.
+      El mockup pasa de 24 a <b>25 pantallas</b>.</p>
+    <p><b>Lo que hay que mirar ahí es cómo ordena los candidatos.</b> No muestra sólo al más cercano: arma un puntaje
+      que suma kilómetros, falta de la habilidad requerida, carga abierta y si el técnico está libre o ya metido en un
+      trabajo. El desglose se ve en cada fila —por eso el primero de la lista puede estar más lejos que el segundo—,
+      para que la sugerencia se pueda discutir en vez de tener que creerle.</p>
   </div>
 
   <div class="note">

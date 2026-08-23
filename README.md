@@ -42,7 +42,7 @@ sin datos del cliente más allá del nombre de la sucursal.
 estados, marca, la regla de los dos amarillos, doble moneda, inventario de componentes y métricas de densidad.
 No es una pantalla del producto: es contra qué se comparan las demás.
 
-**§2b — pendiente de aprobación.** La leyenda ampliada de estados
+**§2b — aprobada (2026-08-23).** La leyenda ampliada de estados
 (`web/patrones.html#s-estados-nuevos`): los 5 aprobados intactos, más `sin_asignar` y `cancelada`.
 Ver «Contrato de estados» más abajo.
 
@@ -65,12 +65,13 @@ para una marca de gráfico. Decisión aprobada por Juan: **mantener los dos usos
 - **Badges** → conservan el `#C9A227` del contrato, sobre fondo tintado, con borde y texto oscurecido.
 - **Rellenos de gráfico** → usan el paso oscuro de la misma familia ámbar, `#A16207`, que sí pasa.
 
-### Contrato de estados — 5 aprobados, 2 propuestos
+### Contrato de estados — 7, todos aprobados
 
 Los **5 aprobados** son el contrato vigente y no se tocan:
 `asignada` `#C02C38` · `camino` `#D97316` · `trabajando` `#1C7F4E` · `pendientes` `#C9A227` · `cerrada` `#6B7890`.
 
-Juan pidió **ampliar conservando esos significados**. La propuesta (§2b de `patrones.html`) suma dos:
+Juan pidió **ampliar conservando esos significados**, y el 2026-08-23 aprobó la ampliación (§2b de
+`patrones.html`), que suma dos:
 
 - `sin_asignar` — ya existe en `agenda.html` (KPI «Sin asignar» y panel «Arrastrá al técnico»), pero hoy se
   pinta con el rojo de `asignada`, así que «nadie la tomó» y «alguien la tomó y no salió» se ven igual.
@@ -84,8 +85,9 @@ Quedan **fuera** a propósito: `pausada` (el modelo aprobado ya lo resuelve con 
 `finalizada c/ pendientes` + revisita) y el corte `en_sitio` / `en_proceso` (el despachador no puede actuar
 distinto con uno que con el otro; el minuto de arranque ya está en la línea de tiempo).
 
-**Pendiente de aprobación:** hasta que Juan apruebe, ni el contrato ni las pantallas de F1 que pintan estados
-se tocan — `src/lib/types.ts`, `globals.css` y `StatusChip` siguen sin modificarse.
+**Aprobado.** Con eso el contrato quedó en 7 y se alineó el código de F1 —`src/lib/estado-orden.ts` es la
+fuente única, y `types.ts`, `globals.css` y `StatusChip` la consumen—. La pantalla que faltaba, la **consola
+de asignación** (`web/asignacion.html`), se maquetó en esta misma vuelta: el mockup pasa a 25 pantallas.
 
 ---
 

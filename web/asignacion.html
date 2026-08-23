@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Consola de asignación</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  /* ---- Fila de candidato ------------------------------------------------ */
+  .cand {
+    display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+    padding: 8px 10px; border: 0; border-bottom: 1px solid var(--n-100);
+    background: var(--n-000); cursor: pointer; font: inherit;
+  }
+  .cand:last-child { border-bottom: 0; }
+  .cand:hover { background: var(--accent-050); }
+  .cand.is-picked { background: var(--accent-050); box-shadow: inset 2px 0 0 var(--accent); }
+  .cand__rank {
+    flex: 0 0 16px; text-align: right; font-size: 10.5px; font-weight: 700;
+    color: var(--n-400); font-variant-numeric: tabular-nums;
+  }
+  .cand.is-picked .cand__rank { color: var(--accent); }
+  .cand__av {
+    width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 9.5px; font-weight: 700; color: #fff; flex: 0 0 26px;
+  }
+  .cand__main { min-width: 0; flex: 1; }
+  .cand__n { display: flex; align-items: baseline; gap: 6px; }
+  .cand__nm { font-size: var(--fs-sm); font-weight: 650; color: var(--n-900); }
+  .cand__cd { font-family: var(--mono); font-size: 10px; color: var(--n-400); }
+  .cand__sub { font-size: 10.5px; color: var(--n-500); line-height: 1.35; }
+  .cand__km { text-align: right; flex: 0 0 auto; }
+  .cand__kmv { display: block; font-size: var(--fs-sm); font-weight: 700; color: var(--n-700); font-variant-numeric: tabular-nums; }
+  .cand__kml { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .05em; color: var(--n-400); }
+
+  /* Desglose del puntaje: la misma fórmula que ordena la lista, visible. */
+  .score { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
+  .score span {
+    font-size: 9.5px; padding: 0 5px; height: 15px; display: inline-flex; align-items: center;
+    border-radius: 8px; background: var(--n-100); color: var(--n-600); font-variant-numeric: tabular-nums;
+  }
+  .score .pen { background: #fdecee; color: #a3242e; }
+  .score .tot { background: var(--navy); color: #fff; font-weight: 700; }
+
+  .queue-empty { padding: 26px 14px; text-align: center; }
+  @media (max-width: 1180px) { .grid--sidebar { grid-template-columns: minmax(0,1fr); } }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><span>Operación</span><span class="sep">/</span><span>Consola de asignación</span></div>
+      <div class="subbar__title">Consola de asignación</div>
+      <div class="subbar__meta">Acá se asigna. El tablero de despacho es sólo monitoreo: las tarjetas avanzan con lo que reporta la app del técnico.</div>
+    </div>
+    <div class="subbar__right">
+      <a class="btn" href="despacho.html"><span id="ti"></span>Ver tablero</a>
+      <a class="btn" href="agenda.html"><span id="ai"></span>Ver agenda</a>
+      <a class="btn btn--primary" href="servicio-nuevo.html"><span id="pi"></span>Nuevo servicio</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="grid grid--4 u-mb-2">
+      <div class="kpi kpi--danger">
+        <div class="kpi__label">Sin asignar</div>
+        <div class="kpi__value" id="k-cola">—</div>
+        <div class="kpi__delta down" id="k-cola-d"></div>
+      </div>
+      <div class="kpi kpi--warn">
+        <div class="kpi__label">Vencen hoy</div>
+        <div class="kpi__value" id="k-vence">—</div>
+        <div class="kpi__delta flat">SLA a menos de 4 h</div>
+      </div>
+      <div class="kpi kpi--ok">
+        <div class="kpi__label">Técnicos disponibles</div>
+        <div class="kpi__value" id="k-disp">—</div>
+        <div class="kpi__delta flat" id="k-disp-d"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label">Asignadas hoy</div>
+        <div class="kpi__value" id="k-hoy">9</div>
+        <div class="kpi__delta up">+2 vs. ayer</div>
+      </div>
+    </div>
+
+    <div class="grid grid--sidebar">
+
+      <!-- ================= Cola sin asignar ================= -->
+      <div class="card">
+        <div class="toolbar">
+          <span class="u-xs u-muted u-cap">Cola</span>
+          <label class="search-input"><span id="si"></span><input class="input" id="q" placeholder="Cliente, sucursal u OS…"></label>
+          <select class="select" style="width:160px" id="f-hab">
+            <option value="">Toda habilidad</option>
+          </select>
+          <button class="chip" id="f-urg" style="cursor:pointer">Solo urgentes</button>
+          <button class="btn btn--sm btn--ghost" id="clr">Limpiar</button>
+          <div class="spacer"></div>
+          <span class="badge badge--sin-asignar"><i class="badge__dot"></i><span class="badge__label">Sin asignar</span></span>
+        </div>
+
+        <div class="card__body--flush table-wrap">
+          <table class="dt dt--zebra" style="width:100%">
+            <thead>
+              <tr>
+                <th>OS</th>
+                <th>Cliente / sucursal</th>
+                <th>Tipo · habilidad</th>
+                <th>Prioridad</th>
+                <th class="num nowrap">SLA</th>
+              </tr>
+            </thead>
+            <tbody id="cola"></tbody>
+          </table>
+        </div>
+
+        <div class="card__foot">
+          <span class="u-xs u-muted">Una orden entra a esta cola cuando nace sin dueño o cuando se le libera la asignación.
+            Mientras está acá <b>ya le corre el SLA</b>.</span>
+          <div class="spacer"></div>
+          <span class="u-xs u-muted" id="foot-count"></span>
+        </div>
+      </div>
+
+      <!-- ================= Panel de asignación ================= -->
+      <div class="stack">
+
+        <div class="card">
+          <div class="card__head">
+            <span style="color:var(--accent)" id="ui"></span>
+            <div>
+              <div class="card__title" id="sel-os">Elegí una orden</div>
+              <div class="card__sub" id="sel-sub">La cola de la izquierda</div>
+            </div>
+          </div>
+
+          <div id="panel" hidden>
+            <div class="card__body" style="padding-bottom:8px">
+              <div class="field u-mb-1">
+                <span class="field__label">Habilidad requerida</span>
+                <span class="u-sm" id="sel-hab"></span>
+              </div>
+              <label class="row" style="gap:6px;align-items:center;cursor:pointer">
+                <input type="checkbox" id="solo-hab">
+                <span class="u-xs u-muted">Solo técnicos con la habilidad requerida</span>
+              </label>
+            </div>
+
+            <div class="u-xs u-cap u-muted u-strong" style="padding:0 12px 5px">Técnicos sugeridos</div>
+            <div id="cands" style="border-top:1px solid var(--n-100);border-bottom:1px solid var(--n-100)"></div>
+
+            <div class="card__body stack" style="gap:9px">
+              <div class="grid grid--2" style="gap:8px">
+                <label class="field">
+                  <span class="field__label">Inicio agendado</span>
+                  <input class="input" type="datetime-local" id="f-ini" value="2026-08-22T14:00">
+                </label>
+                <label class="field">
+                  <span class="field__label">Duración</span>
+                  <select class="select" id="f-dur">
+                    <option>1 h</option><option>1 h 30 min</option>
+                    <option selected>2 h</option><option>2 h 30 min</option>
+                    <option>3 h</option><option>4 h</option><option>5 h</option>
+                  </select>
+                </label>
+              </div>
+              <label class="field">
+                <span class="field__label">Cuadrilla (opcional)</span>
+                <select class="select" id="f-cua">
+                  <option value="">— Trabajo individual —</option>
+                  <option>Cuadrilla Alfa (3 integrantes)</option>
+                  <option>Cuadrilla Beta (2 integrantes)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field__label">Instrucciones para el técnico</span>
+                <textarea class="textarea" rows="2" placeholder="Ej.: coordinar con portería antes de ingresar; llevar escalera."></textarea>
+              </label>
+            </div>
+
+            <div class="card__foot">
+              <button class="btn btn--primary btn--block" id="btn-asig" data-act="mock" data-what="La asignación de la orden">Asignar orden</button>
+            </div>
+            <div class="card__foot">
+              <button class="btn btn--sm btn--block" data-act="mock" data-what="La asignación automática por cercanía">Asignar automáticamente por cercanía</button>
+            </div>
+            <div class="card__foot" style="gap:8px">
+              <span class="u-xs u-muted">¿No hay que hacerla?</span>
+              <div class="spacer"></div>
+              <button class="btn btn--sm btn--danger" id="btn-canc" data-act="mock" data-what="La cancelación de la orden (pide motivo)">Cancelar orden</button>
+            </div>
+          </div>
+
+          <div class="card__body queue-empty" id="vacio">
+            <div style="color:var(--n-300)" id="ei"></div>
+            <div class="u-sm u-muted u-mt-1">Elegí una orden de la cola para ver quién puede tomarla.</div>
+          </div>
+        </div>
+
+        <!-- Cómo se ordena: la fórmula, escrita -->
+        <div class="card">
+          <div class="card__head">
+            <div><div class="card__title">Cómo se ordenan los candidatos</div></div>
+          </div>
+          <div class="card__body">
+            <p class="u-xs u-muted" style="line-height:1.6;margin:0">
+              Cada técnico recibe un <b>puntaje</b>, y la lista va de menor a mayor. El puntaje arranca en los
+              kilómetros que lo separan del sitio y suma castigos:
+            </p>
+            <div class="score" style="margin-top:9px">
+              <span>km al sitio</span>
+              <span class="pen">+25 sin la habilidad</span>
+              <span class="pen">+3 × orden abierta</span>
+              <span class="pen">+6 en ruta</span>
+              <span class="pen">+10 en sitio</span>
+              <span class="pen">+18 fuera de turno</span>
+            </div>
+            <p class="u-xs u-muted" style="line-height:1.6;margin:9px 0 0">
+              Así el más cercano deja de ser el mejor candidato si le falta la habilidad o ya está cargado.
+              <b>Es una sugerencia, no una regla</b>: el despachador puede elegir a cualquiera, y la orden
+              queda igual de auditada.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "asignacion" });
+document.getElementById("ti").innerHTML = NT.icon("truck", 14);
+document.getElementById("ai").innerHTML = NT.icon("calendar", 14);
+document.getElementById("pi").innerHTML = NT.icon("plus", 14);
+document.getElementById("ui").innerHTML = NT.icon("users", 15);
+document.getElementById("ei").innerHTML = NT.icon("users", 30);
+document.getElementById("si").innerHTML = NT.icon("search", 15);
+
+/* Mismo roster que el tablero y la agenda, para que las tres vistas cuenten lo mismo. */
+var TECS = [
+  { n:"Rubén Benítez",  c:"var(--navy)",   ini:"RB", hab:["refrigeración","electricidad"], pres:"disponible",   ab:2, base:[-25.2822,-57.6351] },
+  { n:"Marcos Cáceres", c:"var(--violet)", ini:"MC", hab:["climatización"],                pres:"en_ruta",      ab:3, base:[-25.2965,-57.5762] },
+  { n:"Diego Ayala",    c:"#0f766e",       ini:"DA", hab:["refrigeración","cámaras"],      pres:"en_sitio",     ab:4, base:[-25.3402,-57.5088] },
+  { n:"Luis Fretes",    c:"#9a3412",       ini:"LF", hab:["electricidad"],                 pres:"disponible",   ab:1, base:[-25.3197,-57.5403] },
+  { n:"Óscar Duarte",   c:"#155e75",       ini:"OD", hab:["climatización","electricidad"], pres:"disponible",   ab:3, base:[-25.3552,-57.4459] },
+  { n:"Nadia Rolón",    c:"#be123c",       ini:"NR", hab:["refrigeración"],                pres:"fuera_turno",  ab:0, base:[-25.1998,-57.5331] }
+];
+var PRES_L = { disponible:"Disponible", en_ruta:"En ruta", en_sitio:"En sitio", fuera_turno:"Fuera de turno" };
+var PRES_P = { disponible:0, en_ruta:6, en_sitio:10, fuera_turno:18 };
+
+var COLA = [
+  { os:"OS-2026-0864", cli:"Frigochaco",             suc:"Cámara 2 · Luque",             tipo:"Correctivo",   hab:"refrigeración", pri:"critica", sla:"-0,8 h", venc:true,  urg:true,  sitio:[-25.2668,-57.4871] },
+  { os:"OS-2026-0866", cli:"Banco Continental",      suc:"Suc. San Lorenzo",             tipo:"Correctivo",   hab:"climatización", pri:"alta",    sla:"2,4 h",  venc:true,  urg:true,  sitio:[-25.3402,-57.5088] },
+  { os:"OS-2026-0869", cli:"Copetrol",               suc:"Estación Capiatá",             tipo:"Preventivo",   hab:"electricidad",  pri:"media",   sla:"9,1 h",  venc:false, urg:false, sitio:[-25.3552,-57.4459] },
+  { os:"OS-2026-0871", cli:"Farmacenter",            suc:"Suc. Lambaré",                 tipo:"Correctivo",   hab:"refrigeración", pri:"alta",    sla:"3,6 h",  venc:true,  urg:true,  sitio:[-25.3448,-57.6062] },
+  { os:"OS-2026-0873", cli:"Universidad Americana",  suc:"Bloque C",                     tipo:"Relevamiento", hab:"climatización", pri:"baja",    sla:"31 h",   venc:false, urg:false, sitio:[-25.2965,-57.5762] },
+  { os:"OS-2026-0875", cli:"Sanatorio Migone",       suc:"Laboratorio",                  tipo:"Correctivo",   hab:"refrigeración", pri:"critica", sla:"1,2 h",  venc:true,  urg:true,  sitio:[-25.2822,-57.6351] },
+  { os:"OS-2026-0877", cli:"Shopping del Sol",       suc:"Patio de comidas",             tipo:"Preventivo",   hab:"climatización", pri:"media",   sla:"13 h",   venc:false, urg:false, sitio:[-25.2965,-57.5762] },
+  { os:"OS-2026-0879", cli:"Municipalidad de Asunción", suc:"Depósito central",          tipo:"Correctivo",   hab:"electricidad",  pri:"media",   sla:"7,5 h",  venc:false, urg:false, sitio:[-25.2822,-57.6351] }
+];
+
+var PRI_L = { critica:"Crítica", alta:"Alta", media:"Media", baja:"Baja" };
+var PRI_TONE = { critica:"danger", alta:"warn", media:"neutral", baja:"neutral" };
+var F = { q:"", hab:"", urg:false };
+var sel = null, picked = null, soloHab = false;
+
+/* Distancia en km, redondeada como la muestra la app. */
+function km(a, b) {
+  var R = 6371, dLat = (b[0]-a[0]) * Math.PI/180, dLng = (b[1]-a[1]) * Math.PI/180;
+  var s = Math.sin(dLat/2)*Math.sin(dLat/2) +
+          Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+document.getElementById("f-hab").innerHTML = '<option value="">Toda habilidad</option>' +
+  ["refrigeración","climatización","electricidad"].map(function (h) { return '<option>' + h + '</option>'; }).join("");
+
+function visibles() {
+  return COLA.filter(function (o) {
+    if (F.urg && !o.urg) return false;
+    if (F.hab && o.hab !== F.hab) return false;
+    if (F.q) {
+      var t = (o.os + " " + o.cli + " " + o.suc).toLowerCase();
+      if (t.indexOf(F.q.toLowerCase()) < 0) return false;
+    }
+    return true;
+  });
+}
+
+function pintarCola() {
+  var vs = visibles();
+  document.getElementById("cola").innerHTML = vs.length ? vs.map(function (o) {
+    return '<tr data-os="' + o.os + '"' + (sel && sel.os === o.os ? ' class="is-selected"' : '') + '>' +
+      '<td class="strong nowrap" style="font-family:var(--mono);font-size:11px">' + o.os + '</td>' +
+      '<td><span class="strong">' + o.cli + '</span><br><span class="muted" style="font-size:10.5px">' + o.suc + '</span></td>' +
+      '<td class="muted nowrap">' + o.tipo + ' · ' + o.hab + '</td>' +
+      '<td class="nowrap"><span class="badge badge--' + PRI_TONE[o.pri] + '">' + PRI_L[o.pri] + '</span></td>' +
+      '<td class="num nowrap u-strong"' + (o.venc ? ' style="color:var(--danger)"' : ' style="color:var(--n-500);font-weight:400"') + '>' + o.sla + '</td>' +
+      '</tr>';
+  }).join("") : '<tr><td colspan="5" class="queue-empty muted">No hay órdenes que cumplan ese filtro.</td></tr>';
+
+  document.getElementById("foot-count").textContent = vs.length + " de " + COLA.length + " en cola";
+  document.getElementById("k-cola").textContent = COLA.length;
+  document.getElementById("k-cola-d").textContent = COLA.filter(function (o) { return o.venc; }).length + " vencen hoy";
+  document.getElementById("k-vence").textContent = COLA.filter(function (o) { return o.venc; }).length;
+  var disp = TECS.filter(function (t) { return t.pres === "disponible"; }).length;
+  document.getElementById("k-disp").textContent = disp;
+  document.getElementById("k-disp-d").textContent = "de " + TECS.length + " activos";
+
+  Array.prototype.forEach.call(document.querySelectorAll("#cola tr[data-os]"), function (tr) {
+    tr.style.cursor = "pointer";
+    tr.addEventListener("click", function () {
+      sel = COLA.filter(function (o) { return o.os === tr.dataset.os; })[0];
+      picked = null;
+      pintarCola();
+      pintarPanel();
+    });
+  });
+}
+
+function ranking(o) {
+  return TECS.map(function (t) {
+    var d = km(t.base, o.sitio);
+    var tiene = t.hab.indexOf(o.hab) >= 0;
+    var pen = PRES_P[t.pres];
+    return { t: t, d: d, tiene: tiene, pen: pen, score: d + (tiene ? 0 : 25) + t.ab * 3 + pen };
+  }).sort(function (a, b) { return a.score - b.score; });
+}
+
+function pintarPanel() {
+  var vacio = document.getElementById("vacio"), panel = document.getElementById("panel");
+  if (!sel) { vacio.hidden = false; panel.hidden = true;
+    document.getElementById("sel-os").textContent = "Elegí una orden";
+    document.getElementById("sel-sub").textContent = "La cola de la izquierda";
+    return; }
+
+  vacio.hidden = true; panel.hidden = false;
+  document.getElementById("sel-os").textContent = sel.os;
+  document.getElementById("sel-sub").textContent = sel.cli + " · " + sel.suc;
+  document.getElementById("sel-hab").innerHTML = '<span class="badge badge--neutral">' + sel.hab + "</span>";
+
+  var lista = ranking(sel).filter(function (r) { return soloHab ? r.tiene : true; });
+  document.getElementById("cands").innerHTML = lista.length ? lista.map(function (r, i) {
+    var partes = '<span>' + r.d.toFixed(1) + ' km</span>' +
+      (r.tiene ? '' : '<span class="pen">+25 sin habilidad</span>') +
+      (r.t.ab ? '<span class="pen">+' + (r.t.ab * 3) + ' · ' + r.t.ab + ' abiertas</span>' : '') +
+      (r.pen ? '<span class="pen">+' + r.pen + ' ' + PRES_L[r.t.pres].toLowerCase() + '</span>' : '') +
+      '<span class="tot">' + r.score.toFixed(1) + '</span>';
+    return '<button type="button" class="cand' + (picked === r.t.n ? ' is-picked' : '') + '" data-n="' + r.t.n + '">' +
+      '<span class="cand__rank">' + (i + 1) + '</span>' +
+      '<span class="cand__av" style="background:' + r.t.c + '">' + r.t.ini + '</span>' +
+      '<span class="cand__main">' +
+        '<span class="cand__n"><span class="cand__nm">' + r.t.n + '</span>' +
+          (i === 0 ? '<span class="badge badge--ok" style="height:16px">mejor candidato</span>' : '') +
+        '</span>' +
+        '<span class="cand__sub">' + PRES_L[r.t.pres] + ' · ' + r.t.ab + ' abiertas · ' + r.t.hab.join(", ") + '</span>' +
+        '<span class="score">' + partes + '</span>' +
+      '</span>' +
+      '<span class="cand__km"><span class="cand__kmv">' + r.d.toFixed(1) + '</span><span class="cand__kml">km</span></span>' +
+      '</button>';
+  }).join("") : '<div class="queue-empty u-sm u-muted">Ningún técnico activo tiene la habilidad «' + sel.hab + '».</div>';
+
+  Array.prototype.forEach.call(document.querySelectorAll(".cand"), function (b) {
+    b.addEventListener("click", function () { picked = b.dataset.n; pintarPanel(); });
+  });
+
+  var btn = document.getElementById("btn-asig");
+  btn.disabled = !picked;
+  btn.textContent = picked ? "Asignar " + sel.os + " a " + picked : "Elegí un técnico";
+  btn.dataset.what = "La asignación de " + sel.os;
+  document.getElementById("btn-canc").dataset.what = "La cancelación de " + sel.os + " (pide motivo)";
+}
+
+document.getElementById("q").addEventListener("input", function (e) { F.q = e.target.value; pintarCola(); });
+document.getElementById("f-hab").addEventListener("change", function (e) { F.hab = e.target.value; pintarCola(); });
+document.getElementById("f-urg").addEventListener("click", function (e) {
+  F.urg = !F.urg; e.target.classList.toggle("chip--filter", F.urg); pintarCola();
+});
+document.getElementById("clr").addEventListener("click", function () {
+  F = { q:"", hab:"", urg:false };
+  document.getElementById("q").value = "";
+  document.getElementById("f-hab").value = "";
+  document.getElementById("f-urg").classList.remove("chip--filter");
+  pintarCola();
+});
+document.getElementById("solo-hab").addEventListener("change", function (e) { soloHab = e.target.checked; pintarPanel(); });
+
+/* Enlace directo a una orden: asignacion.html?os=OS-2026-0864. Lo usa el tablero
+   cuando el despachador quiere saltar de una tarjeta a su asignación. */
+var qos = new URLSearchParams(location.search).get("os");
+if (qos) sel = COLA.filter(function (o) { return o.os === qos; })[0] || null;
+
+pintarCola();
+pintarPanel();
+</script>
+</body>
+</html>
