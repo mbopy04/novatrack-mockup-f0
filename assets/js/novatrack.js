@@ -54,7 +54,8 @@
     play:      '<path d="m6 3 14 9-14 9z"/>',
     stop:      '<rect x="5" y="5" width="14" height="14" rx="2"/>',
     battery:   '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2"/>',
-    gps:       '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/>'
+    gps:       '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/>',
+    inbox:     '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.4 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.4-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.8 1.1"/>'
   };
 
   NT.icon = function (name, size, cls) {
@@ -150,7 +151,7 @@
     { g: "Operación", items: [
       { k: "agenda",    t: "Agenda",              i: "calendar", h: "agenda.html",       c: "18" },
       { k: "despacho",  t: "Despacho",            i: "truck",    h: "despacho.html",     c: "14" },
-      { k: "asignacion",t: "Asignación",          i: "users",    h: "asignacion.html",   c: "8" },
+      { k: "asignacion",t: "Asignación",          i: "inbox",    h: "asignacion.html",   c: "4" },
       { k: "nuevo",     t: "Nuevo servicio",      i: "plus",     h: "servicio-nuevo.html" },
       { k: "mapa",      t: "Mapa en vivo",        i: "map",      h: "mapa.html",         c: "7" }
     ]},

@@ -116,7 +116,10 @@
   <div class="content">
     <!-- KPIs -->
     <div class="grid grid--5 u-mb-2">
-      <div class="kpi kpi--danger"><div class="kpi__label">Sin asignar</div><div class="kpi__value">4</div><div class="kpi__delta down">2 vencen hoy</div></div>
+      <!-- NOVAA-18: este KPI usaba `kpi--danger`, o sea el rojo de «Asignada», para
+           marcar lo que todavía no tiene dueño. Es el caso que motivó darle entrada
+           propia a «Sin asignar» en §2b de patrones. Ahora usa su marca punteada. -->
+      <div class="kpi kpi--sin-asignar"><div class="kpi__label">Sin asignar</div><div class="kpi__value">4</div><div class="kpi__delta down">2 vencen hoy</div></div>
       <div class="kpi"><div class="kpi__label">En curso ahora</div><div class="kpi__value">7</div><div class="kpi__delta flat">3 en camino · 4 trabajando</div></div>
       <div class="kpi kpi--warn"><div class="kpi__label">Con pendientes</div><div class="kpi__value">3</div><div class="kpi__delta down">requieren revisita</div></div>
       <div class="kpi kpi--ok"><div class="kpi__label">Cerradas hoy</div><div class="kpi__value">11</div><div class="kpi__delta up">+18% vs. ayer</div></div>
@@ -179,12 +182,17 @@
       <div class="stack">
         <div class="card">
           <div class="card__head">
-            <span style="color:var(--danger)" id="ui"></span>
+            <span style="color:var(--n-500)" id="ui"></span>
             <div><div class="card__title">Sin asignar</div><div class="card__sub">Arrastrá al técnico</div></div>
-            <div class="card__right"><span class="badge badge--danger">4</span></div>
+            <div class="card__right"><span class="badge badge--sin-asignar"><i class="badge__dot"></i><span class="badge__label">4</span></span></div>
           </div>
           <div class="card__body--flush" id="unassigned"></div>
-          <div class="card__foot"><button class="btn btn--sm btn--block" data-act="mock" data-what="La asignación automática por cercanía">Asignar automáticamente por cercanía</button></div>
+          <!-- El arrastre resuelve la asignación rápida de una orden que ya se está
+               mirando. Para vaciar la cola con el ranking a la vista está la consola. -->
+          <div class="card__foot" style="flex-direction:column;gap:6px">
+            <a class="btn btn--sm btn--primary btn--block" href="asignacion.html" style="text-decoration:none">Abrir consola de asignación</a>
+            <button class="btn btn--sm btn--block" data-act="mock" data-what="La asignación automática por cercanía">Asignar automáticamente por cercanía</button>
+          </div>
         </div>
 
         <div class="card">
@@ -216,7 +224,7 @@ document.getElementById("di").innerHTML = NT.icon("download", 14);
 document.getElementById("pi").innerHTML = NT.icon("plus", 14);
 document.getElementById("prev").innerHTML = NT.icon("chevleft", 15);
 document.getElementById("next").innerHTML = NT.icon("chevright", 15);
-document.getElementById("ui").innerHTML = NT.icon("alert", 16);
+document.getElementById("ui").innerHTML = NT.icon("inbox", 16);
 document.getElementById("ai").innerHTML = NT.icon("bell", 16);
 ["a1","a2","a3"].forEach(function(k){ document.getElementById(k).innerHTML = NT.icon("alert", 15); });
 ["c1","c2"].forEach(function(k){ document.getElementById(k).innerHTML = NT.icon("x", 11); });
