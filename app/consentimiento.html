@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Consentimiento de tracking</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="appmock">
+<div data-screen>
+  <div class="appbar"><div><div class="appbar__t">Consentimiento</div><div class="appbar__s">Obligatorio · primer ingreso</div></div></div>
+
+  <div class="ascreen">
+    <div class="apad">
+
+      <div class="acard" style="border-color:var(--violet);border-width:1.5px">
+        <div class="acard__t"><span style="color:var(--violet)" id="i1"></span>Registro de ubicación durante la jornada</div>
+        <p style="font-size:12.5px;line-height:1.6;color:var(--n-700);margin:0">
+          Para poder demostrarle al cliente que estuviste en su sucursal, NovaTrack registra tu ubicación
+          <b>únicamente dentro de tu jornada de trabajo</b>. Leé qué se registra y qué no antes de firmar.
+        </p>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--ok)" id="i2"></span>Qué se registra</div>
+        <ul style="margin:0;padding-left:17px;font-size:12.5px;line-height:1.75;color:var(--n-700)">
+          <li>Tu posición <b>cada 3 minutos</b> mientras tenés una orden en «en camino» o «trabajando».</li>
+          <li>Un <b>sello puntual</b> en cada transición: en camino, check-in, check-out.</li>
+          <li>La ubicación del momento en que <b>sacás cada foto</b> y en que <b>firmás</b>.</li>
+          <li>Precisión de la señal, y la hora del teléfono junto con la del servidor.</li>
+          <li>Si el teléfono reporta una <b>ubicación simulada</b>, queda marcado.</li>
+        </ul>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--danger)" id="i3"></span>Qué NO se registra</div>
+        <ul style="margin:0;padding-left:17px;font-size:12.5px;line-height:1.75;color:var(--n-700)">
+          <li><b>Nada fuera de tu jornada configurada.</b> Terminada la jornada, el registro se apaga solo.</li>
+          <li>Nada los domingos, feriados ni durante tus licencias.</li>
+          <li>Ni tus llamadas, ni tus mensajes, ni tus contactos, ni qué otras apps usás.</li>
+          <li>Ni el micrófono, ni la cámara fuera de las fotos que vos sacás para una orden.</li>
+        </ul>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--accent)" id="i4"></span>Tu jornada configurada</div>
+        <dl class="kv">
+          <dt>Lunes a viernes</dt><dd>08:00 – 17:00</dd>
+          <dt>Sábados</dt><dd>08:00 – 12:00</dd>
+          <dt>Domingos</dt><dd style="color:var(--n-500)">Sin registro</dd>
+          <dt>Tolerancia</dt><dd>15 min antes y después</dd>
+        </dl>
+        <div class="abanner abanner--violet" style="margin-top:10px">
+          <span style="flex:0 0 15px" id="i5"></span>
+          <div>Podés ver esto cuando quieras en <b>Mi privacidad</b>, y ahí mismo ver el detalle de lo que se registró de vos en los últimos 30 días.</div>
+        </div>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span id="i6"></span>Firma de conformidad</div>
+        <p style="font-size:12px;color:var(--n-600);margin:0 0 9px;line-height:1.55">
+          Firmá abajo para dejar constancia de que leíste y aceptás. Queda registrado con fecha, hora y tu identidad.
+        </p>
+        <div class="sigpad" id="pad">
+          <canvas id="cv"></canvas>
+          <div class="sigpad__line"></div>
+          <div class="sigpad__hint" id="hint">Firmá con el dedo</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:9px">
+          <button class="abtn abtn--sm" id="clear" style="flex:0 0 108px">Borrar</button>
+          <div style="flex:1;font-size:10.5px;color:var(--n-500);line-height:1.4;align-self:center">
+            Marcos Cáceres · CI 3.998.120<br>22/08/2026 09:04 −03
+          </div>
+        </div>
+      </div>
+
+      <label class="check" style="font-size:12.5px;margin:13px 0 4px;align-items:flex-start;gap:9px">
+        <input type="checkbox" id="ack" style="width:19px;height:19px;flex:0 0 19px;margin-top:1px">
+        <span>Leí y entiendo qué se registra de mí, en qué franja horaria, y que puedo consultarlo cuando quiera.</span>
+      </label>
+
+      <button class="abtn abtn--primary" id="aceptar" style="margin-top:11px">Acepto y firmo</button>
+      <button class="abtn abtn--sm" id="rechazar" style="margin-top:9px;border-color:var(--n-300);color:var(--n-600)">No acepto</button>
+
+      <div style="height:14px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "2 · Consentimiento firmado de tracking", bat: "47" });
+document.getElementById("i1").innerHTML = NT.icon("shield", 16);
+document.getElementById("i2").innerHTML = NT.icon("okcircle", 16);
+document.getElementById("i3").innerHTML = NT.icon("xcircle", 16);
+document.getElementById("i4").innerHTML = NT.icon("clock", 16);
+document.getElementById("i5").innerHTML = NT.icon("info", 15);
+document.getElementById("i6").innerHTML = NT.icon("signature", 16);
+
+/* Canvas de firma */
+var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), drawing = false, dirty = false;
+function size() {
+  var r = cv.parentElement.getBoundingClientRect();
+  cv.width = r.width * 2; cv.height = r.height * 2;
+  ctx.scale(2, 2); ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#141b28";
+}
+size(); addEventListener("resize", size);
+function pos(e) {
+  var r = cv.getBoundingClientRect(), t = e.touches ? e.touches[0] : e;
+  return [t.clientX - r.left, t.clientY - r.top];
+}
+function start(e) { e.preventDefault(); drawing = true; dirty = true; document.getElementById("hint").style.display = "none";
+  var p = pos(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); }
+function move(e) { if (!drawing) return; e.preventDefault(); var p = pos(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); }
+function end() { drawing = false; }
+cv.addEventListener("mousedown", start); cv.addEventListener("mousemove", move);
+addEventListener("mouseup", end);
+cv.addEventListener("touchstart", start, { passive: false });
+cv.addEventListener("touchmove", move, { passive: false });
+cv.addEventListener("touchend", end);
+
+document.getElementById("clear").addEventListener("click", function () {
+  ctx.clearRect(0, 0, cv.width, cv.height); dirty = false;
+  document.getElementById("hint").style.display = "";
+});
+
+document.getElementById("aceptar").addEventListener("click", function () {
+  if (!document.getElementById("ack").checked) {
+    A.toast({ kind: "err", title: "Falta la confirmación", msg: "Marcá la casilla de que leíste qué se registra de vos.",
+      reason: "VALIDATION · campo=confirmacion_lectura · requerido" });
+    return;
+  }
+  if (!dirty) {
+    A.toast({ kind: "err", title: "Falta tu firma", msg: "Firmá en el recuadro con el dedo. Sin firma no se puede dejar constancia.",
+      reason: "VALIDATION · campo=firma · trazos=0" });
+    return;
+  }
+  A.toast({ kind: "ok", title: "Consentimiento registrado",
+    msg: "Guardado con fecha, hora e identidad. Ya podés recibir servicios.",
+    reason: "CONSENT_OK · marcos-caceres · 2026-08-22T09:04:12−03 · v1.0" });
+  setTimeout(function () { location.href = "servicios.html"; }, 1500);
+});
+
+document.getElementById("rechazar").addEventListener("click", function () {
+  A.toast({ kind: "warn", title: "Sin consentimiento no se pueden asignar servicios", sticky: true,
+    msg: "La app necesita registrar tu ubicación en jornada para que la orden tenga valor como evidencia ante el cliente. Si no querés firmar, hablalo con tu supervisor: se puede revisar tu caso, pero no se puede desactivar el registro para una orden sola.",
+    reason: "CONSENT_DECLINED · sin consentimiento no hay asignacion de ordenes" });
+});
+</script>
+</body>
+</html>

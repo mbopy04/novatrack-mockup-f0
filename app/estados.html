@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Estados de campo</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="appmock">
+<div data-screen>
+  <div id="ab-host"></div>
+  <div id="netbar-host"></div>
+
+  <!-- Máquina de estados -->
+  <div class="fsm" id="fsm">
+    <div class="fsm__s is-done"><div class="fsm__d" id="d1"></div><div class="fsm__l">En camino</div></div>
+    <div class="fsm__s is-done"><div class="fsm__d" id="d2"></div><div class="fsm__l">Check-in</div></div>
+    <div class="fsm__s is-now"><div class="fsm__d">3</div><div class="fsm__l">Trabajando</div></div>
+    <div class="fsm__s"><div class="fsm__d">4</div><div class="fsm__l">Check-out</div></div>
+  </div>
+
+  <div class="ascreen">
+    <div class="apad">
+
+      <!-- Cronómetro -->
+      <div class="acard" style="text-align:center;background:linear-gradient(160deg,#14663e 0%,#1C7F4E 100%);border:0;color:#fff">
+        <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;opacity:.78;font-weight:700">Trabajando en sitio</div>
+        <div style="font-size:37px;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1.1" id="crono">01:44:12</div>
+        <div style="font-size:11.5px;opacity:.8">Check-in 09:58 · OS-2026-0838</div>
+      </div>
+
+      <!-- Próxima acción -->
+      <div class="acard" style="margin-top:11px">
+        <div class="acard__t"><span style="color:var(--navy)" id="i1"></span>Próxima acción: Check-out</div>
+        <p style="font-size:12.5px;color:var(--n-600);line-height:1.55;margin:0 0 4px">
+          Antes de tocar el botón, mirá lo que va a quedar registrado. Esto es lo que ve el cliente en la orden.
+        </p>
+        <div id="seal"></div>
+        <button class="abtn abtn--out" style="margin-top:12px" id="checkout">
+          <span id="i2"></span>Registrar Check-out
+        </button>
+      </div>
+
+      <!-- Historial de transiciones -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--accent)" id="i3"></span>Lo ya registrado</div>
+
+        <div class="tl" style="margin-top:4px">
+          <div class="tl__item">
+            <div class="tl__dot tl__dot--warn"></div>
+            <div class="tl__t">En camino</div>
+            <div class="tl__m">22/08 09:41:18 · a 4,2 km del destino</div>
+            <div class="tl__geo">lat −25,299100 · lon −57,602200<br>±11 m · disp. 09:41:18 −03 · srv. 09:41:21 −03</div>
+          </div>
+          <div class="tl__item">
+            <div class="tl__dot tl__dot--ok"></div>
+            <div class="tl__t">Check-in</div>
+            <div class="tl__m">22/08 09:58:41 · a 4 m de la sucursal ✓ dentro de radio</div>
+            <div class="tl__geo">lat −25,281880 · lon −57,633440<br>±8 m · disp. 09:58:41 −03 · srv. 09:58:44 −03<br>origen GPS satelital · simulación NO detectada</div>
+          </div>
+          <div class="tl__item">
+            <div class="tl__dot tl__dot--ok"></div>
+            <div class="tl__t">Trabajando</div>
+            <div class="tl__m">22/08 10:02:07</div>
+            <div class="tl__geo">lat −25,281900 · lon −57,633400<br>±7 m · disp. 10:02:07 −03 · srv. 10:02:09 −03</div>
+          </div>
+          <div class="tl__item">
+            <div class="tl__dot tl__dot--warn"></div>
+            <div class="tl__t" style="color:#8a6d12">Hueco de cobertura · 14 min</div>
+            <div class="tl__m">Sin señal GPS entre 11:28:04 y 11:42:11</div>
+            <div class="tl__geo" style="background:var(--warn-050);border-color:#f0dfb8">
+              El hueco queda informado tal cual.<br>No se inventa una posición ni se rellena el tramo.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Otras acciones -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--n-600)" id="i4"></span>Otras acciones</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="abtn abtn--sm" onclick="location.href='camara.html'"><span id="a1"></span>Fotos (4)</button>
+          <button class="abtn abtn--sm" onclick="location.href='reporte.html'"><span id="a2"></span>Reporte de trabajo</button>
+          <button class="abtn abtn--sm" onclick="location.href='gastos.html'"><span id="a3"></span>Gastos (3)</button>
+          <button class="abtn abtn--sm abtn--danger" id="pausa"><span id="a4"></span>No puedo terminar</button>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "5 · Máquina de estados de campo con geoestampa", bat: "44" });
+document.getElementById("ab-host").outerHTML = A.appbar({ back: "detalle.html", title: "Estados de campo", sub: "OS-2026-0838" });
+document.getElementById("netbar-host").outerHTML = A.netbar("ok", null, "Sincronizado");
+document.getElementById("d1").innerHTML = NT.icon("check", 14);
+document.getElementById("d2").innerHTML = NT.icon("check", 14);
+[["i1","pin"],["i2","stop"],["i3","clock"],["i4","layers"]].forEach(function (p) {
+  document.getElementById(p[0]).innerHTML = NT.icon(p[1], 16);
+});
+[["a1","camera"],["a2","file"],["a3","money"],["a4","alert"]].forEach(function (p) {
+  document.getElementById(p[0]).innerHTML = NT.icon(p[1], 16);
+});
+
+/* Sello de geoestampa del check-out, en vivo */
+document.getElementById("seal").innerHTML = A.geoseal({
+  title: "Sello del check-out",
+  lat: "−25,281900", lon: "−57,633400", prec: "±7 m",
+  dev: "22/08 11:42:19 −03", srv: "22/08 11:42:22 −03",
+  extra: ["distancia", "3 m de la sucursal ✓"],
+  note: "Se guarda también: origen de la posición (GPS satelital), si el teléfono reporta ubicación simulada, modelo y IMEI del dispositivo, versión de la app y nivel de batería."
+});
+
+/* Cronómetro vivo */
+var t = 6252;
+setInterval(function () {
+  t++;
+  var h = String(Math.floor(t / 3600)).padStart(2, "0"),
+      m = String(Math.floor(t % 3600 / 60)).padStart(2, "0"),
+      s = String(t % 60).padStart(2, "0");
+  document.getElementById("crono").textContent = h + ":" + m + ":" + s;
+}, 1000);
+
+document.getElementById("checkout").addEventListener("click", function () {
+  A.toast({ kind: "err", title: "Todavía no se puede cerrar", sticky: true,
+    msg: "Falta la firma del cliente y hay un gasto sin comprobante. La orden no cierra hasta resolver las dos cosas.",
+    reason: "CLOSE_BLOCKED · falta_firma_cliente=true · gastos_sin_comprobante=1" });
+  setTimeout(function () {
+    A.toast({ kind: "info", title: "¿Qué hago?", msg: "Cargá el comprobante en Gastos y pedile la firma a Andrea Duarte." });
+  }, 1400);
+});
+
+document.getElementById("pausa").addEventListener("click", function () {
+  A.toast({ kind: "warn", title: "Finalizar con pendientes", sticky: true,
+    msg: "Vas a tener que elegir un motivo del catálogo (falta de repuesto, requiere presupuesto, sin acceso…). La orden queda en amarillo y se genera la revisita.",
+    reason: "ESTADO → finalizada_con_pendientes · motivo=requerido" });
+});
+</script>
+</body>
+</html>

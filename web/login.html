@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Ingreso</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  body { background: radial-gradient(1100px 620px at 12% -8%, #24357f 0%, var(--navy) 42%, var(--navy-900) 100%); }
+  .login { min-height: 100vh; display: grid; grid-template-columns: 1fr 452px; }
+  .login__pitch { padding: 46px 52px; color: #fff; display: flex; flex-direction: column; }
+  .login__panel { background: var(--n-050); padding: 40px 40px; display: flex; flex-direction: column; justify-content: center; overflow-y: auto; }
+  .pitch-brand { display: flex; align-items: center; gap: 11px; font-size: 21px; font-weight: 650; letter-spacing: -.02em; }
+  .pitch-brand .brand__mark { width: 32px; height: 32px; font-size: 15px; }
+  .pitch-h { font-size: 37px; line-height: 1.14; font-weight: 680; letter-spacing: -.035em; margin-top: auto; max-width: 15ch; }
+  .pitch-p { font-size: 15px; opacity: .74; max-width: 46ch; margin-top: 15px; line-height: 1.6; }
+  .pitch-feats { display: grid; gap: 13px; margin-top: 32px; max-width: 44ch; }
+  .pitch-feat { display: flex; gap: 11px; font-size: 13px; }
+  .pitch-feat__ic { flex: 0 0 30px; height: 30px; border-radius: var(--r-md); background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.16); display: grid; place-items: center; }
+  .pitch-feat strong { display: block; font-weight: 600; margin-bottom: 1px; }
+  .pitch-feat span { opacity: .68; line-height: 1.5; }
+  .pitch-foot { margin-top: auto; padding-top: 34px; font-size: 11px; opacity: .5; }
+  .tenant-card { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--n-200); border-radius: var(--r-md); background: var(--n-000); cursor: pointer; text-align: left; width: 100%; transition: border-color .12s, box-shadow .12s; }
+  .tenant-card:hover { border-color: var(--accent); }
+  .tenant-card.is-active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-050); }
+  .tenant-card__logo { width: 30px; height: 30px; border-radius: var(--r-sm); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 11px; flex: 0 0 30px; }
+  .tenant-card__n { font-weight: 600; font-size: var(--fs-md); color: var(--n-900); }
+  .tenant-card__m { font-size: var(--fs-xs); color: var(--n-500); }
+  @media (max-width: 980px) { .login { grid-template-columns: 1fr; } .login__pitch { display: none; } .login__panel { min-height: 100vh; } }
+</style>
+</head>
+<body>
+<div class="login">
+  <aside class="login__pitch">
+    <div class="pitch-brand"><span class="brand__mark">N</span>NovaTrack <span class="brand__sub" style="font-size:12px">by Noventra</span></div>
+    <h1 class="pitch-h">Cada servicio de campo, con evidencia.</h1>
+    <p class="pitch-p">Despacho, seguimiento y cierre de órdenes de servicio para equipos técnicos en terreno. Geoestampado no repudiable, operación offline-first y cuentas separadas por empresa.</p>
+    <div class="pitch-feats">
+      <div class="pitch-feat"><span class="pitch-feat__ic" id="f1"></span><div><strong>Geoestampa en cada transición</strong><span>Latitud, longitud, precisión y doble reloj — dispositivo y servidor.</span></div></div>
+      <div class="pitch-feat"><span class="pitch-feat__ic" id="f2"></span><div><strong>El técnico trabaja sin señal</strong><span>La app encola y sincroniza sola al recuperar cobertura.</span></div></div>
+      <div class="pitch-feat"><span class="pitch-feat__ic" id="f3"></span><div><strong>Aislamiento por empresa</strong><span>Multi-tenant con separación a nivel de base, no de aplicación.</span></div></div>
+    </div>
+    <div class="pitch-foot">NovaTrack · Mockup F0 para aprobación visual · Ninguna credencial es real</div>
+  </aside>
+
+  <main class="login__panel">
+    <div style="max-width:372px;width:100%;margin:0 auto">
+      <h2 style="font-size:23px;letter-spacing:-.03em">Ingresar</h2>
+      <p class="u-sm u-muted u-mt-1" style="margin-bottom:20px">Usá tu cuenta corporativa. Si tenés acceso a más de una empresa, elegí abajo con cuál entrás.</p>
+
+      <form class="stack" id="form" novalidate>
+        <div class="field">
+          <label class="field__label">Correo corporativo <span class="req">*</span></label>
+          <input class="input" type="email" id="email" value="juan.dimatteo@noventra.com.py" autocomplete="username">
+        </div>
+        <div class="field">
+          <label class="field__label">Contraseña <span class="req">*</span></label>
+          <input class="input" type="password" id="pass" value="························" autocomplete="current-password">
+          <span class="field__err u-hide" id="err">Credenciales inválidas. Te quedan 4 intentos antes del bloqueo temporal.</span>
+        </div>
+
+        <div>
+          <div class="field__label u-mb-1">Empresa <span class="req">*</span></div>
+          <div class="stack" style="gap:6px">
+            <button type="button" class="tenant-card is-active" data-t="Frigorífico Guaraní S.A.">
+              <span class="tenant-card__logo" style="background:var(--navy)">FG</span>
+              <span style="flex:1"><span class="tenant-card__n">Frigorífico Guaraní S.A.</span><span class="tenant-card__m">Administrador · 24 técnicos · 47 sucursales</span></span>
+              <span style="color:var(--accent)" id="chk"></span>
+            </button>
+            <button type="button" class="tenant-card" data-t="Supermercados del Este">
+              <span class="tenant-card__logo" style="background:var(--violet)">SE</span>
+              <span style="flex:1"><span class="tenant-card__n">Supermercados del Este</span><span class="tenant-card__m">Supervisor · 9 técnicos · 12 sucursales</span></span>
+            </button>
+            <button type="button" class="tenant-card" data-t="Agro Itapúa S.R.L." data-suspended="1">
+              <span class="tenant-card__logo" style="background:var(--n-400)">AI</span>
+              <span style="flex:1"><span class="tenant-card__n">Agro Itapúa S.R.L.</span><span class="tenant-card__m">Solo lectura · suscripción suspendida</span></span>
+              <span class="badge badge--warn">Suspendida</span>
+            </button>
+          </div>
+        </div>
+
+        <label class="check u-sm"><input type="checkbox" checked> Mantener la sesión iniciada en este equipo</label>
+
+        <button class="btn btn--primary btn--block" type="submit" style="height:36px">Ingresar</button>
+        <div class="row" style="justify-content:space-between">
+          <a href="#" class="u-sm" id="forgot">Olvidé mi contraseña</a>
+          <a href="#" class="u-sm" id="sso">Ingresar con SSO corporativo</a>
+        </div>
+      </form>
+
+      <div class="banner banner--violet u-mt-3">
+        <span class="banner__icon" id="bi"></span>
+        <div><strong>Estás viendo un mockup</strong>Cualquier credencial entra. El botón te lleva directo a la agenda.</div>
+      </div>
+
+      <div class="u-xs u-muted u-mt-3 u-center">NovaTrack v0.1.0-mockup · <a href="../index.html">Índice del mockup</a></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+  document.getElementById("f1").innerHTML = NT.icon("pin", 15);
+  document.getElementById("f2").innerHTML = NT.icon("wifi_off", 15);
+  document.getElementById("f3").innerHTML = NT.icon("shield", 15);
+  document.getElementById("chk").innerHTML = NT.icon("check", 16);
+  document.getElementById("bi").innerHTML = NT.icon("info", 16);
+
+  var selected = "Frigorífico Guaraní S.A.";
+  document.querySelectorAll(".tenant-card").forEach(function (c) {
+    c.addEventListener("click", function () {
+      if (c.dataset.suspended) {
+        NT.toast({ kind: "err", title: "No podés entrar a esa empresa",
+          msg: "La suscripción de Agro Itapúa S.R.L. está suspendida por falta de pago. El acceso queda en solo lectura hasta regularizar.",
+          reason: "TENANT_SUSPENDED · agro-itapua · desde 2026-08-01", sticky: true, action: "Contactar a administración" });
+        return;
+      }
+      document.querySelectorAll(".tenant-card").forEach(function (x) { x.classList.remove("is-active"); });
+      c.classList.add("is-active");
+      selected = c.dataset.t;
+      var mark = document.getElementById("chk");
+      c.appendChild(mark);
+    });
+  });
+
+  document.getElementById("form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!document.getElementById("email").value.trim()) {
+      document.getElementById("email").classList.add("is-err");
+      NT.toast({ kind: "err", title: "Falta el correo", msg: "Ingresá tu correo corporativo para continuar.", reason: "VALIDATION · field=email · required" });
+      return;
+    }
+    NT.toast({ kind: "ok", title: "Sesión iniciada", msg: "Entrando a " + selected + "…" });
+    setTimeout(function () { location.href = "agenda.html"; }, 620);
+  });
+
+  document.getElementById("forgot").addEventListener("click", function (e) {
+    e.preventDefault();
+    NT.toast({ kind: "info", title: "Recuperación de contraseña",
+      msg: "Se enviaría un enlace de un solo uso, válido 30 minutos, al correo corporativo.",
+      reason: "PENDIENTE · proveedor de email transaccional sin definir (issue de infraestructura)" });
+  });
+  document.getElementById("sso").addEventListener("click", function (e) {
+    e.preventDefault();
+    NT.toast({ kind: "warn", title: "SSO no configurado", msg: "Ninguna empresa tiene todavía un proveedor de identidad conectado.", reason: "SSO_NOT_CONFIGURED · tenant=frigorifico-guarani" });
+  });
+</script>
+</body>
+</html>

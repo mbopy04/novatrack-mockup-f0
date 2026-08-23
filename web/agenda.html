@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Agenda</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  /* ---- Leyenda de estados ---- */
+  .legend { display: flex; align-items: center; gap: 11px; flex-wrap: wrap; font-size: var(--fs-xs); color: var(--n-600); }
+  .legend b { display: inline-flex; align-items: center; gap: 5px; font-weight: 550; }
+  .legend i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  /* ---- Vista DÍA: recurso (técnico) × hora ---- */
+  .dayv { display: grid; grid-template-columns: 168px minmax(0,1fr); background: var(--n-000); border: 1px solid var(--n-200); border-radius: var(--r-lg); overflow: hidden; }
+  .dayv__res { border-right: 1px solid var(--n-200); }
+  .dayv__scroll { overflow-x: auto; }
+  .dayv__grid { min-width: 940px; position: relative; }
+  .hrow { display: grid; grid-template-columns: repeat(13, 1fr); height: 28px; border-bottom: 1px solid var(--n-200); background: var(--n-050); position: sticky; top: 0; z-index: 3; }
+  .hrow div { font-size: 10px; font-weight: 650; color: var(--n-500); display: flex; align-items: center; padding-left: 5px; border-left: 1px solid var(--n-200); }
+  .hrow div:first-child { border-left: 0; }
+  .res-head { height: 28px; border-bottom: 1px solid var(--n-200); background: var(--n-050); display: flex; align-items: center; padding: 0 10px; font-size: 10px; font-weight: 650; color: var(--n-500); text-transform: uppercase; letter-spacing: .05em; position: sticky; top: 0; z-index: 3; }
+  .res { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: 1px solid var(--n-100); }
+  .res__av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 10px; font-weight: 700; flex: 0 0 26px; }
+  .res__n { display: block; font-size: var(--fs-sm); font-weight: 600; color: var(--n-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+  .res__m { display: block; font-size: 10px; color: var(--n-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+  .lane { height: 46px; border-bottom: 1px solid var(--n-100); position: relative; background-image: repeating-linear-gradient(to right, var(--n-100) 0 1px, transparent 1px calc(100%/13)); background-size: calc(100%/13) 100%; }
+  .lane--off { background-color: var(--n-050); }
+  .ev {
+    position: absolute; top: 5px; height: 36px; border-radius: var(--r-sm); padding: 3px 7px;
+    color: #fff; font-size: 10.5px; overflow: hidden; cursor: pointer; box-shadow: var(--sh-1);
+    border-left: 3px solid rgba(0,0,0,.28); line-height: 1.3;
+  }
+  .ev:hover { filter: brightness(1.07); box-shadow: var(--sh-2); z-index: 5; }
+  .ev b { display: block; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev span { opacity: .88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .ev--asignada   { background: var(--st-asignada); }
+  .ev--camino     { background: var(--st-camino); }
+  .ev--trabajando { background: var(--st-trabajando); }
+  .ev--pendientes { background: var(--st-pendientes); color: #3d2f00; border-left-color: rgba(0,0,0,.2); }
+  .ev--cerrada    { background: var(--st-cerrada); }
+  .now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); z-index: 6; }
+  .now::before { content: ""; position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+
+  /* ---- Vista SEMANA ---- */
+  .weekv { background: var(--n-000); border: 1px solid var(--n-200); border-radius: var(--r-lg); overflow: hidden; }
+  .weekv__head { display: grid; grid-template-columns: 52px repeat(7, 1fr); background: var(--n-050); border-bottom: 1px solid var(--n-200); }
+  .weekv__head div { padding: 6px 8px; font-size: var(--fs-xs); font-weight: 650; color: var(--n-600); border-left: 1px solid var(--n-200); text-align: center; }
+  .weekv__head div:first-child { border-left: 0; }
+  .weekv__head .dnum { display: block; font-size: var(--fs-lg); font-weight: 700; color: var(--n-800); letter-spacing: -.02em; }
+  .weekv__head .is-today .dnum { color: var(--accent); }
+  .weekv__body { display: grid; grid-template-columns: 52px repeat(7, 1fr); max-height: 520px; overflow-y: auto; }
+  .wcol { border-left: 1px solid var(--n-200); position: relative; }
+  .wtime { text-align: right; padding-right: 7px; font-size: 10px; color: var(--n-400); height: 44px; border-bottom: 1px solid var(--n-100); padding-top: 2px; }
+  .wslot { height: 44px; border-bottom: 1px solid var(--n-100); }
+  .wev { position: absolute; left: 3px; right: 3px; border-radius: var(--r-sm); padding: 3px 6px; color: #fff; font-size: 10px; cursor: pointer; overflow: hidden; box-shadow: var(--sh-1); line-height: 1.28; }
+  .wev b { display: block; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ---- Vista MES ---- */
+  .monthv { background: var(--n-000); border: 1px solid var(--n-200); border-radius: var(--r-lg); overflow: hidden; }
+  .monthv__dow { display: grid; grid-template-columns: repeat(7,1fr); background: var(--n-050); border-bottom: 1px solid var(--n-200); }
+  .monthv__dow div { padding: 6px; font-size: var(--fs-xs); font-weight: 650; color: var(--n-600); text-align: center; border-left: 1px solid var(--n-200); text-transform: uppercase; letter-spacing: .04em; }
+  .monthv__dow div:first-child { border-left: 0; }
+  .monthv__grid { display: grid; grid-template-columns: repeat(7,1fr); grid-auto-rows: minmax(96px, auto); }
+  .mcell { border-left: 1px solid var(--n-100); border-bottom: 1px solid var(--n-100); padding: 4px 5px; min-height: 96px; }
+  .mcell:nth-child(7n+1) { border-left: 0; }
+  .mcell--out { background: var(--n-025); }
+  .mcell--today { background: var(--accent-050); }
+  .mcell__n { font-size: var(--fs-sm); font-weight: 650; color: var(--n-700); margin-bottom: 3px; display: flex; align-items: center; gap: 4px; }
+  .mcell--out .mcell__n { color: var(--n-400); font-weight: 500; }
+  .mcell--today .mcell__n { color: var(--accent); }
+  .mev { display: flex; align-items: center; gap: 4px; font-size: 10px; padding: 1.5px 4px; border-radius: 2px; margin-bottom: 2px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mev i { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 6px; }
+  .mev:hover { background: var(--n-100); }
+  .mmore { font-size: 10px; color: var(--accent); cursor: pointer; font-weight: 600; padding-left: 4px; }
+
+  /* ---- Panel lateral ---- */
+  .unassigned { display: flex; gap: 9px; padding: 9px 11px; border-bottom: 1px solid var(--n-100); cursor: grab; }
+  .unassigned:hover { background: var(--accent-050); }
+  .unassigned__pri { width: 3px; border-radius: 2px; flex: 0 0 3px; background: var(--danger); }
+  .load-bar { height: 6px; background: var(--n-100); border-radius: 3px; overflow: hidden; display: flex; }
+  .load-bar i { display: block; height: 100%; }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><a href="agenda.html">Operación</a><span class="sep">/</span><span>Agenda</span></div>
+      <div class="subbar__title">Agenda de servicios</div>
+    </div>
+    <div class="row" style="margin-left:18px">
+      <button class="btn btn--icon" id="prev"></button>
+      <button class="btn" id="today">Hoy</button>
+      <button class="btn btn--icon" id="next"></button>
+      <div style="margin-left:6px">
+        <div class="u-strong" id="range-label">Sábado 22 de agosto de 2026</div>
+        <div class="subbar__meta" id="range-meta">18 servicios · 6 cuadrillas · 24 técnicos activos</div>
+      </div>
+    </div>
+    <div class="subbar__right">
+      <div class="seg">
+        <button class="is-active" data-panel="dia" data-panel-host="[data-panels]">Día</button>
+        <button data-panel="semana" data-panel-host="[data-panels]">Semana</button>
+        <button data-panel="mes" data-panel-host="[data-panels]">Mes</button>
+      </div>
+      <button class="btn" id="filters"><span id="fi"></span>Filtros<span class="badge badge--info" style="margin-left:2px">2</span></button>
+      <button class="btn" data-act="mock" data-what="La exportación de la agenda"><span id="di"></span>Exportar</button>
+      <a class="btn btn--primary" href="servicio-nuevo.html"><span id="pi"></span>Nuevo servicio</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KPIs -->
+    <div class="grid grid--5 u-mb-2">
+      <div class="kpi kpi--danger"><div class="kpi__label">Sin asignar</div><div class="kpi__value">4</div><div class="kpi__delta down">2 vencen hoy</div></div>
+      <div class="kpi"><div class="kpi__label">En curso ahora</div><div class="kpi__value">7</div><div class="kpi__delta flat">3 en camino · 4 trabajando</div></div>
+      <div class="kpi kpi--warn"><div class="kpi__label">Con pendientes</div><div class="kpi__value">3</div><div class="kpi__delta down">requieren revisita</div></div>
+      <div class="kpi kpi--ok"><div class="kpi__label">Cerradas hoy</div><div class="kpi__value">11</div><div class="kpi__delta up">+18% vs. ayer</div></div>
+      <div class="kpi kpi--violet"><div class="kpi__label">Facturable del día</div><div class="kpi__value" style="font-size:19px" id="kpi-money"></div></div>
+    </div>
+
+    <!-- Filtros activos + leyenda -->
+    <div class="row row--wrap u-mb-2" style="gap:7px">
+      <span class="chip chip--filter">Estado: activos <button id="c1"></button></span>
+      <span class="chip chip--filter">Zona: Asunción + Central <button id="c2"></button></span>
+      <button class="btn btn--sm btn--ghost" id="clearf">Limpiar filtros</button>
+      <div class="spacer"></div>
+      <div class="legend">
+        <b><i style="background:var(--st-asignada)"></i>Asignada</b>
+        <b><i style="background:var(--st-camino)"></i>En camino</b>
+        <b><i style="background:var(--st-trabajando)"></i>Trabajando</b>
+        <b><i style="background:var(--st-pendientes)"></i>Finalizada c/ pendientes</b>
+        <b><i style="background:var(--st-cerrada)"></i>Cerrada</b>
+      </div>
+    </div>
+
+    <div class="grid grid--sidebar">
+      <!-- ================= Vistas ================= -->
+      <div data-panels>
+        <!-- DÍA -->
+        <div data-panel-id="dia">
+          <div class="dayv">
+            <div class="dayv__res">
+              <div class="res-head">Técnico / cuadrilla</div>
+              <div id="res-list"></div>
+            </div>
+            <div class="dayv__scroll">
+              <div class="dayv__grid">
+                <div class="hrow" id="hrow"></div>
+                <div id="lanes" style="position:relative"></div>
+              </div>
+            </div>
+          </div>
+          <div class="u-xs u-muted u-mt-1">Arrastrá un bloque para reprogramar o reasignar. La franja gris es fuera de jornada configurada del colaborador.</div>
+        </div>
+
+        <!-- SEMANA -->
+        <div data-panel-id="semana" hidden>
+          <div class="weekv">
+            <div class="weekv__head" id="wk-head"></div>
+            <div class="weekv__body" id="wk-body"></div>
+          </div>
+        </div>
+
+        <!-- MES -->
+        <div data-panel-id="mes" hidden>
+          <div class="monthv">
+            <div class="monthv__dow"><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div></div>
+            <div class="monthv__grid" id="mo-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= Lateral ================= -->
+      <div class="stack">
+        <div class="card">
+          <div class="card__head">
+            <span style="color:var(--danger)" id="ui"></span>
+            <div><div class="card__title">Sin asignar</div><div class="card__sub">Arrastrá al técnico</div></div>
+            <div class="card__right"><span class="badge badge--danger">4</span></div>
+          </div>
+          <div class="card__body--flush" id="unassigned"></div>
+          <div class="card__foot"><button class="btn btn--sm btn--block" data-act="mock" data-what="La asignación automática por cercanía">Asignar automáticamente por cercanía</button></div>
+        </div>
+
+        <div class="card">
+          <div class="card__head"><div class="card__title">Carga por técnico</div><div class="card__right"><span class="u-xs u-muted">hoy</span></div></div>
+          <div class="card__body stack" style="gap:11px" id="load"></div>
+        </div>
+
+        <div class="card">
+          <div class="card__head"><span style="color:var(--warn)" id="ai"></span><div class="card__title">Alertas operativas</div></div>
+          <div class="card__body stack" style="gap:8px">
+            <div class="banner banner--danger" style="padding:8px 10px"><span class="banner__icon" id="a1"></span><div><strong>OS-2026-0841 vencida</strong>Asignada 07:30, sin check-in a las 11:42. Técnico: R. Benítez.</div></div>
+            <div class="banner banner--warn" style="padding:8px 10px"><span class="banner__icon" id="a2"></span><div><strong>Hueco de GPS · 14 min</strong>M. Cáceres, OS-2026-0838. Se registró el hueco; no se borra ni se rellena.</div></div>
+            <div class="banner banner--warn" style="padding:8px 10px"><span class="banner__icon" id="a3"></span><div><strong>Gasto sin comprobante</strong>OS-2026-0835 · combustible <span class="u-mono">USD 34,00</span>. Bloquea el cierre.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "agenda" });
+
+document.getElementById("fi").innerHTML = NT.icon("filter", 14);
+document.getElementById("di").innerHTML = NT.icon("download", 14);
+document.getElementById("pi").innerHTML = NT.icon("plus", 14);
+document.getElementById("prev").innerHTML = NT.icon("chevleft", 15);
+document.getElementById("next").innerHTML = NT.icon("chevright", 15);
+document.getElementById("ui").innerHTML = NT.icon("alert", 16);
+document.getElementById("ai").innerHTML = NT.icon("bell", 16);
+["a1","a2","a3"].forEach(function(k){ document.getElementById(k).innerHTML = NT.icon("alert", 15); });
+["c1","c2"].forEach(function(k){ document.getElementById(k).innerHTML = NT.icon("x", 11); });
+document.getElementById("kpi-money").innerHTML = NT.money(4820);
+
+/* ---------- Datos de ejemplo ---------- */
+var TECS = [
+  { n: "Rubén Benítez",   r: "Refrigeración · Zona Norte",  c: "var(--navy)",   ini: "RB", off: [[8,9]] },
+  { n: "Marcos Cáceres",  r: "Refrigeración · Centro",      c: "var(--violet)", ini: "MC", off: [] },
+  { n: "Cuadrilla Alfa",  r: "3 técnicos · Instalaciones",  c: "var(--accent)", ini: "α",  off: [] },
+  { n: "Diego Ayala",     r: "Electricidad · Zona Sur",     c: "#0f766e",       ini: "DA", off: [[17,20]] },
+  { n: "Luis Fretes",     r: "Climatización · Central",     c: "#9a3412",       ini: "LF", off: [] },
+  { n: "Cuadrilla Beta",  r: "2 técnicos · Mantenimiento",  c: "#6d28d9",       ini: "β",  off: [] },
+  { n: "Óscar Duarte",    r: "Refrigeración · Itá",         c: "#155e75",       ini: "OD", off: [[8,10]] },
+  { n: "Nadia Rolón",     r: "Electricidad · Luque",        c: "#be123c",       ini: "NR", off: [] }
+];
+var H0 = 7, H1 = 20; // 07:00 → 20:00
+var EVENTS = [
+  { t:0, s:8,   e:10.5, st:"cerrada",    os:"OS-2026-0830", cli:"Supermercado Stock · Suc. Villa Morra" },
+  { t:0, s:11,  e:13,   st:"asignada",   os:"OS-2026-0841", cli:"Frigorífico Guaraní · Planta 2" },
+  { t:0, s:14,  e:16.5, st:"asignada",   os:"OS-2026-0849", cli:"Farmacenter · Suc. Aviadores" },
+  { t:1, s:7.5, e:9.5,  st:"cerrada",    os:"OS-2026-0828", cli:"Shopping del Sol · Cámara 3" },
+  { t:1, s:10,  e:13,   st:"trabajando", os:"OS-2026-0838", cli:"Supermercado Stock · Suc. Centro" },
+  { t:1, s:15,  e:17,   st:"asignada",   os:"OS-2026-0852", cli:"Hotel Guaraní · Cocina" },
+  { t:2, s:8,   e:14,   st:"trabajando", os:"OS-2026-0833", cli:"Frigorífico Guaraní · Túnel de congelado (instalación)" },
+  { t:2, s:15,  e:19,   st:"asignada",   os:"OS-2026-0855", cli:"Agrofértil · Depósito San Lorenzo" },
+  { t:3, s:7.5, e:9,    st:"cerrada",    os:"OS-2026-0827", cli:"Copetrol · Estación Ñemby" },
+  { t:3, s:9.5, e:12,   st:"pendientes", os:"OS-2026-0835", cli:"Copetrol · Estación Itá" },
+  { t:3, s:13,  e:15,   st:"camino",     os:"OS-2026-0844", cli:"Copetrol · Estación Capiatá" },
+  { t:4, s:8,   e:11,   st:"cerrada",    os:"OS-2026-0831", cli:"Banco Continental · Casa Matriz" },
+  { t:4, s:12,  e:14.5, st:"trabajando", os:"OS-2026-0840", cli:"Banco Continental · Suc. Mcal. López" },
+  { t:4, s:16,  e:18,   st:"asignada",   os:"OS-2026-0857", cli:"Torres del Paraguay · Piso 12" },
+  { t:5, s:8,   e:12,   st:"trabajando", os:"OS-2026-0834", cli:"Municipalidad de Asunción · Depósito" },
+  { t:5, s:14,  e:17,   st:"pendientes", os:"OS-2026-0843", cli:"Colegio San José · Aulas B" },
+  { t:6, s:10,  e:12.5, st:"camino",     os:"OS-2026-0846", cli:"Frigochaco · Cámara 1" },
+  { t:7, s:9,   e:11,   st:"cerrada",    os:"OS-2026-0829", cli:"Sanatorio Migone · Quirófano 2" },
+  { t:7, s:13,  e:16,   st:"camino",     os:"OS-2026-0847", cli:"Sanatorio Migone · Farmacia" }
+];
+var ST_LABEL = { asignada:"Asignada", camino:"En camino", trabajando:"Trabajando", pendientes:"Finalizada c/ pendientes", cerrada:"Cerrada" };
+var ST_COLOR = { asignada:"var(--st-asignada)", camino:"var(--st-camino)", trabajando:"var(--st-trabajando)", pendientes:"var(--st-pendientes)", cerrada:"var(--st-cerrada)" };
+function hhmm(h) { var m = Math.round((h % 1) * 60); return String(Math.floor(h)).padStart(2,"0") + ":" + String(m).padStart(2,"0"); }
+function pct(h) { return ((h - H0) / (H1 - H0)) * 100; }
+
+/* ---------- Vista DÍA ---------- */
+(function () {
+  var head = document.getElementById("hrow");
+  head.style.gridTemplateColumns = "repeat(" + (H1 - H0) + ", 1fr)";
+  var hh = "";
+  for (var h = H0; h < H1; h++) hh += "<div>" + String(h).padStart(2,"0") + ":00</div>";
+  head.innerHTML = hh;
+
+  var res = "", lanes = "";
+  TECS.forEach(function (t, i) {
+    res += '<div class="res"><span class="res__av" style="background:' + t.c + '">' + t.ini + '</span>' +
+           '<span style="min-width:0"><span class="res__n">' + t.n + '</span><span class="res__m">' + t.r + "</span></span></div>";
+    var evs = EVENTS.filter(function (e) { return e.t === i; }).map(function (e) {
+      return '<div class="ev ev--' + e.st + '" style="left:' + pct(e.s) + "%;width:" + (pct(e.e) - pct(e.s)) + '%" ' +
+        'data-ev="' + e.os + '" data-st="' + e.st + '" data-cli="' + e.cli + '" data-hs="' + hhmm(e.s) + '" data-he="' + hhmm(e.e) + '">' +
+        "<b>" + e.os + "</b><span>" + e.cli + "</span></div>";
+    }).join("");
+    var off = t.off.map(function (o) {
+      return '<div style="position:absolute;left:' + pct(o[0]) + "%;width:" + (pct(o[1]) - pct(o[0])) +
+        '%;top:0;bottom:0;background:repeating-linear-gradient(45deg,var(--n-100) 0 6px,var(--n-050) 6px 12px)"></div>';
+    }).join("");
+    lanes += '<div class="lane">' + off + evs + "</div>";
+  });
+  document.getElementById("res-list").innerHTML = res;
+  document.getElementById("lanes").innerHTML = lanes +
+    '<div class="now" style="left:' + pct(11.7) + '%" title="Ahora · 11:42"></div>';
+})();
+
+/* ---------- Vista SEMANA ---------- */
+(function () {
+  var days = [["Lun","17"],["Mar","18"],["Mié","19"],["Jue","20"],["Vie","21"],["Sáb","22"],["Dom","23"]];
+  document.getElementById("wk-head").innerHTML = "<div></div>" + days.map(function (d, i) {
+    return '<div class="' + (i === 5 ? "is-today" : "") + '">' + d[0] + '<span class="dnum">' + d[1] + "</span></div>";
+  }).join("");
+
+  var WH0 = 7, WH1 = 19, SLOT = 44;
+  var body = "<div>";
+  for (var h = WH0; h < WH1; h++) body += '<div class="wtime">' + String(h).padStart(2,"0") + ":00</div>";
+  body += "</div>";
+
+  var WK = [
+    [ {s:8,e:11,st:"cerrada",os:"OS-0801",c:"Stock Villa Morra"}, {s:13,e:16,st:"cerrada",os:"OS-0803",c:"Copetrol Ñemby"} ],
+    [ {s:7.5,e:10,st:"cerrada",os:"OS-0808",c:"Shopping del Sol"}, {s:11,e:14,st:"cerrada",os:"OS-0810",c:"Frigochaco"}, {s:15,e:18,st:"pendientes",os:"OS-0812",c:"Colegio San José"} ],
+    [ {s:8,e:12,st:"cerrada",os:"OS-0815",c:"Banco Continental"}, {s:14,e:17,st:"cerrada",os:"OS-0818",c:"Hotel Guaraní"} ],
+    [ {s:9,e:13,st:"cerrada",os:"OS-0821",c:"Sanatorio Migone"}, {s:14,e:16.5,st:"pendientes",os:"OS-0823",c:"Farmacenter"} ],
+    [ {s:7.5,e:11,st:"cerrada",os:"OS-0825",c:"Agrofértil"}, {s:12,e:15,st:"cerrada",os:"OS-0826",c:"Municipalidad"}, {s:16,e:18.5,st:"cerrada",os:"OS-0827",c:"Torres del Py"} ],
+    [ {s:8,e:11,st:"trabajando",os:"OS-0833",c:"Guaraní Planta 2"}, {s:10,e:13,st:"trabajando",os:"OS-0838",c:"Stock Centro"}, {s:13,e:15,st:"camino",os:"OS-0844",c:"Copetrol Capiatá"}, {s:15,e:19,st:"asignada",os:"OS-0855",c:"Agrofértil SL"} ],
+    [ {s:9,e:12,st:"asignada",os:"OS-0861",c:"Guardia · Frigochaco"} ]
+  ];
+  WK.forEach(function (evs, i) {
+    var col = '<div class="wcol">';
+    for (var h = WH0; h < WH1; h++) col += '<div class="wslot"></div>';
+    col += evs.map(function (e) {
+      var top = (e.s - WH0) * SLOT, hgt = (e.e - e.s) * SLOT - 3;
+      return '<div class="wev ev--' + e.st + '" style="top:' + (top + 2) + "px;height:" + hgt + "px;background:" + ST_COLOR[e.st] +
+        (e.st === "pendientes" ? ";color:#3d2f00" : "") + '" data-ev="' + e.os + '" data-st="' + e.st + '" data-cli="' + e.c +
+        '" data-hs="' + hhmm(e.s) + '" data-he="' + hhmm(e.e) + '"><b>' + hhmm(e.s) + " " + e.os + "</b>" + e.c + "</div>";
+    }).join("") + "</div>";
+    body += col;
+  });
+  document.getElementById("wk-body").innerHTML = body;
+})();
+
+/* ---------- Vista MES ---------- */
+(function () {
+  var grid = "", day = 27; // arranca 27 jul (lun) para agosto 2026
+  var MONTH_EV = {
+    3:[["cerrada",6],["pendientes",1]], 4:[["cerrada",8]], 5:[["cerrada",5],["pendientes",2]],
+    6:[["cerrada",7]], 7:[["cerrada",4]], 10:[["cerrada",9]], 11:[["cerrada",6],["pendientes",1]],
+    12:[["cerrada",8]], 13:[["cerrada",7]], 14:[["cerrada",5]], 17:[["cerrada",8]],
+    18:[["cerrada",9],["pendientes",1]], 19:[["cerrada",6]], 20:[["cerrada",7],["pendientes",1]],
+    21:[["cerrada",8]],
+    22:[["trabajando",4],["camino",3],["asignada",4],["pendientes",3],["cerrada",11]],
+    23:[["asignada",2]], 24:[["asignada",6]], 25:[["asignada",5]], 26:[["asignada",7]],
+    27:[["asignada",4]], 28:[["asignada",6]], 31:[["asignada",3]]
+  };
+  for (var i = 0; i < 42; i++) {
+    var out = (i < 5) || (i > 35);
+    var d = i < 5 ? (27 + i) : (i > 35 ? (i - 35) : (i - 4));
+    var today = (!out && d === 22);
+    var evs = out ? [] : (MONTH_EV[d] || []);
+    var body = evs.slice(0, 3).map(function (e) {
+      return '<div class="mev" data-mday="' + d + '" data-mst="' + e[0] + '"><i style="background:' + ST_COLOR[e[0]] + '"></i>' +
+        e[1] + " " + ST_LABEL[e[0]].toLowerCase() + "</div>";
+    }).join("");
+    var extra = evs.length > 3 ? '<div class="mmore" data-mday="' + d + '">+' + (evs.length - 3) + " más</div>" : "";
+    var total = evs.reduce(function (a, e) { return a + e[1]; }, 0);
+    grid += '<div class="mcell ' + (out ? "mcell--out" : "") + (today ? " mcell--today" : "") + '">' +
+      '<div class="mcell__n">' + d + (total ? '<span class="badge badge--neutral" style="height:16px;font-size:9px;padding:0 5px">' + total + "</span>" : "") + "</div>" +
+      body + extra + "</div>";
+  }
+  document.getElementById("mo-grid").innerHTML = grid;
+})();
+
+/* ---------- Sin asignar ---------- */
+(function () {
+  var U = [
+    { os:"OS-2026-0863", cli:"Frigochaco · Cámara 4", tipo:"Correctivo · Refrigeración", sla:"Vence hoy 18:00", pri:"var(--danger)", prio:"Urgente" },
+    { os:"OS-2026-0864", cli:"Supermercado Stock · Suc. Lambaré", tipo:"Preventivo · Climatización", sla:"Vence hoy 20:00", pri:"var(--danger)", prio:"Urgente" },
+    { os:"OS-2026-0865", cli:"Copetrol · Estación Luque", tipo:"Correctivo · Electricidad", sla:"Vence mañana", pri:"var(--warn)", prio:"Alta" },
+    { os:"OS-2026-0866", cli:"Hotel Guaraní · Lavandería", tipo:"Preventivo · Mantenimiento", sla:"Vence en 3 días", pri:"var(--n-400)", prio:"Normal" }
+  ];
+  document.getElementById("unassigned").innerHTML = U.map(function (u) {
+    return '<div class="unassigned" data-ev="' + u.os + '" data-st="asignada" data-cli="' + u.cli + '" data-hs="—" data-he="—">' +
+      '<span class="unassigned__pri" style="background:' + u.pri + '"></span>' +
+      '<span style="flex:1;min-width:0">' +
+        '<span class="u-strong u-sm" style="display:block">' + u.os + "</span>" +
+        '<span class="u-xs u-muted" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + u.cli + "</span>" +
+        '<span class="u-xs u-muted" style="display:block">' + u.tipo + "</span>" +
+        '<span class="badge badge--warn u-mt-1" style="height:17px;font-size:10px">' + u.sla + "</span>" +
+      "</span></div>";
+  }).join("");
+})();
+
+/* ---------- Carga por técnico ---------- */
+(function () {
+  var L = [
+    { n:"Rubén Benítez",  h:6.5, cap:8, seg:[["var(--st-cerrada)",2.5],["var(--st-asignada)",4]] },
+    { n:"Marcos Cáceres", h:7,   cap:8, seg:[["var(--st-cerrada)",2],["var(--st-trabajando)",3],["var(--st-asignada)",2]] },
+    { n:"Cuadrilla Alfa", h:10,  cap:8, seg:[["var(--st-trabajando)",6],["var(--st-asignada)",4]] },
+    { n:"Diego Ayala",    h:5,   cap:8, seg:[["var(--st-cerrada)",1.5],["var(--st-pendientes)",2.5],["var(--st-camino)",2]] },
+    { n:"Luis Fretes",    h:7.5, cap:8, seg:[["var(--st-cerrada)",3],["var(--st-trabajando)",2.5],["var(--st-asignada)",2]] },
+    { n:"Nadia Rolón",    h:5,   cap:8, seg:[["var(--st-cerrada)",2],["var(--st-camino)",3]] }
+  ];
+  document.getElementById("load").innerHTML = L.map(function (t) {
+    var over = t.h > t.cap;
+    return '<div><div class="row u-xs" style="margin-bottom:3px">' +
+      '<span class="u-strong">' + t.n + "</span><span class=spacer></span>" +
+      '<span class="' + (over ? "" : "u-muted") + '" style="' + (over ? "color:var(--danger);font-weight:650" : "") + '">' +
+        t.h + " / " + t.cap + " h" + (over ? " · sobreasignado" : "") + "</span></div>" +
+      '<div class="load-bar">' + t.seg.map(function (s) {
+        return '<i style="background:' + s[0] + ";width:" + (s[1] / t.cap * 100) + '%"></i>';
+      }).join("") + "</div></div>";
+  }).join("");
+})();
+
+/* ---------- Interacción: detalle del evento ---------- */
+document.body.insertAdjacentHTML("beforeend",
+  '<div class="scrim" id="ev-modal" hidden><div class="modal">' +
+    '<div class="modal__head"><span id="em-ic"></span><div><div class="modal__title" id="em-os">—</div>' +
+      '<div class="u-xs u-muted" id="em-cli">—</div></div><div class="spacer"></div>' +
+      '<span id="em-badge"></span>' +
+      '<button class="icon-btn" style="color:var(--n-500)" data-close>' + NT.icon("x",16) + "</button></div>" +
+    '<div class="modal__body stack">' +
+      '<dl class="props">' +
+        '<dt>Ventana</dt><dd id="em-h">—</dd>' +
+        "<dt>Tipo</dt><dd>Correctivo · Refrigeración industrial</dd>" +
+        "<dt>Asignado a</dt><dd id=\"em-tec\">—</dd>" +
+        "<dt>Contacto en sitio</dt><dd>Gustavo Ríos · +595 981 442-118</dd>" +
+        '<dt>Dirección</dt><dd>Avda. Mcal. López 3520, Asunción</dd>' +
+        '<dt>Facturable</dt><dd id="em-money">—</dd>' +
+      "</dl>" +
+      '<div class="banner banner--info"><span class="banner__icon">' + NT.icon("pin",16) + "</span>" +
+        "<div><strong>Geoestampa del check-in</strong>" +
+        '<span class="u-mono u-xs">lat −25,28841 · lon −57,58612 · ±8 m · disp. 09:58:41 −03 · srv. 09:58:44 −03</span></div></div>' +
+    "</div>" +
+    '<div class="modal__foot"><button class="btn" data-act="mock" data-what="La reasignación de servicio">Reasignar</button>' +
+      '<button class="btn" data-act="mock" data-what="La reprogramación">Reprogramar</button><div class="spacer"></div>' +
+      '<button class="btn" data-close>Cerrar</button>' +
+      '<a class="btn btn--primary" href="orden-pdf.html">Ver orden de servicio</a></div>' +
+  "</div></div>");
+
+document.getElementById("ev-modal").addEventListener("click", function (e) {
+  if (e.target.closest("[data-close]") || e.target.id === "ev-modal") NT.closeModal("ev-modal");
+});
+document.addEventListener("click", function (e) {
+  var el = e.target.closest("[data-ev]");
+  if (!el) return;
+  var st = el.dataset.st;
+  document.getElementById("em-os").textContent = el.dataset.ev;
+  document.getElementById("em-cli").textContent = el.dataset.cli;
+  document.getElementById("em-h").textContent = el.dataset.hs + " – " + el.dataset.he + (el.dataset.hs === "—" ? " (sin programar)" : "");
+  document.getElementById("em-tec").textContent = el.closest(".unassigned") ? "— sin asignar —" : "Rubén Benítez · Zona Norte";
+  document.getElementById("em-badge").innerHTML = '<span class="badge badge--' + st + '"><i class="badge__dot"></i>' + ST_LABEL[st] + "</span>";
+  document.getElementById("em-ic").innerHTML = NT.icon("wrench", 18);
+  document.getElementById("em-money").innerHTML = NT.money(420);
+  NT.paintFx();
+  NT.openModal("ev-modal");
+});
+
+/* ---------- Navegación de fecha ---------- */
+var LABELS = {
+  dia:    ["Sábado 22 de agosto de 2026", "18 servicios · 6 cuadrillas · 24 técnicos activos"],
+  semana: ["17 – 23 de agosto de 2026",   "94 servicios · 78 cerradas · 5 con pendientes"],
+  mes:    ["Agosto de 2026",              "412 servicios · 89% cerrados en SLA"]
+};
+document.querySelectorAll(".seg button").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var l = LABELS[b.dataset.panel];
+    document.getElementById("range-label").textContent = l[0];
+    document.getElementById("range-meta").textContent = l[1];
+  });
+});
+["prev","next"].forEach(function (id) {
+  document.getElementById(id).addEventListener("click", function () {
+    NT.toast({ kind: "info", title: "Navegación de fecha", msg: "En el mockup la agenda muestra un día fijo (22-ago-2026) para que los datos de ejemplo sean coherentes entre pantallas." });
+  });
+});
+document.getElementById("today").addEventListener("click", function () {
+  NT.toast({ kind: "ok", title: "Hoy", msg: "Ya estás en el día actual: sábado 22 de agosto de 2026." });
+});
+document.getElementById("filters").addEventListener("click", function () {
+  NT.toast({ kind: "info", title: "Panel de filtros", msg: "Filtra por estado, zona, tipo de servicio, técnico, cuadrilla, cliente y rango de SLA. Los filtros activos quedan como chips debajo de la barra." });
+});
+document.getElementById("clearf").addEventListener("click", function () {
+  document.querySelectorAll(".chip--filter").forEach(function (c) { c.remove(); });
+  NT.toast({ kind: "ok", title: "Filtros limpiados", msg: "La agenda muestra los 18 servicios del día sin recorte." });
+});
+document.querySelectorAll(".unassigned").forEach(function (u) {
+  u.addEventListener("dragstart", function (e) { e.preventDefault(); });
+});
+</script>
+</body>
+</html>

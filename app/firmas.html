@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Firmas</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="appmock">
+<div data-screen>
+  <div id="ab-host"></div>
+  <div id="netbar-host"></div>
+
+  <div class="ascreen">
+    <div class="apad">
+
+      <div class="abanner abanner--violet">
+        <span style="flex:0 0 16px" id="b1"></span>
+        <div><strong>Las dos firmas se sellan con ubicación y hora</strong>
+          Firmar acá deja constancia de que ambos estaban en la sucursal en ese momento.</div>
+      </div>
+
+      <!-- Firma del técnico -->
+      <div class="acard" style="margin-top:11px">
+        <div class="acard__t"><span style="color:var(--ok)" id="i1"></span>Firma del técnico
+          <span class="badge badge--ok" style="margin-left:auto">Firmada</span></div>
+        <div class="sigpad" style="height:120px;border-style:solid;border-color:var(--ok-050);background:var(--n-025)">
+          <div style="display:grid;place-items:center;height:100%" id="sig-tec"></div>
+        </div>
+        <div style="font-size:12px;color:var(--n-700);margin-top:8px;font-weight:600">Marcos Cáceres · CI 3.998.120</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--n-500);line-height:1.6;margin-top:3px">
+          22/08 12:19:41 −03 · −25,281900 / −57,633400 ±7 m
+        </div>
+        <button class="abtn abtn--sm" id="refirmar" style="margin-top:9px">Volver a firmar</button>
+      </div>
+
+      <!-- Firma del cliente -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--warn)" id="i2"></span>Firma del cliente
+          <span class="badge badge--warn" style="margin-left:auto" id="badge-cli">Pendiente</span></div>
+
+        <div class="afield">
+          <label class="afield__l">Quién firma <span class="req">*</span></label>
+          <input class="ainput" id="quien" value="Andrea Duarte">
+        </div>
+        <div class="afield">
+          <label class="afield__l">Cargo</label>
+          <input class="ainput" value="Encargada de sucursal">
+        </div>
+        <div class="afield">
+          <label class="afield__l">Documento</label>
+          <input class="ainput" value="4.220.118" inputmode="numeric">
+        </div>
+
+        <label class="afield__l">Firma <span class="req">*</span></label>
+        <div class="sigpad" id="pad">
+          <canvas id="cv"></canvas>
+          <div class="sigpad__line"></div>
+          <div class="sigpad__hint" id="hint">Pasale el teléfono al cliente</div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:9px">
+          <button class="abtn abtn--sm" id="clear" style="flex:0 0 104px">Borrar</button>
+          <button class="abtn abtn--sm abtn--primary" id="confirmar" style="flex:1">Confirmar firma</button>
+        </div>
+
+        <div id="seal-host" style="margin-top:2px"></div>
+      </div>
+
+      <!-- Conformidad -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--accent)" id="i3"></span>Conformidad del cliente</div>
+        <div class="aseg">
+          <button class="is-active">Conforme</button>
+          <button id="disconforme">Con observaciones</button>
+        </div>
+        <div id="obs" hidden style="margin-top:11px">
+          <div class="afield" style="margin-bottom:0">
+            <label class="afield__l">Observación del cliente <span class="req">*</span></label>
+            <textarea class="atextarea" style="min-height:76px" placeholder="Qué observa el cliente…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <button class="abtn abtn--out" id="cerrar" style="margin-top:13px">
+        <span id="i4"></span>Cerrar orden de servicio
+      </button>
+      <div style="height:12px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "8 · Firma del técnico y del cliente en canvas", bat: "41" });
+document.getElementById("ab-host").outerHTML = A.appbar({ back: "estados.html", title: "Firmas", sub: "OS-2026-0838" });
+document.getElementById("netbar-host").outerHTML = A.netbar("sync", 7, "Sincronizando 7 elementos…");
+[["b1","signature"],["i1","okcircle"],["i2","signature"],["i3","check"],["i4","lock"]]
+  .forEach(function (p) { document.getElementById(p[0]).innerHTML = NT.icon(p[1], 16); });
+
+document.getElementById("sig-tec").innerHTML =
+  '<svg width="196" height="62" viewBox="0 0 196 62"><path d="M8 44 C 26 10, 40 52, 55 26 S 82 8, 96 36 S 122 52, 138 20 C 148 6, 164 40, 190 28" ' +
+  'fill="none" stroke="#141b28" stroke-width="2" stroke-linecap="round"/></svg>';
+
+/* Canvas de firma del cliente */
+var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), drawing = false, dirty = false, confirmed = false;
+function size() {
+  var r = cv.parentElement.getBoundingClientRect();
+  cv.width = r.width * 2; cv.height = r.height * 2;
+  ctx.scale(2, 2); ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#141b28";
+}
+size(); addEventListener("resize", size);
+function pos(e) { var r = cv.getBoundingClientRect(), t = e.touches ? e.touches[0] : e; return [t.clientX - r.left, t.clientY - r.top]; }
+function start(e) { if (confirmed) return; e.preventDefault(); drawing = true; dirty = true;
+  document.getElementById("hint").style.display = "none"; var p = pos(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); }
+function move(e) { if (!drawing) return; e.preventDefault(); var p = pos(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); }
+cv.addEventListener("mousedown", start); cv.addEventListener("mousemove", move);
+addEventListener("mouseup", function () { drawing = false; });
+cv.addEventListener("touchstart", start, { passive: false });
+cv.addEventListener("touchmove", move, { passive: false });
+cv.addEventListener("touchend", function () { drawing = false; });
+
+document.getElementById("clear").addEventListener("click", function () {
+  if (confirmed) {
+    A.toast({ kind: "err", title: "La firma ya está confirmada", sticky: true,
+      msg: "Una vez confirmada no se puede borrar desde acá: quedaría un hueco en la evidencia. Si el cliente firmó por error, pedí la anulación al supervisor y queda registrada como anulación, no como si nunca hubiera pasado.",
+      reason: "SIGNATURE_LOCKED · estado=confirmada · requiere=anulacion_supervisor" });
+    return;
+  }
+  ctx.clearRect(0, 0, cv.width, cv.height); dirty = false;
+  document.getElementById("hint").style.display = "";
+});
+
+document.getElementById("confirmar").addEventListener("click", function () {
+  if (!document.getElementById("quien").value.trim()) {
+    A.toast({ kind: "err", title: "Falta quién firma", msg: "Escribí el nombre de quien firma por el cliente.",
+      reason: "VALIDATION · campo=quien_firma · requerido" });
+    return;
+  }
+  if (!dirty) {
+    A.toast({ kind: "err", title: "El cliente todavía no firmó", msg: "Pasale el teléfono para que firme en el recuadro.",
+      reason: "VALIDATION · campo=firma_cliente · trazos=0" });
+    return;
+  }
+  confirmed = true;
+  document.getElementById("badge-cli").textContent = "Firmada";
+  document.getElementById("badge-cli").className = "badge badge--ok";
+  document.getElementById("pad").style.borderStyle = "solid";
+  document.getElementById("pad").style.borderColor = "var(--ok)";
+  document.getElementById("seal-host").innerHTML = A.geoseal({
+    title: "Sello de la firma del cliente",
+    lat: "−25,281900", lon: "−57,633400", prec: "±7 m",
+    dev: "22/08 12:24:07 −03", srv: "en cola (sin señal)",
+    note: "El reloj del servidor se completa al sincronizar. La hora del dispositivo ya quedó guardada y no se puede editar."
+  });
+  A.toast({ kind: "ok", title: "Firma del cliente registrada",
+    msg: "Andrea Duarte · sellada con ubicación y hora del dispositivo.",
+    reason: "SIGNATURE_OK · cliente · queued · sha256=1f7a…c3e0" });
+});
+
+document.getElementById("refirmar").addEventListener("click", function () {
+  A.toast({ kind: "warn", title: "Volver a firmar reemplaza la firma anterior",
+    msg: "Queda registrado que hubo un reemplazo, con las dos horas. No se borra la primera.",
+    reason: "SIGNATURE_REPLACE · se conserva historial de versiones" });
+});
+document.getElementById("disconforme").addEventListener("click", function () {
+  document.getElementById("obs").hidden = false;
+  this.classList.add("is-active");
+  this.previousElementSibling.classList.remove("is-active");
+});
+
+document.getElementById("cerrar").addEventListener("click", function () {
+  if (!confirmed) {
+    A.toast({ kind: "err", title: "No se puede cerrar la orden", sticky: true,
+      msg: "Falta la firma del cliente. Este cliente la tiene como obligatoria para el cierre.",
+      reason: "CLOSE_BLOCKED · falta_firma_cliente=true · politica_cliente=firma_obligatoria" });
+    return;
+  }
+  A.toast({ kind: "warn", title: "Falta un comprobante de gasto", sticky: true,
+    msg: "El almuerzo en ruta de USD 11,00 está sin comprobante y ese tipo de gasto lo exige. Cargalo o quitá el gasto.",
+    reason: "CLOSE_BLOCKED · gastos_sin_comprobante=1 · GST-04 requiere comprobante" });
+  setTimeout(function () { location.href = "gastos.html"; }, 2200);
+});
+</script>
+</body>
+</html>

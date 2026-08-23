@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Informes</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  /* Pasos de color validados para relleno de gráfico (ver nota al pie de la página).
+     Escala de ESTADO — reservada, siempre con punto + etiqueta, nunca color solo. */
+  :root {
+    --c-asignada:   #C02C38;
+    --c-camino:     #D97316;
+    --c-trabajando: #1C7F4E;
+    --c-pendientes: #A16207;
+    --c-cerrada:    #546A8C;
+    /* Rampa ordinal de un solo tono (composición de ingresos), claro → oscuro */
+    --o-1: #1E40AF; --o-2: #2E5BD8; --o-3: #7BA3F0;
+  }
+  .chart { width: 100%; display: block; overflow: visible; }
+  .ax-line { stroke: var(--n-200); stroke-width: 1; }
+  .ax-grid { stroke: var(--n-100); stroke-width: 1; }
+  .ax-txt  { font-size: 10px; fill: var(--n-500); font-family: var(--font); }
+  .ax-txt--v { font-variant-numeric: tabular-nums; }
+  .lbl-direct { font-size: 10px; font-weight: 650; fill: var(--n-700); font-family: var(--font); font-variant-numeric: tabular-nums; }
+  .legend-c { display: flex; gap: 13px; flex-wrap: wrap; font-size: var(--fs-xs); color: var(--n-600); }
+  .legend-c b { display: inline-flex; align-items: center; gap: 5px; font-weight: 550; }
+  .legend-c i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+  .hit { fill: transparent; cursor: pointer; }
+  .tip {
+    position: fixed; z-index: 400; pointer-events: none; background: var(--n-900); color: #fff;
+    border-radius: var(--r-md); padding: 7px 9px; font-size: 11px; line-height: 1.5;
+    box-shadow: var(--sh-3); max-width: 236px; opacity: 0; transition: opacity .1s;
+  }
+  .tip.is-on { opacity: 1; }
+  .tip b { display: block; font-weight: 650; margin-bottom: 3px; }
+  .tip .tr { display: flex; align-items: center; gap: 6px; }
+  .tip .tr i { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 8px; }
+  .tip .tr span:last-child { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 650; }
+  .crosshair { stroke: var(--n-400); stroke-width: 1; stroke-dasharray: 3 3; }
+  .rank-row { display: grid; grid-template-columns: 148px minmax(0,1fr) 92px; gap: 9px; align-items: center; }
+  .rank-bar { height: 15px; border-radius: 0 4px 4px 0; background: var(--o-2); }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><span>Análisis</span><span class="sep">/</span><span>Informes</span></div>
+      <div class="subbar__title">Informes de operación</div>
+    </div>
+    <div class="subbar__right">
+      <select class="select" style="width:172px"><option>Últimos 8 meses</option><option>Año 2026</option><option>Últimos 30 días</option><option>Rango personalizado…</option></select>
+      <select class="select" style="width:158px"><option>Todos los clientes</option><option>Supermercado Stock</option><option>Copetrol</option></select>
+      <select class="select" style="width:152px"><option>Todas las zonas</option><option>Asunción</option><option>Central</option></select>
+      <div class="seg"><button class="is-active" id="v-graf">Gráficos</button><button id="v-tabla">Tabla</button></div>
+      <button class="btn" data-act="mock" data-what="La exportación del informe"><span id="di"></span>Exportar</button>
+      <a class="btn btn--primary" href="orden-pdf.html"><span id="fi"></span>PDF de orden</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPI: números protagonistas, sin color de serie -->
+    <div class="grid grid--5 u-mb-2">
+      <div class="kpi"><div class="kpi__label">Órdenes cerradas</div><div class="kpi__value">412</div><div class="kpi__delta up">+11% vs. julio</div></div>
+      <div class="kpi kpi--ok"><div class="kpi__label">SLA cumplido</div><div class="kpi__value">89<small>%</small></div><div class="kpi__delta up">+4 pts</div></div>
+      <div class="kpi kpi--warn"><div class="kpi__label">Tiempo medio de cierre</div><div class="kpi__value">3,4 <small>h</small></div><div class="kpi__delta down">objetivo 3,0 h</div></div>
+      <div class="kpi kpi--danger"><div class="kpi__label">Reincidencias</div><div class="kpi__value">17</div><div class="kpi__delta down">4,1% de las órdenes</div></div>
+      <div class="kpi kpi--violet"><div class="kpi__label">Facturado en el período</div><div class="kpi__value" style="font-size:18px" id="k5"></div></div>
+    </div>
+
+    <!-- ===== Vista gráficos ===== -->
+    <div id="panel-graf">
+      <div class="grid grid--sidebar u-mb-2">
+        <div class="card">
+          <div class="card__head">
+            <div><div class="card__title">Órdenes por mes, según estado de cierre</div>
+              <div class="card__sub">412 órdenes · enero a agosto de 2026</div></div>
+            <div class="card__right"><span class="badge badge--neutral">Agosto en curso</span></div>
+          </div>
+          <div class="card__body">
+            <svg class="chart" id="ch-stack" viewBox="0 0 720 264" role="img"
+                 aria-label="Órdenes por mes según estado de cierre, enero a agosto de 2026"></svg>
+            <div class="legend-c u-mt-2" style="padding-left:44px">
+              <b><i style="background:var(--c-cerrada)"></i>Cerrada</b>
+              <b><i style="background:var(--c-pendientes)"></i>Finalizada c/ pendientes</b>
+              <b><i style="background:var(--c-trabajando)"></i>En curso</b>
+              <b><i style="background:var(--c-camino)"></i>En camino</b>
+              <b><i style="background:var(--c-asignada)"></i>Asignada</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__head"><div class="card__title">Estado ahora</div>
+            <div class="card__sub">Foto del 22/08 11:42</div></div>
+          <div class="card__body">
+            <svg class="chart" id="ch-donut" viewBox="0 0 240 168" role="img" aria-label="Distribución de órdenes abiertas por estado"></svg>
+            <div class="stack u-mt-2" style="gap:5px" id="donut-legend"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid--2 u-mb-2">
+        <div class="card">
+          <div class="card__head">
+            <div><div class="card__title">Tiempo medio de cierre</div>
+              <div class="card__sub">Horas desde el check-in hasta el cierre firmado · objetivo 3,0 h</div></div>
+          </div>
+          <div class="card__body">
+            <svg class="chart" id="ch-line" viewBox="0 0 500 236" role="img"
+                 aria-label="Tiempo medio de cierre por mes, en horas, contra el objetivo de 3 horas"></svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__head">
+            <div><div class="card__title">Composición de lo facturado</div>
+              <div class="card__sub">Mano de obra, repuestos y traslado por mes</div></div>
+            <div class="card__right"><button class="btn btn--sm btn--ghost" data-act="fx">TC</button></div>
+          </div>
+          <div class="card__body">
+            <svg class="chart" id="ch-comp" viewBox="0 0 500 236" role="img"
+                 aria-label="Composición de lo facturado por mes: mano de obra, repuestos y traslado"></svg>
+            <div class="legend-c u-mt-2" style="padding-left:52px">
+              <b><i style="background:var(--o-1)"></i>Mano de obra</b>
+              <b><i style="background:var(--o-2)"></i>Repuestos</b>
+              <b><i style="background:var(--o-3)"></i>Traslado</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid--2">
+        <div class="card">
+          <div class="card__head"><div class="card__title">Clientes con más órdenes</div>
+            <div class="card__sub">Período completo · top 8 de 312</div></div>
+          <div class="card__body stack" style="gap:8px" id="rank-cli"></div>
+        </div>
+        <div class="card">
+          <div class="card__head"><div class="card__title">Técnicos por órdenes cerradas</div>
+            <div class="card__sub">Período completo · top 8 de 24</div></div>
+          <div class="card__body stack" style="gap:8px" id="rank-tec"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Vista tabla (mismo dato, sin depender del color) ===== -->
+    <div id="panel-tabla" hidden>
+      <div class="card">
+        <div class="card__head"><div class="card__title">Órdenes por mes y estado</div>
+          <div class="card__sub">Los mismos datos de los gráficos, en tabla</div></div>
+        <div class="card__body--flush">
+          <table class="dt dt--zebra">
+            <thead><tr><th>Mes</th><th class="num">Asignada</th><th class="num">En camino</th><th class="num">En curso</th>
+              <th class="num">Fin. c/ pendientes</th><th class="num">Cerrada</th><th class="num">Total</th>
+              <th class="num">T. medio cierre</th><th class="num">Facturado</th></tr></thead>
+            <tbody id="tabla"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="banner banner--info u-mt-2">
+      <span class="banner__icon" id="ni"></span>
+      <div><strong>Nota de color para la aprobación</strong>
+        El amarillo <span class="u-mono">#C9A227</span> del contrato de estados llega a 2,42:1 de contraste sobre blanco —
+        por debajo del piso de 3:1 para una marca de gráfico— y contra el naranja queda a ΔE 11,3, difícil de distinguir incluso
+        con visión de color completa. En los <em>rellenos de gráfico</em> se usa un paso más oscuro de la misma familia ámbar
+        (<span class="u-mono">#A16207</span>), que sí pasa. Los <em>badges</em> de la agenda conservan el amarillo del contrato,
+        porque ahí van sobre fondo tintado, con borde y texto. Todo estado se muestra siempre con punto + etiqueta, nunca por color solo.
+        Si preferís un único valor para ambos usos, decilo y unifico en el paso oscuro.</div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "informes" });
+document.getElementById("di").innerHTML = NT.icon("download", 14);
+document.getElementById("fi").innerHTML = NT.icon("file", 14);
+document.getElementById("ni").innerHTML = NT.icon("info", 16);
+document.getElementById("k5").innerHTML = NT.money(184300);
+
+var C = { asignada:"#C02C38", camino:"#D97316", trabajando:"#1C7F4E", pendientes:"#A16207", cerrada:"#546A8C" };
+var O = { o1:"#1E40AF", o2:"#2E5BD8", o3:"#7BA3F0" };
+var MES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago"];
+/* [cerrada, pendientes, encurso, encamino, asignada] */
+var DATA = [
+  [44,4,0,0,0],[38,3,0,0,0],[52,6,0,0,0],[47,4,0,0,0],
+  [55,5,0,0,0],[41,3,0,0,0],[58,7,0,0,0],[36,5,4,3,4]
+];
+var TMED = [3.9,3.7,3.5,3.6,3.3,3.4,3.2,3.4];
+var COMP = [ /* [mano de obra, repuestos, traslado] en USD */
+  [8200,6100,1400],[7100,5200,1200],[9800,8400,1900],[8600,6900,1500],
+  [10200,7800,1700],[7900,5600,1300],[11100,9200,2100],[6400,4900,1100]
+];
+
+var tip = document.getElementById("tip");
+function showTip(e, html) {
+  tip.innerHTML = html; tip.classList.add("is-on");
+  var x = e.clientX + 14, y = e.clientY + 14;
+  if (x + 250 > innerWidth) x = e.clientX - 250;
+  if (y + 110 > innerHeight) y = e.clientY - 110;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.classList.remove("is-on"); }
+document.addEventListener("scroll", hideTip, true);
+
+/* ---------- Barra apilada por estado ---------- */
+(function () {
+  var W = 720, H = 264, L = 44, R = 12, T = 12, B = 30;
+  var pw = W - L - R, ph = H - T - B, max = 70, bw = 42;
+  var s = "";
+  [0,10,20,30,40,50,60,70].forEach(function (v) {
+    var y = T + ph - v / max * ph;
+    s += '<line class="ax-grid" x1="' + L + '" y1="' + y + '" x2="' + (W - R) + '" y2="' + y + '"/>' +
+         '<text class="ax-txt ax-txt--v" x="' + (L - 7) + '" y="' + (y + 3.5) + '" text-anchor="end">' + v + "</text>";
+  });
+  s += '<line class="ax-line" x1="' + L + '" y1="' + (T + ph) + '" x2="' + (W - R) + '" y2="' + (T + ph) + '"/>';
+
+  var KEYS = ["cerrada","pendientes","trabajando","camino","asignada"];
+  var LBL  = { cerrada:"Cerrada", pendientes:"Finalizada c/ pendientes", trabajando:"En curso", camino:"En camino", asignada:"Asignada" };
+  DATA.forEach(function (row, i) {
+    var cx = L + (i + .5) * (pw / DATA.length), x = cx - bw / 2, acc = 0;
+    var total = row.reduce(function (a, b) { return a + b; }, 0);
+    row.forEach(function (v, k) {
+      if (!v) return;
+      var h = v / max * ph - 2;                       /* 2px de aire entre segmentos */
+      var y = T + ph - (acc + v) / max * ph;
+      var top = (k === row.length - 1) || row.slice(k + 1).every(function (z) { return !z; });
+      s += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(h, 1) + '" fill="' + C[KEYS[k]] + '" ' +
+           (top ? 'rx="4" ry="4"' : "") + "/>";
+      acc += v;
+    });
+    s += '<text class="lbl-direct" x="' + cx + '" y="' + (T + ph - total / max * ph - 7) + '" text-anchor="middle">' + total + "</text>";
+    s += '<text class="ax-txt" x="' + cx + '" y="' + (T + ph + 16) + '" text-anchor="middle">' + MES[i] + "</text>";
+    s += '<rect class="hit" x="' + (cx - pw / DATA.length / 2) + '" y="' + T + '" width="' + (pw / DATA.length) + '" height="' + ph + '" data-m="' + i + '"/>';
+  });
+  var el = document.getElementById("ch-stack");
+  el.innerHTML = s;
+  el.addEventListener("mousemove", function (e) {
+    var h = e.target.closest("[data-m]"); if (!h) return hideTip();
+    var i = Number(h.dataset.m), row = DATA[i];
+    var body = KEYS.map(function (k, idx) {
+      return row[idx] ? '<div class="tr"><i style="background:' + C[k] + '"></i><span>' + LBL[k] + "</span><span>" + row[idx] + "</span></div>" : "";
+    }).join("");
+    showTip(e, "<b>" + MES[i] + " 2026 · " + row.reduce(function (a, b) { return a + b; }, 0) + " órdenes</b>" + body);
+  });
+  el.addEventListener("mouseleave", hideTip);
+})();
+
+/* ---------- Dona de estado actual ---------- */
+(function () {
+  var D = [["trabajando","En curso",4],["camino","En camino",3],["asignada","Asignada",4],["pendientes","Finalizada c/ pendientes",3]];
+  var total = D.reduce(function (a, d) { return a + d[2]; }, 0);
+  var cx = 120, cy = 82, r = 58, rw = 21, gap = 0.045, a0 = -Math.PI / 2, s = "";
+  D.forEach(function (d) {
+    var frac = d[2] / total, a1 = a0 + frac * Math.PI * 2;
+    var s0 = a0 + gap / 2, s1 = a1 - gap / 2;
+    var large = (s1 - s0) > Math.PI ? 1 : 0;
+    var ro = r, ri = r - rw;
+    var p = "M " + (cx + ro * Math.cos(s0)) + " " + (cy + ro * Math.sin(s0)) +
+            " A " + ro + " " + ro + " 0 " + large + " 1 " + (cx + ro * Math.cos(s1)) + " " + (cy + ro * Math.sin(s1)) +
+            " L " + (cx + ri * Math.cos(s1)) + " " + (cy + ri * Math.sin(s1)) +
+            " A " + ri + " " + ri + " 0 " + large + " 0 " + (cx + ri * Math.cos(s0)) + " " + (cy + ri * Math.sin(s0)) + " Z";
+    s += '<path d="' + p + '" fill="' + C[d[0]] + '" data-d="' + d[1] + '" data-v="' + d[2] + '" data-c="' + C[d[0]] + '" style="cursor:pointer"/>';
+    a0 = a1;
+  });
+  s += '<text x="' + cx + '" y="' + (cy - 3) + '" text-anchor="middle" style="font:700 25px var(--font);fill:var(--n-900)">' + total + "</text>" +
+       '<text x="' + cx + '" y="' + (cy + 14) + '" text-anchor="middle" class="ax-txt">abiertas</text>';
+  var el = document.getElementById("ch-donut");
+  el.innerHTML = s;
+  el.addEventListener("mousemove", function (e) {
+    var p = e.target.closest("[data-d]"); if (!p) return hideTip();
+    showTip(e, "<b>" + p.dataset.d + "</b><div class=\"tr\"><i style=\"background:" + p.dataset.c + '"></i><span>Órdenes</span><span>' + p.dataset.v + "</span></div>");
+  });
+  el.addEventListener("mouseleave", hideTip);
+
+  document.getElementById("donut-legend").innerHTML = D.map(function (d) {
+    return '<div class="row u-xs"><i style="width:9px;height:9px;border-radius:2px;background:' + C[d[0]] + ';flex:0 0 9px"></i>' +
+      '<span style="color:var(--n-700)">' + d[1] + '</span><span class="spacer"></span><b class="u-strong">' + d[2] + "</b></div>";
+  }).join("");
+})();
+
+/* ---------- Línea de tiempo medio ---------- */
+(function () {
+  var W = 500, H = 236, L = 40, R = 16, T = 14, B = 30;
+  var pw = W - L - R, ph = H - T - B, min = 2.5, max = 4.2;
+  function yv(v) { return T + ph - (v - min) / (max - min) * ph; }
+  function xv(i) { return L + i * (pw / (TMED.length - 1)); }
+  var s = "";
+  [2.5,3.0,3.5,4.0].forEach(function (v) {
+    s += '<line class="ax-grid" x1="' + L + '" y1="' + yv(v) + '" x2="' + (W - R) + '" y2="' + yv(v) + '"/>' +
+         '<text class="ax-txt ax-txt--v" x="' + (L - 7) + '" y="' + (yv(v) + 3.5) + '" text-anchor="end">' + v.toFixed(1).replace(".", ",") + "</text>";
+  });
+  /* objetivo */
+  s += '<line x1="' + L + '" y1="' + yv(3) + '" x2="' + (W - R) + '" y2="' + yv(3) +
+       '" stroke="var(--ok)" stroke-width="1.5" stroke-dasharray="5 4"/>' +
+       '<text class="ax-txt" x="' + (W - R) + '" y="' + (yv(3) - 6) + '" text-anchor="end" style="fill:var(--ok);font-weight:650">objetivo 3,0 h</text>';
+
+  var pts = TMED.map(function (v, i) { return xv(i) + "," + yv(v); }).join(" ");
+  s += '<polyline points="' + pts + '" fill="none" stroke="' + O.o2 + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+  TMED.forEach(function (v, i) {
+    s += '<circle cx="' + xv(i) + '" cy="' + yv(v) + '" r="4.5" fill="' + O.o2 + '" stroke="#fff" stroke-width="2"/>';
+    s += '<text class="ax-txt" x="' + xv(i) + '" y="' + (T + ph + 16) + '" text-anchor="middle">' + MES[i] + "</text>";
+  });
+  /* rótulos directos solo en el primero, el mejor y el último.
+     El primero se ancla a la izquierda y desplazado, si no choca con la etiqueta del eje. */
+  [[0, "start", 7], [6, "middle", 0], [7, "end", -2]].forEach(function (c) {
+    var i = c[0];
+    s += '<text class="lbl-direct" x="' + (xv(i) + c[2]) + '" y="' + (yv(TMED[i]) - 11) +
+      '" text-anchor="' + c[1] + '">' + TMED[i].toFixed(1).replace(".", ",") + " h</text>";
+  });
+  s += '<line class="crosshair" id="cross" x1="0" y1="' + T + '" x2="0" y2="' + (T + ph) + '" style="display:none"/>';
+  TMED.forEach(function (v, i) {
+    s += '<rect class="hit" x="' + (xv(i) - pw / 16) + '" y="' + T + '" width="' + (pw / 8) + '" height="' + ph + '" data-i="' + i + '"/>';
+  });
+  var el = document.getElementById("ch-line");
+  el.innerHTML = s;
+  el.addEventListener("mousemove", function (e) {
+    var h = e.target.closest("[data-i]"); if (!h) { hideTip(); return; }
+    var i = Number(h.dataset.i), cr = el.querySelector("#cross");
+    cr.style.display = ""; cr.setAttribute("x1", xv(i)); cr.setAttribute("x2", xv(i));
+    var d = TMED[i] - 3;
+    showTip(e, "<b>" + MES[i] + " 2026</b><div class=\"tr\"><i style=\"background:" + O.o2 + '"></i><span>Tiempo medio</span><span>' +
+      TMED[i].toFixed(1).replace(".", ",") + ' h</span></div><div class="tr"><i style="background:transparent"></i><span>vs. objetivo</span><span>' +
+      (d > 0 ? "+" : "") + d.toFixed(1).replace(".", ",") + " h</span></div>");
+  });
+  el.addEventListener("mouseleave", function () { hideTip(); el.querySelector("#cross").style.display = "none"; });
+})();
+
+/* ---------- Composición facturada (rampa ordinal de un tono) ---------- */
+(function () {
+  var W = 500, H = 236, L = 52, R = 12, T = 12, B = 30;
+  var pw = W - L - R, ph = H - T - B, max = 24000, bw = 30;
+  var s = "";
+  [0,6000,12000,18000,24000].forEach(function (v) {
+    var y = T + ph - v / max * ph;
+    s += '<line class="ax-grid" x1="' + L + '" y1="' + y + '" x2="' + (W - R) + '" y2="' + y + '"/>' +
+         '<text class="ax-txt ax-txt--v" x="' + (L - 7) + '" y="' + (y + 3.5) + '" text-anchor="end">' + (v / 1000) + "k</text>";
+  });
+  s += '<line class="ax-line" x1="' + L + '" y1="' + (T + ph) + '" x2="' + (W - R) + '" y2="' + (T + ph) + '"/>';
+  var COLS = [O.o1, O.o2, O.o3], NAMES = ["Mano de obra", "Repuestos", "Traslado"];
+  COMP.forEach(function (row, i) {
+    var cx = L + (i + .5) * (pw / COMP.length), x = cx - bw / 2, acc = 0;
+    row.forEach(function (v, k) {
+      var h = v / max * ph - 2, y = T + ph - (acc + v) / max * ph;
+      s += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(h, 1) + '" fill="' + COLS[k] + '" ' +
+        (k === row.length - 1 ? 'rx="4" ry="4"' : "") + "/>";
+      acc += v;
+    });
+    s += '<text class="ax-txt" x="' + cx + '" y="' + (T + ph + 16) + '" text-anchor="middle">' + MES[i] + "</text>";
+    s += '<rect class="hit" x="' + (cx - pw / COMP.length / 2) + '" y="' + T + '" width="' + (pw / COMP.length) + '" height="' + ph + '" data-c="' + i + '"/>';
+  });
+  var el = document.getElementById("ch-comp");
+  el.innerHTML = s;
+  el.addEventListener("mousemove", function (e) {
+    var h = e.target.closest("[data-c]"); if (!h) return hideTip();
+    var i = Number(h.dataset.c), row = COMP[i], tot = row.reduce(function (a, b) { return a + b; }, 0);
+    showTip(e, "<b>" + MES[i] + " 2026 · " + NT.usd(tot) + "</b>" +
+      row.map(function (v, k) {
+        return '<div class="tr"><i style="background:' + COLS[k] + '"></i><span>' + NAMES[k] + "</span><span>" + NT.usd(v) + "</span></div>";
+      }).join("") +
+      '<div class="tr" style="margin-top:4px;opacity:.75"><i style="background:transparent"></i><span>En guaraníes</span><span>' + NT.gs(tot * NT.fx()) + "</span></div>");
+  });
+  el.addEventListener("mouseleave", hideTip);
+})();
+
+/* ---------- Rankings (nominal → un solo tono) ---------- */
+function rank(hostId, rows, unit) {
+  var max = Math.max.apply(null, rows.map(function (r) { return r[1]; }));
+  document.getElementById(hostId).innerHTML = rows.map(function (r) {
+    return '<div class="rank-row"><span class="u-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + r[0] + "</span>" +
+      '<span><span class="rank-bar" style="width:' + (r[1] / max * 100) + '%;display:block"></span></span>' +
+      '<span class="u-sm u-strong u-right" style="font-variant-numeric:tabular-nums">' + r[1] + " " + unit + "</span></div>";
+  }).join("");
+}
+rank("rank-cli", [["Supermercado Stock",184],["Copetrol",112],["Frigorífico Guaraní",96],["Banco Continental",74],
+  ["Farmacenter",61],["Frigochaco",48],["Sanatorio Migone",37],["Agrofértil",29]], "OS");
+rank("rank-tec", [["Marcos Cáceres",26],["Óscar Duarte",24],["Luis Fretes",23],["Gerardo Meza",22],
+  ["Rubén Benítez",21],["Carla Villalba",20],["Diego Ayala",19],["Fabio Riveros",18]], "cerradas");
+
+/* ---------- Tabla equivalente ---------- */
+document.getElementById("tabla").innerHTML = DATA.map(function (row, i) {
+  var tot = row.reduce(function (a, b) { return a + b; }, 0);
+  var fact = COMP[i].reduce(function (a, b) { return a + b; }, 0);
+  return "<tr data-row><td class=\"strong\">" + MES[i] + ' 2026</td><td class="num">' + (row[4] || "—") +
+    '</td><td class="num">' + (row[3] || "—") + '</td><td class="num">' + (row[2] || "—") +
+    '</td><td class="num">' + (row[1] || "—") + '</td><td class="num">' + row[0] +
+    '</td><td class="num strong">' + tot + '</td><td class="num">' + TMED[i].toFixed(1).replace(".", ",") +
+    ' h</td><td class="num">' + NT.money(fact, true) + "</td></tr>";
+}).join("");
+NT.paintFx();
+
+document.getElementById("v-graf").addEventListener("click", function () {
+  document.getElementById("panel-graf").hidden = false; document.getElementById("panel-tabla").hidden = true;
+});
+document.getElementById("v-tabla").addEventListener("click", function () {
+  document.getElementById("panel-graf").hidden = true; document.getElementById("panel-tabla").hidden = false;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Nuevo servicio</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  .steps { display: flex; gap: 0; padding: 0 16px; background: var(--n-000); border-bottom: 1px solid var(--n-200); }
+  .step { display: flex; align-items: center; gap: 8px; padding: 9px 16px 9px 0; font-size: var(--fs-sm); color: var(--n-500); position: relative; }
+  .step:not(:last-child)::after { content: ""; width: 22px; height: 1px; background: var(--n-300); margin-left: 10px; }
+  .step__n { width: 20px; height: 20px; border-radius: 50%; background: var(--n-200); color: var(--n-600); display: grid; place-items: center; font-size: 10px; font-weight: 700; flex: 0 0 20px; }
+  .step.is-done .step__n { background: var(--ok); color: #fff; }
+  .step.is-active .step__n { background: var(--accent); color: #fff; }
+  .step.is-active { color: var(--navy); font-weight: 650; }
+  .step.is-done { color: var(--n-700); }
+
+  .picker { border: 1px solid var(--n-200); border-radius: var(--r-md); max-height: 258px; overflow-y: auto; }
+  .picker__i { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-bottom: 1px solid var(--n-100); cursor: pointer; }
+  .picker__i:last-child { border-bottom: 0; }
+  .picker__i:hover { background: var(--n-050); }
+  .picker__i.is-sel { background: var(--accent-050); box-shadow: inset 2px 0 0 var(--accent); }
+  .picker__av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 10px; font-weight: 700; flex: 0 0 28px; }
+  .cap { font-size: 10px; padding: 1px 6px; border-radius: 8px; font-weight: 700; }
+  .cap--ok { background: var(--ok-050); color: var(--ok); }
+  .cap--full { background: var(--warn-050); color: var(--warn); }
+  .cap--over { background: var(--danger-050); color: var(--danger); }
+  .mapmini { height: 168px; border-radius: var(--r-md); border: 1px solid var(--n-200); position: relative; overflow: hidden;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(46,91,216,.10) 0 3px, transparent 3px),
+      repeating-linear-gradient(0deg, var(--n-100) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(90deg, var(--n-100) 0 1px, transparent 1px 26px), var(--n-050); }
+  .pin { position: absolute; transform: translate(-50%,-100%); color: var(--accent); }
+  .pin b { position: absolute; left: 50%; transform: translateX(-50%); top: 20px; font-size: 9px; background: var(--n-000); border: 1px solid var(--n-200); border-radius: 3px; padding: 0 4px; white-space: nowrap; color: var(--n-700); }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><a href="agenda.html">Operación</a><span class="sep">/</span><a href="agenda.html">Agenda</a><span class="sep">/</span><span>Nuevo servicio</span></div>
+      <div class="subbar__title">Crear orden de servicio</div>
+    </div>
+    <div class="subbar__right">
+      <span class="badge badge--neutral">Borrador · OS-2026-0867</span>
+      <button class="btn" data-act="mock" data-what="Guardar como borrador">Guardar borrador</button>
+      <button class="btn btn--primary" id="crear"><span id="ci"></span>Crear y asignar</button>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step is-done"><span class="step__n"></span>Cliente y sucursal</div>
+    <div class="step is-done"><span class="step__n"></span>Trabajo</div>
+    <div class="step is-active"><span class="step__n">3</span>Asignación</div>
+    <div class="step"><span class="step__n">4</span>Confirmación</div>
+  </div>
+
+  <div class="content">
+    <div class="grid grid--sidebar">
+      <div class="stack">
+
+        <!-- 1 · Cliente -->
+        <div class="card">
+          <div class="card__head"><span style="color:var(--accent)" id="i1"></span><div class="card__title">Cliente y sucursal</div>
+            <div class="card__right"><span class="badge badge--ok"><i class="badge__dot"></i>Completo</span></div></div>
+          <div class="card__body">
+            <div class="grid grid--2">
+              <div class="field"><label class="field__label">Cliente <span class="req">*</span></label>
+                <select class="select"><option>Supermercado Stock S.A.</option><option>Frigorífico Guaraní S.A.</option><option>Copetrol S.A.</option></select>
+                <span class="field__hint">RUC 80012345-7 · 31 sucursales activas · Contrato mantenimiento anual</span></div>
+              <div class="field"><label class="field__label">Sucursal <span class="req">*</span></label>
+                <select class="select"><option>Suc. Villa Morra — Avda. Mcal. López 3520</option><option>Suc. Centro — Palma 456</option><option>Suc. Lambaré — Cacique Lambaré 1200</option></select>
+                <span class="field__hint">Georreferenciada · −25.28841, −57.58612 · radio de tolerancia 120 m</span></div>
+              <div class="field"><label class="field__label">Contacto en sitio</label>
+                <input class="input" value="Gustavo Ríos — Jefe de mantenimiento"></div>
+              <div class="field"><label class="field__label">Teléfono</label>
+                <input class="input" value="+595 981 442-118"></div>
+            </div>
+            <div class="banner banner--info u-mt-2"><span class="banner__icon" id="b1"></span>
+              <div><strong>Sucursal con horario restringido</strong>Solo recibe técnicos de 08:00 a 17:00 de lunes a sábado. Fuera de esa franja el check-in se marca como excepción y requiere autorización del supervisor.</div></div>
+          </div>
+        </div>
+
+        <!-- 2 · Trabajo -->
+        <div class="card">
+          <div class="card__head"><span style="color:var(--accent)" id="i2"></span><div class="card__title">Trabajo a realizar</div>
+            <div class="card__right"><span class="badge badge--ok"><i class="badge__dot"></i>Completo</span></div></div>
+          <div class="card__body">
+            <div class="grid grid--3">
+              <div class="field"><label class="field__label">Tipo de servicio <span class="req">*</span></label>
+                <select class="select"><option>Correctivo — Refrigeración industrial</option><option>Preventivo — Climatización</option><option>Instalación</option><option>Relevamiento</option></select>
+                <span class="field__hint">Del catálogo administrable</span></div>
+              <div class="field"><label class="field__label">Prioridad <span class="req">*</span></label>
+                <select class="select"><option>Urgente — SLA 4 h</option><option selected>Alta — SLA 24 h</option><option>Normal — SLA 72 h</option></select></div>
+              <div class="field"><label class="field__label">Vencimiento SLA</label>
+                <input class="input" value="23/08/2026 11:42" readonly><span class="field__hint">Calculado desde la prioridad</span></div>
+            </div>
+            <div class="field u-mt-2"><label class="field__label">Descripción del problema <span class="req">*</span></label>
+              <textarea class="textarea">Cámara de congelados N.º 3 no sostiene temperatura: sube a −8 °C durante el día. Se sospecha pérdida de gas o falla del presostato de baja. Revisar carga, estanqueidad y controles. El cliente reporta el problema desde el martes.</textarea></div>
+            <div class="grid grid--3 u-mt-2">
+              <div class="field"><label class="field__label">Fecha programada <span class="req">*</span></label><input class="input" type="date" value="2026-08-22"></div>
+              <div class="field"><label class="field__label">Ventana horaria <span class="req">*</span></label>
+                <div class="row"><input class="input" type="time" value="14:00"><span class="u-muted">a</span><input class="input" type="time" value="16:30"></div></div>
+              <div class="field"><label class="field__label">Duración estimada</label><input class="input" value="2 h 30 min" readonly></div>
+            </div>
+            <div class="field u-mt-2"><label class="field__label">Adjuntos del cliente</label>
+              <div class="row row--wrap"><span class="chip">foto-cámara-3.jpg · 1,2 MB <button id="x1"></button></span>
+                <span class="chip">informe-temperaturas.pdf · 340 KB <button id="x2"></button></span>
+                <button class="btn btn--sm" data-act="mock" data-what="La carga de adjuntos"><span id="up"></span>Adjuntar</button></div></div>
+          </div>
+        </div>
+
+        <!-- 3 · Asignación -->
+        <div class="card" id="asig">
+          <div class="card__head"><span style="color:var(--accent)" id="i3"></span>
+            <div><div class="card__title">Asignación</div><div class="card__sub">Un técnico individual o una cuadrilla de 2 a 4 personas</div></div>
+            <div class="card__right"><span class="badge badge--warn"><i class="badge__dot"></i>Pendiente</span></div></div>
+          <div class="card__body">
+            <div class="seg u-mb-2">
+              <button class="is-active" data-panel="ind" data-panel-host="#asig-panels">Técnico individual</button>
+              <button data-panel="cua" data-panel-host="#asig-panels">Cuadrilla</button>
+            </div>
+
+            <div id="asig-panels" data-panels>
+              <!-- Individual -->
+              <div data-panel-id="ind">
+                <div class="row u-mb-1">
+                  <label class="search-input" style="flex:1">
+                    <span id="s1"></span><input class="input" placeholder="Buscar técnico por nombre, especialidad o zona…">
+                  </label>
+                  <label class="check u-sm"><input type="checkbox" checked> Solo disponibles en la ventana</label>
+                </div>
+                <div class="picker" id="pick-ind"></div>
+              </div>
+
+              <!-- Cuadrilla -->
+              <div data-panel-id="cua" hidden>
+                <div class="grid grid--2">
+                  <div>
+                    <div class="field__label u-mb-1">Disponibles</div>
+                    <div class="picker" id="pick-pool"></div>
+                  </div>
+                  <div>
+                    <div class="field__label u-mb-1">Cuadrilla armada <span class="u-muted">(2 – 4 personas)</span></div>
+                    <div class="picker" id="pick-crew" style="min-height:120px"></div>
+                    <div class="field u-mt-2"><label class="field__label">Responsable de la cuadrilla <span class="req">*</span></label>
+                      <select class="select" id="lead"><option>Marcos Cáceres</option><option>Diego Ayala</option></select>
+                      <span class="field__hint">El responsable firma el cierre y es dueño de la orden. Los demás cargan fotos, gastos y reportes.</span></div>
+                    <div class="banner banner--warn u-mt-2" id="crew-warn" hidden><span class="banner__icon" id="b2"></span>
+                      <div><strong>La cuadrilla necesita al menos 2 personas</strong>Con una sola, usá la pestaña «Técnico individual».</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lateral -->
+      <div class="stack">
+        <div class="card">
+          <div class="card__head"><div class="card__title">Resumen</div></div>
+          <div class="card__body">
+            <dl class="props" style="grid-template-columns:104px minmax(0,1fr)">
+              <dt>Orden</dt><dd class="u-mono">OS-2026-0867</dd>
+              <dt>Cliente</dt><dd>Supermercado Stock</dd>
+              <dt>Sucursal</dt><dd>Villa Morra</dd>
+              <dt>Tipo</dt><dd>Correctivo</dd>
+              <dt>Prioridad</dt><dd><span class="badge badge--warn">Alta · SLA 24 h</span></dd>
+              <dt>Programado</dt><dd>22/08 14:00–16:30</dd>
+              <dt>Asignado</dt><dd id="sum-asig"><span class="u-muted">— sin asignar —</span></dd>
+              <dt>Estado inicial</dt><dd><span class="badge badge--asignada"><i class="badge__dot"></i>Asignada</span></dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__head"><div class="card__title">Estimación económica</div>
+            <div class="card__right"><button class="btn btn--sm btn--ghost" data-act="fx">TC</button></div></div>
+          <div class="card__body">
+            <table class="dt"><tbody>
+              <tr><td>Mano de obra (2,5 h)</td><td class="num" id="m1"></td></tr>
+              <tr><td>Traslado (18 km)</td><td class="num" id="m2"></td></tr>
+              <tr><td>Repuestos estimados</td><td class="num" id="m3"></td></tr>
+              <tr><td class="strong">Total estimado</td><td class="num strong" id="m4"></td></tr>
+            </tbody></table>
+            <div class="u-xs u-muted u-mt-1">Al cerrar la orden se congela el TC del día para que el histórico no se mueva.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__head"><span style="color:var(--violet)" id="i4"></span><div class="card__title">Ubicación de la sucursal</div></div>
+          <div class="card__body--flush" style="padding:11px">
+            <div class="mapmini">
+              <div class="pin" style="left:42%;top:46%" id="p1"></div>
+              <div class="pin" style="left:68%;top:66%;color:var(--st-trabajando)" id="p2"></div>
+            </div>
+            <div class="u-xs u-muted u-mt-1">Técnico más cercano disponible: <b>Marcos Cáceres</b>, a 3,4 km (≈ 11 min).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "nuevo" });
+document.getElementById("ci").innerHTML = NT.icon("check", 14);
+document.getElementById("i1").innerHTML = NT.icon("building", 16);
+document.getElementById("i2").innerHTML = NT.icon("wrench", 16);
+document.getElementById("i3").innerHTML = NT.icon("users", 16);
+document.getElementById("i4").innerHTML = NT.icon("map", 16);
+document.getElementById("b1").innerHTML = NT.icon("info", 16);
+document.getElementById("b2").innerHTML = NT.icon("alert", 16);
+document.getElementById("s1").innerHTML = NT.icon("search", 15);
+document.getElementById("up").innerHTML = NT.icon("upload", 13);
+["x1","x2"].forEach(function(k){ document.getElementById(k).innerHTML = NT.icon("x", 11); });
+document.querySelectorAll(".step.is-done .step__n").forEach(function(e){ e.innerHTML = NT.icon("check", 12); });
+document.getElementById("p1").innerHTML = NT.icon("pin", 22) + "<b>Suc. Villa Morra</b>";
+document.getElementById("p2").innerHTML = NT.icon("truck", 20) + "<b>M. Cáceres · 3,4 km</b>";
+document.getElementById("m1").innerHTML = NT.money(150);
+document.getElementById("m2").innerHTML = NT.money(22);
+document.getElementById("m3").innerHTML = NT.money(248);
+document.getElementById("m4").innerHTML = NT.money(420);
+NT.paintFx();
+
+var TECS = [
+  { n:"Marcos Cáceres",  e:"Refrigeración industrial · Centro", c:"var(--violet)", i:"MC", cap:"ok",   h:"5,0 / 8 h · libre 14:00–18:00", km:"3,4 km" },
+  { n:"Rubén Benítez",   e:"Refrigeración · Zona Norte",        c:"var(--navy)",   i:"RB", cap:"full", h:"7,5 / 8 h · libre 16:30–18:00", km:"9,1 km" },
+  { n:"Luis Fretes",     e:"Climatización · Central",           c:"#9a3412",       i:"LF", cap:"ok",   h:"6,0 / 8 h · libre 14:00–17:00", km:"6,8 km" },
+  { n:"Diego Ayala",     e:"Electricidad · Zona Sur",           c:"#0f766e",       i:"DA", cap:"ok",   h:"5,0 / 8 h · libre 15:00–19:00", km:"14,2 km" },
+  { n:"Nadia Rolón",     e:"Electricidad · Luque",              c:"#be123c",       i:"NR", cap:"ok",   h:"5,0 / 8 h · libre 13:00–18:00", km:"11,7 km" },
+  { n:"Óscar Duarte",    e:"Refrigeración · Itá",               c:"#155e75",       i:"OD", cap:"over", h:"9,5 / 8 h · sobreasignado",     km:"22,5 km" }
+];
+var CAP_L = { ok:"Disponible", full:"Casi lleno", over:"Sobreasignado" };
+function tecRow(t, idx, mode) {
+  return '<div class="picker__i" data-t="' + idx + '" data-mode="' + mode + '">' +
+    '<span class="picker__av" style="background:' + t.c + '">' + t.i + "</span>" +
+    '<span style="flex:1;min-width:0"><span class="u-strong u-sm" style="display:block">' + t.n + "</span>" +
+      '<span class="u-xs u-muted" style="display:block">' + t.e + "</span>" +
+      '<span class="u-xs u-muted">' + t.h + "</span></span>" +
+    '<span style="text-align:right"><span class="cap cap--' + t.cap + '">' + CAP_L[t.cap] + "</span>" +
+      '<span class="u-xs u-muted" style="display:block;margin-top:2px">' + t.km + "</span></span></div>";
+}
+document.getElementById("pick-ind").innerHTML  = TECS.map(function (t, i) { return tecRow(t, i, "ind"); }).join("");
+document.getElementById("pick-pool").innerHTML = TECS.map(function (t, i) { return tecRow(t, i, "pool"); }).join("");
+
+var crew = [];
+function renderCrew() {
+  var host = document.getElementById("pick-crew");
+  if (!crew.length) { host.innerHTML = '<div class="empty" style="padding:22px"><div class="u-sm">Elegí 2 a 4 personas de la izquierda</div></div>'; }
+  else {
+    host.innerHTML = crew.map(function (i) {
+      var t = TECS[i];
+      return '<div class="picker__i"><span class="picker__av" style="background:' + t.c + '">' + t.i + "</span>" +
+        '<span style="flex:1"><span class="u-strong u-sm" style="display:block">' + t.n + "</span>" +
+        '<span class="u-xs u-muted">' + t.e + "</span></span>" +
+        '<button class="btn btn--sm btn--ghost" data-drop="' + i + '">' + NT.icon("x", 13) + "</button></div>";
+    }).join("");
+  }
+  document.getElementById("crew-warn").hidden = crew.length !== 1;
+  var lead = document.getElementById("lead");
+  lead.innerHTML = crew.length ? crew.map(function (i) { return "<option>" + TECS[i].n + "</option>"; }).join("") : "<option>—</option>";
+  document.getElementById("sum-asig").innerHTML = crew.length
+    ? '<span class="badge badge--violet">Cuadrilla · ' + crew.length + " personas</span>"
+    : '<span class="u-muted">— sin asignar —</span>';
+}
+renderCrew();
+
+document.addEventListener("click", function (e) {
+  var drop = e.target.closest("[data-drop]");
+  if (drop) { crew = crew.filter(function (x) { return x !== Number(drop.dataset.drop); }); renderCrew(); return; }
+
+  var it = e.target.closest(".picker__i[data-t]");
+  if (!it) return;
+  var idx = Number(it.dataset.t), t = TECS[idx];
+
+  if (it.dataset.mode === "ind") {
+    if (t.cap === "over") {
+      NT.toast({ kind: "err", title: "No se puede asignar a " + t.n,
+        msg: "Ya tiene 9,5 h asignadas contra una jornada de 8 h. Liberá una orden o elegí otro técnico.",
+        reason: "CAPACITY_EXCEEDED · tecnico=oscar-duarte · asignado=9.5h · jornada=8h", sticky: true, action: "Ver su agenda" });
+      return;
+    }
+    document.querySelectorAll('.picker__i[data-mode="ind"]').forEach(function (x) { x.classList.remove("is-sel"); });
+    it.classList.add("is-sel");
+    document.getElementById("sum-asig").innerHTML = '<span class="badge badge--info">' + t.n + "</span>";
+    if (t.cap === "full") NT.toast({ kind: "warn", title: "Agenda ajustada", msg: t.n + " queda con 8 h exactas. Cualquier demora empuja la última orden fuera de jornada." });
+  } else {
+    if (crew.indexOf(idx) >= 0) return;
+    if (crew.length >= 4) {
+      NT.toast({ kind: "err", title: "Cuadrilla completa", msg: "Una cuadrilla admite hasta 4 personas. Sacá a alguien antes de agregar.", reason: "CREW_MAX · max=4 · actual=4" });
+      return;
+    }
+    crew.push(idx); renderCrew();
+  }
+});
+
+document.getElementById("crear").addEventListener("click", function () {
+  var ind = document.querySelector('.picker__i[data-mode="ind"].is-sel');
+  var cuaTab = document.querySelector('.seg button[data-panel="cua"]').classList.contains("is-active");
+  if (cuaTab && crew.length < 2) {
+    NT.toast({ kind: "err", title: "No se puede crear la orden", msg: "La cuadrilla tiene " + crew.length + " persona(s). El mínimo es 2.",
+      reason: "VALIDATION · crew.size=" + crew.length + " · min=2", sticky: true });
+    return;
+  }
+  if (!cuaTab && !ind) {
+    NT.toast({ kind: "err", title: "Falta asignar", msg: "Elegí un técnico o armá una cuadrilla antes de crear la orden.",
+      reason: "VALIDATION · field=assignee · required" });
+    document.getElementById("asig").scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  NT.toast({ kind: "ok", title: "Orden creada · OS-2026-0867",
+    msg: "Estado inicial: asignada. Se envió notificación push a " + (cuaTab ? "los " + crew.length + " integrantes de la cuadrilla" : ind.querySelector(".u-strong").textContent) + "." });
+  setTimeout(function () { location.href = "agenda.html"; }, 1400);
+});
+</script>
+</body>
+</html>

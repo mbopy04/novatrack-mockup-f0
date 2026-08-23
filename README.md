@@ -1,38 +1,59 @@
-# NovaTrack — Mockup F0 (Web Admin)
+# NovaTrack · Mockup F0
 
-Mockup HTML navegable para **aprobación visual** (issue NOVAA-9).
-Sin backend, sin base de datos, sin autenticación real: HTML + CSS + JavaScript
-plano, con datos de ejemplo hardcodeados y deterministas.
+Mockup navegable para **aprobación visual** de la fase F0 de NovaTrack (Noventra E.A.S., Paraguay).
 
-## Pantallas
+**Sin backend, sin base de datos, sin autenticación real, sin código de producción.**
+Todos los datos son de ejemplo y están hardcodeados. Método Noventra: propose → approve → execute.
 
-| # | Pantalla | Archivo |
-|---|----------|---------|
-| 1 | Login + selección de tenant | `index.html` |
-| 2 | Agenda (día / semana / mes) con estados por color | `agenda.html` |
-| — | Tablero de despacho (kanban por estado) | `despacho.html` |
-| 3 | Creación y asignación de servicio (técnico o cuadrilla 2–4) | `servicio-nuevo.html` |
-| 4 | Clientes — listado paginado 25/página | `clientes.html` |
-| 4b | Ficha de cliente + sucursales georreferenciadas | `cliente.html` |
-| 5 | Colaboradores + jornada laboral configurable | `colaboradores.html` |
-| 6 | Mapa en vivo — técnicos y sucursales | `mapa.html` |
-| 7 | Informes | `informes.html` |
-| 7b | Vista previa del PDF de orden de servicio | `orden-pdf.html` |
-| 8 | Catálogos administrables (servicios, gastos, checklists, monedas) | `catalogos.html` |
-| — | Patrones de UI (incluye el patrón de toasts) | `patrones.html` |
+👉 **Ver publicado:** https://mbopy04.github.io/novatrack-mockup-f0/
 
-## Convenciones del producto que el mockup fija
+Repo **descartable**: existe sólo para servir esta revisión. Se puede borrar una vez aprobado F0.
 
-- **Estados por color**: asignada `#DC2626` · en camino `#EA580C` · trabajando `#16A34A` ·
-  finalizada con pendientes `#CA8A04` · cerrada `#6B7280`.
-- **Marca Noventra**: navy `#1B2A6B`, accent `#2E5BD8`, violeta `#6A4A8F`.
-- **Doble moneda** USD / Guaraníes en todo importe, con tipo de cambio editable
-  desde la barra superior (recalcula la pantalla completa).
-- **Prohibido el fallo silencioso**: todo error, bloqueo o redirect muestra un toast
-  con motivo, código rastreable y acción de salida. Ver `patrones.html`.
-- Mobile-responsive: el menú colapsa, las grillas se apilan, las tablas mantienen
-  scroll horizontal sin recortar columnas.
+---
 
-## Fuera de alcance
+## Qué incluye
 
-Backend, base de datos, autenticación real y cualquier código de producción.
+### Web Admin — 10 pantallas (`web/`)
+
+| Archivo | Qué cubre |
+|---|---|
+| `login.html` | Ingreso + selección de tenant. La empresa suspendida devuelve el motivo y no deja entrar. |
+| `agenda.html` | Día / semana / mes. Día es vista de recurso (técnico × hora) con franjas fuera de jornada y línea de «ahora». |
+| `servicio-nuevo.html` | Alta en 4 pasos. Técnico individual o cuadrilla de 2 a 4, con validación de capacidad. |
+| `clientes.html` | Listado paginado 25/página sobre 312 clientes, filtros y selección múltiple. |
+| `cliente-detalle.html` | Ficha con sucursales georreferenciadas: mapa, coordenadas, radio de tolerancia. |
+| `colaboradores.html` | Personas + jornada laboral configurable por día, excepciones, horas extra, cuadrillas. |
+| `mapa.html` | Posición de técnicos y sucursales, recorrido del día, huecos de GPS mostrados como huecos. |
+| `informes.html` | Estados por mes, tiempo de cierre, composición facturada, rankings. Con vista de tabla equivalente. |
+| `orden-pdf.html` | PDF de orden de servicio en A4, 2 páginas, con `@media print` real. |
+| `catalogos.html` | Tipos de gasto, tipos de servicio y el contrato de estados. |
+
+### App del técnico (Android) — 11 pantallas (`app/`)
+
+`login` · `servicios` · `detalle` · `estados` · `camara` · `firmas` · `gastos` · `reporte` · `offline` · `consentimiento` · `privacidad`
+
+---
+
+## Notas de diseño
+
+- Marca Noventra: navy `#1B2A6B`, accent `#2E5BD8`, violeta `#6A4A8F`.
+- Densidad SAP Business One / Salesforce Lightning: fila de 34 px, control de 30 px, cabecera sticky.
+- **Moneda dual USD / Guaraníes** con tipo de cambio editable desde la topbar. Cada orden cerrada
+  congela el TC de su fecha, así el histórico no se mueve.
+- **Prohibido el silent failure:** todo error, bloqueo o redirect levanta un toast con motivo técnico visible.
+- Responsive: el rail colapsa a drawer bajo 960 px; las grillas caen a una columna bajo 720 px.
+
+### Contraste del amarillo de estados
+
+El amarillo del contrato de estados `#C9A227` mide **2,42:1** sobre blanco, por debajo del piso de 3:1
+para una marca de gráfico. Decisión aprobada por Juan: **mantener los dos usos separados.**
+
+- **Badges** → conservan el `#C9A227` del contrato, sobre fondo tintado, con borde y texto oscurecido.
+- **Rellenos de gráfico** → usan el paso oscuro de la misma familia ámbar, `#A16207`, que sí pasa.
+
+---
+
+## Cómo correrlo local
+
+Cero dependencias: ni CDN ni npm. Abrir `index.html` con doble clic, o servir la carpeta con
+cualquier hosting estático.

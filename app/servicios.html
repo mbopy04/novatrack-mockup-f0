@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Mis servicios</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="appmock">
+<div data-screen>
+  <div class="appbar">
+    <div><div class="appbar__t">Mis servicios</div><div class="appbar__s">Sábado 22 de agosto · 5 asignados</div></div>
+    <div class="appbar__r">
+      <button style="background:none;border:0;color:#fff;cursor:pointer" id="push-again" title="Volver a mostrar la notificación"></button>
+      <span style="width:28px;height:28px;border-radius:50%;background:var(--violet);display:grid;place-items:center;font-size:10px;font-weight:800">MC</span>
+    </div>
+  </div>
+
+  <div id="netbar-host"></div>
+
+  <div class="ascreen" style="padding-bottom:9px">
+
+    <!-- Resumen del día -->
+    <div class="apad" style="padding-bottom:4px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div class="acard" style="padding:9px;text-align:center">
+          <div style="font-size:21px;font-weight:800;color:var(--st-trabajando);letter-spacing:-.03em">1</div>
+          <div style="font-size:10px;color:var(--n-500);font-weight:650">En curso</div></div>
+        <div class="acard" style="padding:9px;text-align:center">
+          <div style="font-size:21px;font-weight:800;color:var(--st-asignada);letter-spacing:-.03em">3</div>
+          <div style="font-size:10px;color:var(--n-500);font-weight:650">Pendientes</div></div>
+        <div class="acard" style="padding:9px;text-align:center">
+          <div style="font-size:21px;font-weight:800;color:var(--st-cerrada);letter-spacing:-.03em">1</div>
+          <div style="font-size:10px;color:var(--n-500);font-weight:650">Cerradas</div></div>
+      </div>
+    </div>
+
+    <div class="asec">Ahora</div>
+    <div class="scard scard--trabajando" onclick="location.href='detalle.html'">
+      <div class="scard__b">
+        <div class="scard__h">
+          <span class="badge badge--trabajando"><i class="badge__dot"></i>Trabajando</span>
+          <span class="scard__os" style="margin-left:auto">OS-2026-0838</span>
+        </div>
+        <div class="scard__t">Supermercado Stock — Suc. Centro</div>
+        <div class="scard__m">Correctivo · Refrigeración industrial<br>Palma 456 c/ 14 de Mayo, Asunción</div>
+      </div>
+      <div class="scard__f">
+        <span id="f1"></span><span>Check-in 09:58</span>
+        <span style="margin-left:auto;color:var(--st-trabajando);font-weight:700">1 h 44 min en sitio</span>
+      </div>
+    </div>
+
+    <div class="asec">Siguientes</div>
+
+    <div class="scard scard--asignada" onclick="location.href='detalle.html'" id="nuevo-card">
+      <div class="scard__b">
+        <div class="scard__h">
+          <span class="badge badge--asignada"><i class="badge__dot"></i>Asignada</span>
+          <span class="badge badge--danger" style="height:18px;font-size:9.5px">Urgente · SLA 4 h</span>
+          <span class="scard__os" style="margin-left:auto">OS-2026-0863</span>
+        </div>
+        <div class="scard__t">Frigochaco — Cámara 4</div>
+        <div class="scard__m">Correctivo · Refrigeración<br>Avda. Artigas 4210, Asunción</div>
+      </div>
+      <div class="scard__f">
+        <span id="f2"></span><span>Hoy 14:00 – 16:30</span>
+        <span style="margin-left:auto">6,8 km</span>
+      </div>
+    </div>
+
+    <div class="scard scard--asignada" onclick="location.href='detalle.html'">
+      <div class="scard__b">
+        <div class="scard__h">
+          <span class="badge badge--asignada"><i class="badge__dot"></i>Asignada</span>
+          <span class="scard__os" style="margin-left:auto">OS-2026-0852</span>
+        </div>
+        <div class="scard__t">Hotel Guaraní — Cocina central</div>
+        <div class="scard__m">Preventivo · Climatización<br>Independencia Nacional c/ Oliva</div>
+      </div>
+      <div class="scard__f"><span id="f3"></span><span>Hoy 15:00 – 17:00</span><span style="margin-left:auto">3,1 km</span></div>
+    </div>
+
+    <div class="scard scard--asignada" onclick="location.href='detalle.html'">
+      <div class="scard__b">
+        <div class="scard__h">
+          <span class="badge badge--asignada"><i class="badge__dot"></i>Asignada</span>
+          <span class="badge badge--violet" style="height:18px;font-size:9.5px">Cuadrilla Alfa</span>
+          <span class="scard__os" style="margin-left:auto">OS-2026-0855</span>
+        </div>
+        <div class="scard__t">Agrofértil — Depósito San Lorenzo</div>
+        <div class="scard__m">Instalación · Cámara frigorífica<br>Ruta Mcal. Estigarribia km 12</div>
+      </div>
+      <div class="scard__f"><span id="f4"></span><span>Lunes 07:30</span><span style="margin-left:auto">11,4 km</span></div>
+    </div>
+
+    <div class="asec">Cerradas hoy</div>
+    <div class="scard scard--cerrada" onclick="location.href='detalle.html'">
+      <div class="scard__b">
+        <div class="scard__h">
+          <span class="badge badge--cerrada"><i class="badge__dot"></i>Cerrada</span>
+          <span class="scard__os" style="margin-left:auto">OS-2026-0828</span>
+        </div>
+        <div class="scard__t">Shopping del Sol — Cámara 3</div>
+        <div class="scard__m">Correctivo · Refrigeración</div>
+      </div>
+      <div class="scard__f"><span id="f5"></span><span>07:30 – 09:30 · firmada</span></div>
+    </div>
+
+    <div style="height:10px"></div>
+  </div>
+
+  <div id="tab-host"></div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "3 · Notificación push → listado de servicios del día", bat: "47" });
+document.getElementById("netbar-host").outerHTML = A.netbar("ok", null, "Sincronizado hace 1 min");
+document.getElementById("tab-host").outerHTML = A.tabbar("servicios.html");
+document.getElementById("push-again").innerHTML = NT.icon("bell", 18);
+["f1","f2","f3","f4","f5"].forEach(function (k, i) {
+  document.getElementById(k).innerHTML = NT.icon(i === 0 ? "clock" : i === 4 ? "check" : "calendar", 14);
+});
+
+/* Notificación push simulada */
+function push() {
+  var old = document.querySelector(".push"); if (old) old.remove();
+  var el = document.createElement("div");
+  el.className = "push";
+  el.innerHTML = '<div class="push__ic">N</div>' +
+    '<div style="flex:1;min-width:0">' +
+      '<div class="push__app">NovaTrack · ahora</div>' +
+      '<div class="push__t">Nuevo servicio asignado · Urgente</div>' +
+      '<div class="push__m">OS-2026-0863 — Frigochaco, Cámara 4. Hoy 14:00. Vence en 4 h.</div>' +
+    "</div>" +
+    '<button style="background:none;border:0;color:var(--n-400);cursor:pointer;align-self:flex-start" id="push-x">' +
+      NT.icon("x", 15) + "</button>";
+  document.querySelector(".phone__screen").appendChild(el);
+  el.addEventListener("click", function (e) {
+    if (e.target.closest("#push-x")) { el.remove(); return; }
+    el.remove();
+    document.getElementById("nuevo-card").scrollIntoView({ behavior: "smooth", block: "center" });
+    A.toast({ kind: "info", title: "OS-2026-0863", msg: "Abrí el detalle para ponerte en camino." });
+  });
+  setTimeout(function () { if (el.isConnected) el.remove(); }, 8000);
+}
+setTimeout(push, 700);
+document.getElementById("push-again").addEventListener("click", push);
+</script>
+</body>
+</html>

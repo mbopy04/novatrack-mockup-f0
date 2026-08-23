@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Fotos</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+  .cam-view { position: relative; height: 268px; background: #10141c; display: grid; place-items: center; overflow: hidden; }
+  .cam-view::before { content: ""; position: absolute; inset: 0;
+    background: repeating-linear-gradient(120deg, #1a2130 0 22px, #151b27 22px 44px); opacity: .85; }
+  .cam-frame { position: absolute; inset: 22px; border: 1.5px solid rgba(255,255,255,.24); border-radius: 8px; }
+  .cam-frame span { position: absolute; width: 17px; height: 17px; border: 2.5px solid #fff; }
+  .cam-hud { position: absolute; left: 11px; right: 11px; top: 9px; display: flex; gap: 6px; font-size: 9.5px;
+    font-family: var(--mono); color: #fff; }
+  .cam-hud b { background: rgba(0,0,0,.55); border-radius: 4px; padding: 2px 6px; font-weight: 600; }
+  .cam-geo { position: absolute; left: 11px; right: 11px; bottom: 9px; background: rgba(0,0,0,.62);
+    border-radius: 6px; padding: 6px 8px; font-family: var(--mono); font-size: 9.5px; color: #fff; line-height: 1.55; }
+  .cam-bar { display: flex; align-items: center; justify-content: space-around; padding: 13px; background: #10141c; }
+  .shutter { width: 60px; height: 60px; border-radius: 50%; background: #fff; border: 4px solid rgba(255,255,255,.35);
+    cursor: pointer; box-shadow: 0 0 0 2px #10141c inset; }
+  .shutter:active { transform: scale(.94); }
+  .comp { height: 5px; border-radius: 3px; background: var(--n-200); overflow: hidden; }
+  .comp i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .25s linear; }
+</style>
+</head>
+<body class="appmock">
+<div data-screen>
+  <div id="ab-host"></div>
+  <div id="netbar-host"></div>
+
+  <div class="ascreen">
+
+    <!-- Visor -->
+    <div class="cam-view">
+      <div class="cam-frame">
+        <span style="left:-2px;top:-2px;border-right:0;border-bottom:0"></span>
+        <span style="right:-2px;top:-2px;border-left:0;border-bottom:0"></span>
+        <span style="left:-2px;bottom:-2px;border-right:0;border-top:0"></span>
+        <span style="right:-2px;bottom:-2px;border-left:0;border-top:0"></span>
+      </div>
+      <div class="cam-hud">
+        <b id="h1"></b><b>OS-2026-0838</b><b style="margin-left:auto">4/12</b>
+      </div>
+      <div style="position:relative;color:rgba(255,255,255,.3)" id="lens"></div>
+      <div class="cam-geo">
+        GPS FIJO ±7 m · −25,281900 / −57,633400<br>
+        22/08/2026 12:14:33 −03 · flash auto · 12 MP
+      </div>
+    </div>
+
+    <div class="cam-bar">
+      <button style="background:none;border:0;color:#fff;cursor:pointer" id="gal">
+        <span id="g1"></span><div style="font-size:9.5px;margin-top:2px">Galería</div></button>
+      <button class="shutter" id="shot" aria-label="Capturar"></button>
+      <button style="background:none;border:0;color:#fff;cursor:pointer" id="flip">
+        <span id="g2"></span><div style="font-size:9.5px;margin-top:2px">Girar</div></button>
+    </div>
+
+    <div class="apad">
+      <div class="abanner abanner--info">
+        <span style="flex:0 0 16px" id="b1"></span>
+        <div><strong>La foto se sella al capturarla</strong>
+          La geoestampa y la hora se toman en el momento del disparo, <b>antes</b> de comprimir. Si después se comprime
+          o se reenvía, el sello no cambia.</div>
+      </div>
+
+      <div class="acard" style="margin-top:11px" id="comp-card" hidden>
+        <div class="acard__t"><span style="color:var(--accent)" id="b2"></span>Comprimiendo en el dispositivo</div>
+        <div class="comp"><i id="compbar"></i></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--n-500);margin-top:5px">
+          <span id="comp-txt">4,8 MB → …</span><span id="comp-pct">0%</span>
+        </div>
+        <div style="font-size:11px;color:var(--n-500);margin-top:6px;line-height:1.5">
+          Se comprime acá antes de subir, así la sincronización no te come los datos ni tarda una eternidad con mala señal.
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:7px;margin:13px 0 8px">
+        <div style="font-size:12.5px;font-weight:700;color:var(--n-800)">Fotos de esta orden</div>
+        <span class="badge badge--ok" id="cnt">4 de 4 mínimas</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--n-500)" id="synced">4 sincronizadas</span>
+      </div>
+
+      <div class="photogrid" id="grid"></div>
+
+      <div class="abanner abanner--warn" style="margin-top:12px">
+        <span style="flex:0 0 16px" id="b3"></span>
+        <div><strong>Este tipo de servicio exige 4 fotos como mínimo</strong>
+          Antes, falla, durante y después. Sin las 4 no se habilita el check-out. Van 4.</div>
+      </div>
+
+      <div style="height:12px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "6 · Cámara, preview y compresión en el dispositivo", bat: "43" });
+document.getElementById("ab-host").outerHTML = A.appbar({ back: "estados.html", title: "Fotos", sub: "OS-2026-0838 · 4 capturadas" });
+document.getElementById("netbar-host").outerHTML = A.netbar("ok", null, "Sincronizado");
+document.getElementById("h1").innerHTML = "● REC GEO";
+document.getElementById("lens").innerHTML = NT.icon("camera", 52);
+document.getElementById("g1").innerHTML = NT.icon("layers", 21);
+document.getElementById("g2").innerHTML = NT.icon("refresh", 21);
+document.getElementById("b1").innerHTML = NT.icon("pin", 16);
+document.getElementById("b2").innerHTML = NT.icon("upload", 16);
+document.getElementById("b3").innerHTML = NT.icon("alert", 16);
+
+var FOTOS = [
+  { t: "Antes", h: "10:07:12", g: "−25,28190/−57,63340 ±7 m", s: 1 },
+  { t: "Falla", h: "10:24:48", g: "−25,28191/−57,63339 ±7 m", s: 1 },
+  { t: "Durante", h: "10:58:03", g: "−25,28190/−57,63341 ±6 m", s: 1 },
+  { t: "Después", h: "12:14:33", g: "−25,28189/−57,63340 ±8 m", s: 1 }
+];
+function grid() {
+  document.getElementById("grid").innerHTML = FOTOS.map(function (f, i) {
+    return '<div class="photo">' + NT.icon("camera", 24) +
+      '<button class="photo__x" data-del="' + i + '">' + NT.icon("x", 12) + "</button>" +
+      (f.s ? "" : '<span style="position:absolute;top:4px;left:4px;background:var(--warn);color:#fff;font-size:8px;font-weight:800;border-radius:3px;padding:1px 4px">EN COLA</span>') +
+      '<div class="photo__tag"><b>' + f.t + "</b> " + f.h + "<br>" + f.g + "</div></div>";
+  }).join("") + '<div class="photo photo--add" id="add">' + NT.icon("plus", 24) +
+    '<div style="font-size:10px;font-weight:700;margin-top:3px">Agregar</div></div>';
+  document.getElementById("cnt").textContent = FOTOS.length + " de 4 mínimas";
+  document.getElementById("cnt").className = "badge " + (FOTOS.length >= 4 ? "badge--ok" : "badge--danger");
+  document.getElementById("synced").textContent = FOTOS.filter(function (f) { return f.s; }).length + " sincronizadas";
+}
+grid();
+
+function capturar() {
+  var card = document.getElementById("comp-card"), bar = document.getElementById("compbar");
+  card.hidden = false; bar.style.width = "0";
+  var p = 0;
+  var iv = setInterval(function () {
+    p += 9 + Math.floor(p / 12);
+    if (p >= 100) {
+      p = 100; clearInterval(iv);
+      document.getElementById("comp-txt").textContent = "4,8 MB → 612 KB (−87%)";
+      setTimeout(function () {
+        card.hidden = true;
+        FOTOS.push({ t: "Adicional", h: "12:19:04", g: "−25,28190/−57,63340 ±7 m", s: 0 });
+        grid();
+        A.toast({ kind: "ok", title: "Foto guardada y sellada",
+          msg: "Comprimida de 4,8 MB a 612 KB en el teléfono. Queda en la cola de sincronización.",
+          reason: "PHOTO_QUEUED · geoestampa=−25,281900/−57,633400 ±7 m · disp. 12:19:04 −03" });
+      }, 400);
+    }
+    bar.style.width = p + "%";
+    document.getElementById("comp-pct").textContent = p + "%";
+    document.getElementById("comp-txt").textContent = "4,8 MB → " + Math.round(4800 - p * 41.9) + " KB";
+  }, 130);
+}
+document.getElementById("shot").addEventListener("click", capturar);
+document.addEventListener("click", function (e) {
+  if (e.target.closest("#add")) return capturar();
+  var d = e.target.closest("[data-del]");
+  if (d) {
+    var i = Number(d.dataset.del);
+    if (FOTOS.length <= 4) {
+      A.toast({ kind: "err", title: "No podés borrar esa foto", sticky: true,
+        msg: "Este tipo de servicio exige 4 fotos como mínimo y tenés exactamente 4. Sacá la de reemplazo primero.",
+        reason: "MIN_PHOTOS · requeridas=4 · actuales=4 · tipo=SRV-01" });
+      return;
+    }
+    FOTOS.splice(i, 1); grid();
+    A.toast({ kind: "warn", title: "Foto eliminada", msg: "Se sacó de la cola de sincronización. Quedan " + FOTOS.length + "." });
+  }
+});
+document.getElementById("gal").addEventListener("click", function () {
+  A.toast({ kind: "info", title: "Galería de la orden", msg: "Solo se ven las fotos de esta orden. La app no toca el resto de la galería del teléfono." });
+});
+document.getElementById("flip").addEventListener("click", function () {
+  A.toast({ kind: "info", title: "Cámara frontal", msg: "La frontal sirve para la selfie de presencia, si el cliente la exige. La geoestampa se aplica igual." });
+});
+</script>
+</body>
+</html>

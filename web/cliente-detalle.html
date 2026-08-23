@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Ficha de cliente</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  .mapbox { height: 300px; border-radius: var(--r-md); border: 1px solid var(--n-200); position: relative; overflow: hidden;
+    background: repeating-linear-gradient(0deg, var(--n-100) 0 1px, transparent 1px 30px),
+                repeating-linear-gradient(90deg, var(--n-100) 0 1px, transparent 1px 30px), var(--n-050); }
+  .mp { position: absolute; transform: translate(-50%,-100%); cursor: pointer; }
+  .mp b { position: absolute; left: 50%; transform: translateX(-50%); top: 19px; font-size: 9px; background: var(--n-000); border: 1px solid var(--n-200); border-radius: 3px; padding: 0 4px; white-space: nowrap; color: var(--n-700); font-weight: 600; }
+  .mp:hover { z-index: 4; }
+  .hero { display: flex; gap: 14px; align-items: flex-start; }
+  .hero__logo { width: 52px; height: 52px; border-radius: var(--r-md); background: var(--navy); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 18px; flex: 0 0 52px; }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><span>Maestros</span><span class="sep">/</span><a href="clientes.html">Clientes</a><span class="sep">/</span><span>Supermercado Stock S.A.</span></div>
+      <div class="subbar__title">Supermercado Stock S.A.</div>
+    </div>
+    <div class="subbar__right">
+      <span class="badge badge--ok"><i class="badge__dot"></i>Activo</span>
+      <span class="badge badge--info">Mantenimiento anual</span>
+      <button class="btn" data-act="mock" data-what="La edición del cliente"><span id="ei"></span>Editar</button>
+      <a class="btn btn--primary" href="servicio-nuevo.html"><span id="pi"></span>Nuevo servicio</a>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="is-active" data-panel="resumen">Resumen</button>
+    <button data-panel="sucursales">Sucursales <span class="cnt">31</span></button>
+    <button data-panel="servicios">Servicios <span class="cnt">184</span></button>
+    <button data-panel="contactos">Contactos <span class="cnt">6</span></button>
+    <button data-panel="facturacion">Facturación</button>
+  </div>
+
+  <div class="content" data-panels>
+
+    <!-- RESUMEN -->
+    <div data-panel-id="resumen">
+      <div class="grid grid--sidebar">
+        <div class="stack">
+          <div class="card"><div class="card__body">
+            <div class="hero">
+              <div class="hero__logo">SS</div>
+              <div style="flex:1">
+                <h3 style="font-size:17px">Supermercado Stock S.A.</h3>
+                <div class="u-sm u-muted">RUC 80012345-7 · Cliente desde marzo de 2024 · Retail alimentario</div>
+                <div class="row row--wrap u-mt-2" style="gap:6px">
+                  <span class="chip">31 sucursales</span><span class="chip">4 OS abiertas</span>
+                  <span class="chip">184 servicios históricos</span><span class="chip">SLA cumplido 94%</span>
+                </div>
+              </div>
+            </div>
+          </div></div>
+
+          <div class="grid grid--4">
+            <div class="kpi"><div class="kpi__label">OS abiertas</div><div class="kpi__value">4</div><div class="kpi__delta down">1 vence hoy</div></div>
+            <div class="kpi kpi--ok"><div class="kpi__label">SLA cumplido</div><div class="kpi__value">94%</div><div class="kpi__delta up">+3 pts vs. 2025</div></div>
+            <div class="kpi kpi--warn"><div class="kpi__label">Tiempo medio de cierre</div><div class="kpi__value">3,2 <small>h</small></div><div class="kpi__delta flat">objetivo 4 h</div></div>
+            <div class="kpi kpi--violet"><div class="kpi__label">Facturado 2026</div><div class="kpi__value" style="font-size:18px" id="k1"></div></div>
+          </div>
+
+          <div class="card">
+            <div class="card__head"><span style="color:var(--violet)" id="mi"></span>
+              <div><div class="card__title">Sucursales georreferenciadas</div><div class="card__sub">31 sucursales · 29 con coordenadas validadas</div></div>
+              <div class="card__right"><button class="btn btn--sm" data-act="mock" data-what="La vista de mapa ampliada">Abrir en mapa</button></div></div>
+            <div class="card__body">
+              <div class="mapbox" id="map"></div>
+              <div class="banner banner--warn u-mt-2"><span class="banner__icon" id="wi"></span>
+                <div><strong>2 sucursales sin coordenadas</strong>Suc. Ñemby y Suc. San Lorenzo Norte. Sin coordenadas no se puede validar el check-in contra el radio de tolerancia: el técnico entra igual, pero la geoestampa queda marcada como «sin referencia de sucursal».</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head"><div class="card__title">Últimos servicios</div>
+              <div class="card__right"><a class="u-xs" href="#">Ver los 184</a></div></div>
+            <div class="card__body--flush">
+              <table class="dt">
+                <thead><tr><th>Orden</th><th>Sucursal</th><th>Tipo</th><th>Técnico</th><th>Fecha</th><th class="num">Total</th><th>Estado</th></tr></thead>
+                <tbody id="hist"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card__head"><div class="card__title">Datos fiscales y comerciales</div></div>
+            <div class="card__body"><dl class="props" style="grid-template-columns:120px minmax(0,1fr)">
+              <dt>Razón social</dt><dd>Supermercado Stock S.A.</dd>
+              <dt>RUC</dt><dd class="u-mono">80012345-7</dd>
+              <dt>Rubro</dt><dd>Retail alimentario</dd>
+              <dt>Contrato</dt><dd>Mantenimiento anual</dd>
+              <dt>Vigencia</dt><dd>01/03/2026 – 28/02/2027</dd>
+              <dt>Condición de pago</dt><dd>30 días fecha factura</dd>
+              <dt>Moneda de contrato</dt><dd>USD (se factura en Gs al TC del día)</dd>
+              <dt>Ejecutivo</dt><dd>Juan Di Matteo</dd>
+            </dl></div>
+          </div>
+
+          <div class="card">
+            <div class="card__head"><div class="card__title">Contacto principal</div></div>
+            <div class="card__body"><dl class="props" style="grid-template-columns:104px minmax(0,1fr)">
+              <dt>Nombre</dt><dd>Gustavo Ríos</dd>
+              <dt>Cargo</dt><dd>Jefe de mantenimiento</dd>
+              <dt>Teléfono</dt><dd class="u-mono">+595 981 442-118</dd>
+              <dt>Correo</dt><dd class="u-sm">g.rios@stock.com.py</dd>
+            </dl></div>
+          </div>
+
+          <div class="card">
+            <div class="card__head"><div class="card__title">Condiciones operativas</div></div>
+            <div class="card__body stack" style="gap:8px">
+              <div class="banner banner--info" style="padding:8px 10px"><span class="banner__icon" id="c1"></span>
+                <div><strong>Ventana de atención</strong>Lunes a sábado, 08:00 – 17:00. Fuera de esa franja el check-in requiere autorización.</div></div>
+              <div class="banner banner--info" style="padding:8px 10px"><span class="banner__icon" id="c2"></span>
+                <div><strong>Radio de tolerancia</strong>120 m. Un check-in fuera del radio se acepta pero queda marcado como excepción con la distancia registrada.</div></div>
+              <div class="banner banner--violet" style="padding:8px 10px"><span class="banner__icon" id="c3"></span>
+                <div><strong>Firma del cliente obligatoria</strong>No se puede cerrar una orden sin firma en sitio del responsable de la sucursal.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCURSALES -->
+    <div data-panel-id="sucursales" hidden>
+      <div class="card">
+        <div class="toolbar">
+          <label class="search-input"><span id="si"></span><input class="input" placeholder="Buscar sucursal, dirección o ciudad…"></label>
+          <select class="select" style="width:158px"><option>Todas las zonas</option><option>Asunción</option><option>Central</option></select>
+          <label class="check u-sm"><input type="checkbox"> Solo sin georreferenciar</label>
+          <div class="spacer"></div>
+          <button class="btn btn--sm btn--primary" data-act="mock" data-what="El alta de sucursal">Nueva sucursal</button>
+        </div>
+        <div class="table-wrap">
+          <table class="dt dt--zebra">
+            <thead><tr><th>Sucursal</th><th>Dirección</th><th>Ciudad</th><th>Coordenadas</th><th class="num">Radio</th><th>Responsable</th><th class="num">OS 2026</th><th>Estado geo</th><th class="col-act"></th></tr></thead>
+            <tbody id="sucs"></tbody>
+          </table>
+        </div>
+        <div class="pager"><span>Mostrando <b>1</b>–<b>25</b> de <b>31</b> sucursales</span>
+          <div class="pager__pages"><button data-no-toggle>1</button><button class="is-active">1</button><button>2</button></div></div>
+      </div>
+    </div>
+
+    <!-- SERVICIOS -->
+    <div data-panel-id="servicios" hidden>
+      <div class="card"><div class="card__body--flush">
+        <table class="dt dt--zebra">
+          <thead><tr><th>Orden</th><th>Sucursal</th><th>Tipo</th><th>Técnico</th><th>Fecha</th><th class="num">Total</th><th>Estado</th></tr></thead>
+          <tbody id="hist2"></tbody>
+        </table>
+      </div>
+      <div class="pager"><span>Mostrando <b>1</b>–<b>25</b> de <b>184</b> servicios</span>
+        <div class="pager__pages"><button class="is-active">1</button><button>2</button><button>3</button><button>…</button><button>8</button></div></div>
+      </div>
+    </div>
+
+    <!-- CONTACTOS -->
+    <div data-panel-id="contactos" hidden>
+      <div class="card"><div class="card__body--flush">
+        <table class="dt">
+          <thead><tr><th>Nombre</th><th>Cargo</th><th>Sucursal</th><th>Teléfono</th><th>Correo</th><th>Recibe notificaciones</th><th class="col-act"></th></tr></thead>
+          <tbody>
+            <tr data-row><td class="strong">Gustavo Ríos</td><td>Jefe de mantenimiento</td><td>Casa central</td><td class="u-mono u-sm">+595 981 442-118</td><td class="u-sm muted">g.rios@stock.com.py</td><td><span class="badge badge--ok">Sí · todas</span></td><td class="col-act"></td></tr>
+            <tr data-row><td class="strong">Liz Ortega</td><td>Administración</td><td>Casa central</td><td class="u-mono u-sm">+595 971 220-455</td><td class="u-sm muted">l.ortega@stock.com.py</td><td><span class="badge badge--neutral">Solo cierres</span></td><td class="col-act"></td></tr>
+            <tr data-row><td class="strong">Carlos Vera</td><td>Encargado de sucursal</td><td>Villa Morra</td><td class="u-mono u-sm">+595 983 118-902</td><td class="u-sm muted">c.vera@stock.com.py</td><td><span class="badge badge--ok">Sí · su sucursal</span></td><td class="col-act"></td></tr>
+            <tr data-row><td class="strong">Andrea Duarte</td><td>Encargada de sucursal</td><td>Centro</td><td class="u-mono u-sm">+595 985 664-210</td><td class="u-sm muted">a.duarte@stock.com.py</td><td><span class="badge badge--ok">Sí · su sucursal</span></td><td class="col-act"></td></tr>
+            <tr data-row><td class="strong">Marcelo Paredes</td><td>Compras</td><td>Casa central</td><td class="u-mono u-sm">+595 982 771-303</td><td class="u-sm muted">m.paredes@stock.com.py</td><td><span class="badge badge--neutral">No</span></td><td class="col-act"></td></tr>
+            <tr data-row><td class="strong">Rocío Giménez</td><td>Encargada de sucursal</td><td>Lambaré</td><td class="u-mono u-sm">+595 986 442-771</td><td class="u-sm muted">r.gimenez@stock.com.py</td><td><span class="badge badge--ok">Sí · su sucursal</span></td><td class="col-act"></td></tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+
+    <!-- FACTURACIÓN -->
+    <div data-panel-id="facturacion" hidden>
+      <div class="grid grid--2">
+        <div class="card"><div class="card__head"><div class="card__title">Facturado por mes · 2026</div>
+          <div class="card__right"><button class="btn btn--sm btn--ghost" data-act="fx">TC</button></div></div>
+          <div class="card__body--flush">
+            <table class="dt"><thead><tr><th>Mes</th><th class="num">Órdenes</th><th class="num">Mano de obra</th><th class="num">Repuestos</th><th class="num">Total</th></tr></thead>
+            <tbody id="fact"></tbody></table>
+          </div>
+        </div>
+        <div class="card"><div class="card__head"><div class="card__title">Estado de cuenta</div></div>
+          <div class="card__body stack">
+            <div class="grid grid--2">
+              <div class="kpi kpi--ok"><div class="kpi__label">Cobrado</div><div class="kpi__value" style="font-size:17px" id="fk1"></div></div>
+              <div class="kpi kpi--warn"><div class="kpi__label">Pendiente</div><div class="kpi__value" style="font-size:17px" id="fk2"></div></div>
+            </div>
+            <div class="banner banner--info"><span class="banner__icon" id="c4"></span>
+              <div><strong>Doble moneda</strong>El contrato está nominado en USD. Cada orden cerrada guarda el TC de su fecha de cierre, así el total anual no se mueve cuando cambia la cotización de hoy.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "clientes" });
+document.getElementById("ei").innerHTML = NT.icon("edit", 14);
+document.getElementById("pi").innerHTML = NT.icon("plus", 14);
+document.getElementById("mi").innerHTML = NT.icon("map", 16);
+document.getElementById("wi").innerHTML = NT.icon("alert", 16);
+document.getElementById("si").innerHTML = NT.icon("search", 15);
+["c1","c2","c3","c4"].forEach(function(k){ var e=document.getElementById(k); if(e) e.innerHTML = NT.icon("info", 15); });
+document.getElementById("k1").innerHTML  = NT.money(42800);
+document.getElementById("fk1").innerHTML = NT.money(34210);
+document.getElementById("fk2").innerHTML = NT.money(8590);
+
+/* Mapa de sucursales */
+var SUCS = [
+  { n:"Villa Morra",      d:"Avda. Mcal. López 3520",      c:"Asunción",    lat:"-25,28841", lon:"-57,58612", r:120, x:38, y:34, geo:1, resp:"Carlos Vera",     os:14 },
+  { n:"Centro",           d:"Palma 456",                   c:"Asunción",    lat:"-25,28190", lon:"-57,63340", r:80,  x:22, y:46, geo:1, resp:"Andrea Duarte",   os:11 },
+  { n:"Lambaré",          d:"Cacique Lambaré 1200",        c:"Lambaré",     lat:"-25,34120", lon:"-57,61050", r:150, x:31, y:64, geo:1, resp:"Rocío Giménez",   os:9 },
+  { n:"San Lorenzo Sur",  d:"Ruta Mcal. Estigarribia km 12", c:"San Lorenzo", lat:"-25,34390", lon:"-57,50880", x:62, y:58, geo:1, r:200, resp:"Hugo Melgarejo", os:7 },
+  { n:"Luque",            d:"Avda. Aviadores del Chaco 2100", c:"Luque",   lat:"-25,26610", lon:"-57,49220", r:150, x:70, y:28, geo:1, resp:"Silvia Ramos",   os:6 },
+  { n:"Capiatá",          d:"Ruta 1 km 19,5",              c:"Capiatá",     lat:"-25,35520", lon:"-57,44510", r:200, x:82, y:66, geo:1, resp:"Julio Barreto",   os:5 },
+  { n:"Ñemby",            d:"Avda. Ytororó c/ Pitiantuta", c:"Ñemby",       lat:"—",         lon:"—",         r:0,   x:44, y:76, geo:0, resp:"Nelson Ayala",    os:4 },
+  { n:"San Lorenzo Norte",d:"Julia M. Cueto 880",          c:"San Lorenzo", lat:"—",         lon:"—",         r:0,   x:56, y:44, geo:0, resp:"Mirta Sosa",      os:3 }
+];
+document.getElementById("map").innerHTML = SUCS.map(function (s) {
+  var col = s.geo ? "var(--accent)" : "var(--warn)";
+  return '<div class="mp" style="left:' + s.x + "%;top:" + s.y + "%;color:" + col + '" title="' + s.n + '">' +
+    NT.icon("pin", 22) + "<b>" + s.n + "</b></div>";
+}).join("") +
+  '<div style="position:absolute;right:9px;bottom:9px;background:var(--n-000);border:1px solid var(--n-200);border-radius:var(--r-sm);padding:5px 8px;font-size:10px;line-height:1.7">' +
+  '<div><span style="color:var(--accent)">●</span> Georreferenciada (29)</div>' +
+  '<div><span style="color:var(--warn)">●</span> Sin coordenadas (2)</div></div>';
+
+document.getElementById("sucs").innerHTML = SUCS.map(function (s) {
+  return "<tr data-row><td class=\"strong\">" + s.n + "</td><td class=\"muted\">" + s.d + "</td><td>" + s.c + "</td>" +
+    '<td class="u-mono u-sm ' + (s.geo ? "" : "muted") + '">' + s.lat + " · " + s.lon + "</td>" +
+    '<td class="num">' + (s.r ? s.r + " m" : '<span class="muted">—</span>') + "</td><td>" + s.resp + "</td>" +
+    '<td class="num">' + s.os + "</td>" +
+    "<td>" + (s.geo ? '<span class="badge badge--ok"><i class="badge__dot"></i>Validada</span>'
+                    : '<span class="badge badge--warn"><i class="badge__dot"></i>Sin coordenadas</span>') + "</td>" +
+    '<td class="col-act"><span class="row-act"><button class="btn btn--sm btn--ghost" data-act="mock" data-what="La edición de la sucursal">' + NT.icon("edit", 14) + "</button></span></td></tr>";
+}).join("");
+
+/* Historial de servicios */
+var H = [
+  ["OS-2026-0838","Suc. Centro","Correctivo · Refrigeración","Marcos Cáceres","22/08/2026",380,"trabajando","Trabajando"],
+  ["OS-2026-0830","Suc. Villa Morra","Preventivo · Climatización","Rubén Benítez","22/08/2026",240,"cerrada","Cerrada"],
+  ["OS-2026-0821","Suc. Lambaré","Correctivo · Electricidad","Diego Ayala","20/08/2026",510,"pendientes","Finalizada c/ pendientes"],
+  ["OS-2026-0812","Suc. Luque","Preventivo · Refrigeración","Nadia Rolón","18/08/2026",190,"cerrada","Cerrada"],
+  ["OS-2026-0804","Suc. Capiatá","Instalación","Cuadrilla Alfa","15/08/2026",1240,"cerrada","Cerrada"],
+  ["OS-2026-0798","Suc. Centro","Correctivo · Refrigeración","Marcos Cáceres","13/08/2026",420,"cerrada","Cerrada"],
+  ["OS-2026-0791","Suc. San Lorenzo Sur","Preventivo · Climatización","Luis Fretes","11/08/2026",280,"cerrada","Cerrada"]
+];
+function histRows(n) {
+  return H.slice(0, n).map(function (r) {
+    return '<tr data-row><td class="strong u-mono u-sm"><a href="orden-pdf.html">' + r[0] + "</a></td><td>" + r[1] + "</td><td class=\"muted\">" + r[2] +
+      "</td><td>" + r[3] + '</td><td class="nowrap muted">' + r[4] + '</td><td class="num">' + NT.money(r[5], true) +
+      '</td><td><span class="badge badge--' + r[6] + '"><i class="badge__dot"></i>' + r[7] + "</span></td></tr>";
+  }).join("");
+}
+document.getElementById("hist").innerHTML  = histRows(5);
+document.getElementById("hist2").innerHTML = histRows(7);
+
+/* Facturación mensual */
+var F = [["Enero",14,3200,2100],["Febrero",11,2600,1800],["Marzo",17,3900,3400],["Abril",13,3100,2200],
+         ["Mayo",16,3700,2900],["Junio",12,2800,1900],["Julio",15,3500,2600],["Agosto (parcial)",9,2100,1000]];
+document.getElementById("fact").innerHTML = F.map(function (m) {
+  return "<tr data-row><td class=\"strong\">" + m[0] + '</td><td class="num">' + m[1] + '</td><td class="num">' +
+    NT.money(m[2], true) + '</td><td class="num">' + NT.money(m[3], true) + '</td><td class="num strong">' + NT.money(m[2] + m[3], true) + "</td></tr>";
+}).join("");
+
+NT.paintFx();
+</script>
+</body>
+</html>

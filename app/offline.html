@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Offline y cola de sincronización</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="appmock">
+<div data-screen>
+  <div id="ab-host"></div>
+  <div id="netbar-host"></div>
+
+  <div class="ascreen">
+    <div class="apad">
+
+      <!-- Estado grande -->
+      <div class="acard" id="hero" style="text-align:center;padding:20px 14px">
+        <div id="hero-ic" style="margin-bottom:9px"></div>
+        <div id="hero-t" style="font-size:18px;font-weight:750;color:var(--n-900);letter-spacing:-.02em">Sin conexión</div>
+        <div id="hero-m" style="font-size:12.5px;color:var(--n-600);margin-top:5px;line-height:1.55">
+          Podés seguir trabajando normalmente. Todo lo que cargues se guarda en el teléfono
+          y se sube solo cuando vuelva la señal.</div>
+        <div id="hero-since" style="font-size:11px;color:var(--n-500);margin-top:9px;font-family:var(--mono)">
+          Sin señal desde las 11:28 · hace 14 min</div>
+      </div>
+
+      <button class="abtn abtn--primary" id="sync" style="margin-top:12px"><span id="i1"></span>Intentar sincronizar ahora</button>
+
+      <div style="display:flex;align-items:center;gap:7px;margin:16px 0 8px">
+        <div style="font-size:12.5px;font-weight:700;color:var(--n-800)">Cola de envío</div>
+        <span class="badge badge--warn" id="cnt">7 pendientes</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--n-500)" id="peso">2,7 MB</span>
+      </div>
+
+      <div style="border:1px solid var(--n-200);border-radius:11px;overflow:hidden;background:var(--n-000)" id="cola"></div>
+
+      <div class="abanner abanner--ok" style="margin-top:13px">
+        <span style="flex:0 0 16px" id="b1"></span>
+        <div><strong>Nada se pierde</strong>
+          La cola sobrevive si cerrás la app, si se apaga el teléfono o si te quedás sin batería.
+          Se reintenta sola con espera progresiva; nunca se descarta un elemento en silencio.</div>
+      </div>
+
+      <div class="abanner abanner--warn" style="margin-top:9px">
+        <span style="flex:0 0 16px" id="b2"></span>
+        <div><strong>Hueco de GPS registrado</strong>
+          Entre 11:28 y 11:42 no hubo señal, así que en ese tramo no hay posiciones.
+          El hueco se informa como hueco: no se inventa una posición intermedia ni se dibuja una línea recta.</div>
+      </div>
+
+      <div class="acard" style="margin-top:12px">
+        <div class="acard__t"><span style="color:var(--n-600)" id="i2"></span>Última sincronización</div>
+        <dl class="kv">
+          <dt>Bajada</dt><dd>22/08 11:26 · 3 órdenes, 2 catálogos</dd>
+          <dt>Subida</dt><dd>22/08 11:27 · 12 elementos</dd>
+          <dt>Conflictos</dt><dd style="color:var(--ok);font-weight:650">Ninguno</dd>
+          <dt>Catálogos</dt><dd>Al día (v-2026.08.21)</dd>
+        </dl>
+      </div>
+
+      <div style="height:12px"></div>
+    </div>
+  </div>
+
+  <div id="tab-host"></div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "10 · Estado offline, cola de sincronización y confirmación", offline: true, bat: "39" });
+document.getElementById("ab-host").outerHTML = A.appbar({ back: "servicios.html", title: "Sincronización" });
+document.getElementById("tab-host").outerHTML = A.tabbar("offline.html");
+document.getElementById("i1").innerHTML = NT.icon("refresh", 16);
+document.getElementById("i2").innerHTML = NT.icon("clock", 16);
+document.getElementById("b1").innerHTML = NT.icon("okcircle", 16);
+document.getElementById("b2").innerHTML = NT.icon("alert", 16);
+
+var netHost = document.getElementById("netbar-host");
+netHost.outerHTML = A.netbar("off", 7, "Sin conexión · trabajando offline");
+
+function setHero(state) {
+  var H = {
+    off:  ["wifi_off", "var(--warn)",   "Sin conexión",
+           "Podés seguir trabajando normalmente. Todo lo que cargues se guarda en el teléfono y se sube solo cuando vuelva la señal."],
+    sync: ["refresh",  "var(--accent)", "Sincronizando…",
+           "Subiendo lo que quedó en la cola. No hace falta que esperes: podés seguir usando la app."],
+    ok:   ["okcircle", "var(--ok)",     "Todo sincronizado",
+           "No queda nada pendiente de subir. La orden ya está completa del lado del servidor."]
+  }[state];
+  document.getElementById("hero-ic").innerHTML =
+    '<span style="color:' + H[1] + '">' + NT.icon(H[0], 44) + "</span>";
+  document.getElementById("hero-t").textContent = H[2];
+  document.getElementById("hero-m").textContent = H[3];
+}
+setHero("off");
+
+var COLA = [
+  { t: "Check-out de OS-2026-0838", m: "Transición de estado + geoestampa", ic: "pin",       c: "var(--st-trabajando)", s: 0, kb: 2 },
+  { t: "Reporte de trabajo",        m: "OS-2026-0838 · 612 caracteres",     ic: "file",      c: "var(--accent)",        s: 0, kb: 3 },
+  { t: "Foto «Después»",            m: "612 KB · comprimida en el teléfono",ic: "camera",    c: "var(--violet)",        s: 0, kb: 612 },
+  { t: "Foto «Adicional»",          m: "588 KB · comprimida en el teléfono",ic: "camera",    c: "var(--violet)",        s: 0, kb: 588 },
+  { t: "Firma del cliente",         m: "Andrea Duarte · 12:24:07",          ic: "signature", c: "var(--navy)",          s: 0, kb: 46 },
+  { t: "Gasto · Almuerzo en ruta",  m: "USD 11,00 + comprobante 412 KB",    ic: "money",     c: "var(--ok)",            s: 0, kb: 414 },
+  { t: "Traza de ubicación",        m: "128 posiciones de la jornada",      ic: "gps",       c: "var(--n-600)",         s: 0, kb: 18 }
+];
+
+function cola() {
+  document.getElementById("cola").innerHTML = COLA.map(function (q, i) {
+    var st = q.s === 1
+      ? '<span class="badge badge--ok" style="height:19px">Enviado</span>'
+      : q.s === 2
+        ? '<span class="badge badge--info" style="height:19px">Enviando…</span>'
+        : '<span class="badge badge--warn" style="height:19px">En cola</span>';
+    return '<div class="qitem">' +
+      '<div class="qitem__ic" style="background:' + q.c + '18;color:' + q.c + '">' + NT.icon(q.ic, 16) + "</div>" +
+      '<div style="flex:1;min-width:0"><div class="qitem__t">' + q.t + "</div>" +
+      '<div class="qitem__m">' + q.m + "</div></div>" + st + "</div>";
+  }).join("");
+  var pend = COLA.filter(function (q) { return q.s !== 1; }).length;
+  var kb = COLA.filter(function (q) { return q.s !== 1; }).reduce(function (a, q) { return a + q.kb; }, 0);
+  document.getElementById("cnt").textContent = pend ? pend + " pendientes" : "Todo enviado";
+  document.getElementById("cnt").className = "badge " + (pend ? "badge--warn" : "badge--ok");
+  document.getElementById("peso").textContent = pend ? (kb / 1024).toFixed(1).replace(".", ",") + " MB" : "—";
+}
+cola();
+
+var syncing = false;
+document.getElementById("sync").addEventListener("click", function () {
+  if (syncing) return;
+  if (COLA.every(function (q) { return q.s === 1; })) {
+    A.toast({ kind: "ok", title: "No hay nada para subir", msg: "La cola está vacía." });
+    return;
+  }
+  syncing = true;
+  document.querySelector(".netbar").outerHTML = A.netbar("sync", COLA.filter(function (q) { return q.s !== 1; }).length, "Sincronizando…");
+  setHero("sync");
+  A.toast({ kind: "info", title: "Señal recuperada", msg: "Subiendo la cola en orden. Los eventos de estado van primero." });
+
+  var i = 0;
+  (function step() {
+    if (i >= COLA.length) {
+      syncing = false;
+      document.querySelector(".netbar").outerHTML = A.netbar("ok", null, "Sincronizado · hace instantes");
+      setHero("ok");
+      document.getElementById("hero-since").textContent = "Última sincronización 11:42:31 · 7 elementos, 0 conflictos";
+      cola();
+      A.toast({ kind: "ok", title: "Sincronización completa", sticky: true,
+        msg: "7 elementos subidos, 0 conflictos. El servidor confirmó cada uno y devolvió su hora de recepción.",
+        reason: "SYNC_OK · subidos=7 · conflictos=0 · 2,7 MB en 4,1 s" });
+      return;
+    }
+    COLA[i].s = 2; cola();
+    setTimeout(function () { COLA[i].s = 1; i++; cola(); step(); }, 420);
+  })();
+});
+</script>
+</body>
+</html>

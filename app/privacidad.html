@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Mi privacidad</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+  .daybar { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .track { height: 20px; border-radius: 4px; background: var(--n-100); position: relative; overflow: hidden; }
+  .track__on { position: absolute; top: 0; bottom: 0; background: var(--accent); opacity: .88; }
+  .track__gap { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(45deg,var(--warn) 0 4px,#e0a94a 4px 8px); }
+  .scale { display: grid; grid-template-columns: repeat(6,1fr); font-size: 9px; color: var(--n-400); padding-left: 42px; }
+</style>
+</head>
+<body class="appmock">
+<div data-screen>
+  <div id="ab-host"></div>
+
+  <div class="ascreen">
+    <div class="apad">
+
+      <div class="acard" style="border-color:var(--violet);border-width:1.5px">
+        <div class="acard__t"><span style="color:var(--violet)" id="i1"></span>Qué se registra de vos</div>
+        <p style="font-size:12.5px;color:var(--n-700);line-height:1.6;margin:0">
+          Esta pantalla es tuya. Acá ves exactamente qué guarda NovaTrack sobre vos y en qué horario,
+          sin tener que pedírselo a nadie.
+        </p>
+      </div>
+
+      <!-- Franja horaria -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--accent)" id="i2"></span>Tu franja de registro</div>
+        <div id="week"></div>
+        <div class="scale"><span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span></div>
+        <div style="display:flex;gap:14px;margin-top:11px;font-size:11px;color:var(--n-600);flex-wrap:wrap">
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--accent);vertical-align:-1px"></i>
+            Se registra tu ubicación</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--n-100);vertical-align:-1px;border:1px solid var(--n-200)"></i>
+            No se registra nada</span>
+        </div>
+        <div class="abanner abanner--ok" style="margin-top:11px">
+          <span style="flex:0 0 15px" id="i3"></span>
+          <div><strong>Fuera de esa franja el registro está apagado</strong>
+            No es que se guarde y no se muestre: directamente no se toma. Los domingos, feriados y durante tus licencias tampoco.</div>
+        </div>
+      </div>
+
+      <!-- Qué sí / qué no -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--ok)" id="i4"></span>Sí se guarda</div>
+        <div style="font-size:12.5px;line-height:1.9;color:var(--n-700)">
+          <div>· Posición cada 3 min con una orden activa</div>
+          <div>· Sello en cada transición de estado</div>
+          <div>· Ubicación de cada foto y de cada firma</div>
+          <div>· Precisión de la señal y hora del teléfono</div>
+          <div>· Si el teléfono reporta ubicación simulada</div>
+        </div>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--danger)" id="i5"></span>No se guarda</div>
+        <div style="font-size:12.5px;line-height:1.9;color:var(--n-700)">
+          <div>· Nada fuera de tu jornada</div>
+          <div>· Llamadas, mensajes ni contactos</div>
+          <div>· Qué otras apps usás</div>
+          <div>· Micrófono, en ningún momento</div>
+          <div>· Tu cámara fuera de las fotos que sacás vos</div>
+        </div>
+      </div>
+
+      <!-- Últimos 30 días -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--n-600)" id="i6"></span>Tus últimos 30 días</div>
+        <dl class="kv">
+          <dt>Posiciones</dt><dd>3.412 registros</dd>
+          <dt>Días con registro</dt><dd>24 de 30</dd>
+          <dt>Horas cubiertas</dt><dd>186 h de jornada</dd>
+          <dt>Huecos de señal</dt><dd>9 huecos · 2 h 41 min en total</dd>
+          <dt>Fuera de jornada</dt><dd style="color:var(--ok);font-weight:650">0 registros</dd>
+        </dl>
+        <button class="abtn abtn--sm" id="ver" style="margin-top:11px"><span id="i7"></span>Ver el detalle día por día</button>
+        <button class="abtn abtn--sm" id="exportar" style="margin-top:8px"><span id="i8"></span>Pedir una copia de mis datos</button>
+      </div>
+
+      <!-- Consentimiento -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--violet)" id="i9"></span>Tu consentimiento</div>
+        <dl class="kv">
+          <dt>Estado</dt><dd><span class="badge badge--ok"><i class="badge__dot"></i>Firmado</span></dd>
+          <dt>Fecha</dt><dd>22/08/2026 09:04</dd>
+          <dt>Versión</dt><dd>v1.0</dd>
+        </dl>
+        <button class="abtn abtn--sm" id="revocar" style="margin-top:11px;border-color:var(--danger);color:var(--danger)">
+          Revocar mi consentimiento</button>
+        <div style="font-size:11px;color:var(--n-500);margin-top:7px;line-height:1.5">
+          Revocarlo no borra lo ya registrado en órdenes cerradas: esas son evidencia entregada al cliente.
+          Sí detiene todo registro nuevo desde ese momento.
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+    </div>
+  </div>
+
+  <div id="tab-host"></div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "11 · Mi privacidad — qué se registra y en qué franja", bat: "38" });
+document.getElementById("ab-host").outerHTML = A.appbar({ back: "servicios.html", title: "Mi privacidad", sub: "Marcos Cáceres" });
+document.getElementById("tab-host").outerHTML = A.tabbar("privacidad.html");
+[["i1","shield"],["i2","clock"],["i3","okcircle"],["i4","okcircle"],["i5","xcircle"],
+ ["i6","chart"],["i7","eye"],["i8","download"],["i9","signature"]]
+  .forEach(function (p) { document.getElementById(p[0]).innerHTML = NT.icon(p[1], 16); });
+
+var DIAS = [
+  ["Lun", 8, 17], ["Mar", 8, 17], ["Mié", 8, 17], ["Jue", 8, 17],
+  ["Vie", 8, 17], ["Sáb", 8, 12], ["Dom", null, null]
+];
+document.getElementById("week").innerHTML = DIAS.map(function (d, i) {
+  var bar;
+  if (d[1] === null) {
+    bar = '<div class="track"></div>';
+  } else {
+    var l = d[1] / 24 * 100, w = (d[2] - d[1]) / 24 * 100;
+    /* el sábado muestra además el hueco de señal de hoy */
+    var gap = (i === 5) ? '<div class="track__gap" style="left:' + (11.47 / 24 * 100) + '%;width:' + (0.235 / 24 * 100) + '%"></div>' : "";
+    bar = '<div class="track"><div class="track__on" style="left:' + l + "%;width:" + w + '%"></div>' + gap + "</div>";
+  }
+  return '<div class="daybar"><span style="font-size:11px;font-weight:650;color:var(--n-600)">' + d[0] + "</span>" + bar + "</div>";
+}).join("");
+
+document.getElementById("ver").addEventListener("click", function () {
+  A.toast({ kind: "info", title: "Detalle día por día",
+    msg: "Se abre la lista de cada jornada con sus posiciones, sus huecos de señal y a qué orden pertenece cada registro." });
+});
+document.getElementById("exportar").addEventListener("click", function () {
+  A.toast({ kind: "ok", title: "Copia solicitada",
+    msg: "Se te va a enviar por correo un archivo con todo lo registrado sobre vos en los últimos 30 días.",
+    reason: "DATA_EXPORT · marcos-caceres · rango=30d · formato=CSV+JSON" });
+});
+document.getElementById("revocar").addEventListener("click", function () {
+  A.toast({ kind: "warn", title: "Revocar el consentimiento", sticky: true,
+    msg: "Si revocás, dejás de poder recibir órdenes hasta que vuelvas a firmar, porque sin registro la orden no sirve como evidencia ante el cliente. Lo ya registrado en órdenes cerradas se conserva. Se avisa a tu supervisor.",
+    reason: "CONSENT_REVOKE · efecto=sin_asignacion_de_ordenes · historico=se_conserva" });
+});
+</script>
+</body>
+</html>

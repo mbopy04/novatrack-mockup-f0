@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Catálogos</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  .cat-nav { display: flex; flex-direction: column; gap: 1px; }
+  .cat-nav a { display: flex; align-items: center; gap: 9px; padding: 8px 11px; border-radius: var(--r-md); color: var(--n-700); font-size: var(--fs-md); }
+  .cat-nav a:hover { background: var(--n-050); text-decoration: none; }
+  .cat-nav a.is-active { background: var(--accent-050); color: var(--navy); font-weight: 600; }
+  .cat-nav .rail__count { margin-left: auto; }
+  .swatch { width: 15px; height: 15px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,.12); vertical-align: -2px; }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><span>Maestros</span><span class="sep">/</span><span>Catálogos</span></div>
+      <div class="subbar__title">Catálogos administrables</div>
+    </div>
+    <div class="subbar__right">
+      <span class="u-xs u-muted">Los cambios impactan de inmediato en la app de los técnicos</span>
+      <button class="btn" data-act="mock" data-what="La exportación del catálogo"><span id="di"></span>Exportar</button>
+      <button class="btn btn--primary" id="nuevo"><span id="pi"></span>Nuevo ítem</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="grid grid--sidebar-l">
+
+      <div class="card" style="align-self:start">
+        <div class="card__head"><div class="card__title">Catálogos</div></div>
+        <div class="card__body" style="padding:7px">
+          <div class="cat-nav">
+            <a class="is-active" data-cat="gasto" href="#"><span id="c1"></span>Tipos de gasto<span class="rail__count">9</span></a>
+            <a data-cat="servicio" href="#"><span id="c2"></span>Tipos de servicio<span class="rail__count">12</span></a>
+            <a data-cat="estado" href="#"><span id="c3"></span>Estados de servicio<span class="rail__count">5</span></a>
+            <a data-cat="prioridad" href="#"><span id="c4"></span>Prioridades y SLA<span class="rail__count">3</span></a>
+            <a data-cat="motivo" href="#"><span id="c5"></span>Motivos de pendiente<span class="rail__count">7</span></a>
+            <a data-cat="unidad" href="#"><span id="c6"></span>Unidades de medida<span class="rail__count">8</span></a>
+          </div>
+        </div>
+        <div class="card__foot" style="display:block">
+          <div class="u-xs u-muted">Un ítem en uso no se borra: se <b>desactiva</b>. Así las órdenes históricas no pierden su referencia.</div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <div class="card__head">
+            <div><div class="card__title" id="cat-title">Tipos de gasto</div>
+              <div class="card__sub" id="cat-sub">Lo que el técnico puede rendir desde la app. Cada tipo define si exige comprobante y si tiene tope.</div></div>
+            <div class="card__right">
+              <label class="check u-sm"><input type="checkbox" id="showoff"> Ver inactivos</label>
+            </div>
+          </div>
+          <div class="toolbar">
+            <label class="search-input"><span id="si"></span><input class="input" placeholder="Buscar en el catálogo…"></label>
+            <div class="spacer"></div>
+            <button class="btn btn--sm" data-act="mock" data-what="El reordenamiento por arrastre">Reordenar</button>
+          </div>
+          <div class="table-wrap">
+            <table class="dt dt--zebra" id="tbl"></table>
+          </div>
+          <div class="pager"><span id="cnt"></span></div>
+        </div>
+
+        <div class="banner banner--violet">
+          <span class="banner__icon" id="bi"></span>
+          <div><strong>Estos catálogos alimentan la app del técnico</strong>
+            Los tipos de gasto aparecen en el selector de la pantalla de gastos, y los tipos de servicio en el detalle de la orden.
+            Un cambio acá se propaga en la próxima sincronización del dispositivo; si el técnico está offline, sigue viendo la última versión
+            descargada y la app se lo avisa en pantalla.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "catalogos" });
+document.getElementById("di").innerHTML = NT.icon("download", 14);
+document.getElementById("pi").innerHTML = NT.icon("plus", 14);
+document.getElementById("si").innerHTML = NT.icon("search", 15);
+document.getElementById("bi").innerHTML = NT.icon("info", 16);
+[["c1","money"],["c2","wrench"],["c3","layers"],["c4","alert"],["c5","file"],["c6","settings"]].forEach(function (p) {
+  document.getElementById(p[0]).innerHTML = NT.icon(p[1], 15);
+});
+
+var CAT = {
+  gasto: {
+    t: "Tipos de gasto",
+    s: "Lo que el técnico puede rendir desde la app. Cada tipo define si exige comprobante y si tiene tope.",
+    cols: ["Código","Nombre","Comprobante","Tope por orden","Requiere aprobación","Cuenta contable","Uso 2026","Estado"],
+    rows: [
+      ["GST-01","Combustible","Obligatorio",60,"No","5.1.02.001",412,1],
+      ["GST-02","Peaje","Obligatorio",15,"No","5.1.02.002",388,1],
+      ["GST-03","Estacionamiento","Obligatorio",10,"No","5.1.02.003",96,1],
+      ["GST-04","Almuerzo en ruta","Obligatorio",12,"No","5.1.03.001",174,1],
+      ["GST-05","Repuesto de urgencia","Obligatorio",250,"Sí","5.1.04.001",63,1],
+      ["GST-06","Flete / encomienda","Obligatorio",80,"Sí","5.1.02.004",28,1],
+      ["GST-07","Hospedaje","Obligatorio",120,"Sí","5.1.03.002",11,1],
+      ["GST-08","Herramienta menor","Obligatorio",45,"Sí","5.1.04.002",19,1],
+      ["GST-09","Viático fijo interior","No aplica",35,"No","5.1.03.003",42,0]
+    ]
+  },
+  servicio: {
+    t: "Tipos de servicio",
+    s: "Determinan el formulario de reporte que ve el técnico y la duración estimada por defecto.",
+    cols: ["Código","Nombre","Categoría","Duración est.","Formulario","Requiere foto","Uso 2026","Estado"],
+    rows: [
+      ["SRV-01","Correctivo — Refrigeración industrial","Correctivo","3,0 h","Refrigeración","Sí (mín. 4)",148,1],
+      ["SRV-02","Correctivo — Climatización","Correctivo","2,5 h","Climatización","Sí (mín. 3)",96,1],
+      ["SRV-03","Correctivo — Electricidad","Correctivo","2,0 h","Eléctrico","Sí (mín. 3)",74,1],
+      ["SRV-04","Preventivo — Refrigeración","Preventivo","1,5 h","Checklist preventivo","Sí (mín. 6)",112,1],
+      ["SRV-05","Preventivo — Climatización","Preventivo","1,5 h","Checklist preventivo","Sí (mín. 4)",88,1],
+      ["SRV-06","Instalación — Cámara frigorífica","Instalación","16,0 h","Instalación","Sí (mín. 10)",21,1],
+      ["SRV-07","Instalación — Split / multisplit","Instalación","4,0 h","Instalación","Sí (mín. 6)",37,1],
+      ["SRV-08","Relevamiento técnico","Relevamiento","1,0 h","Relevamiento","Sí (mín. 4)",44,1],
+      ["SRV-09","Puesta en marcha","Instalación","3,0 h","Instalación","Sí (mín. 4)",18,1],
+      ["SRV-10","Garantía — retrabajo","Correctivo","2,0 h","Refrigeración","Sí (mín. 4)",17,1],
+      ["SRV-11","Emergencia 24 h","Correctivo","2,0 h","Refrigeración","Sí (mín. 3)",26,1],
+      ["SRV-12","Capacitación en sitio","Otro","2,0 h","Sin formulario","No",6,0]
+    ]
+  },
+  estado: {
+    t: "Estados de servicio",
+    s: "La máquina de estados de campo. El color es contrato con la agenda y con la app del técnico.",
+    cols: ["Orden","Estado","Color","Transiciona a","Exige geoestampa","Visible al cliente","Uso 2026","Estado"],
+    rows: [
+      ["1","Asignada","#C02C38","En camino","No","Sí",412,1],
+      ["2","En camino","#D97316","Check-in","Sí","Sí",408,1],
+      ["3","Trabajando","#1C7F4E","Check-out","Sí","Sí",401,1],
+      ["4","Finalizada con pendientes","#C9A227","Cerrada / revisita","Sí","Sí",37,1],
+      ["5","Cerrada","#6B7890","— final —","Sí","Sí",364,1]
+    ],
+    color: 2
+  },
+  prioridad: {
+    t: "Prioridades y SLA",
+    s: "Definen el vencimiento que se calcula al crear la orden y el color de la alerta.",
+    cols: ["Código","Nombre","SLA","Alerta previa","Escala a","Uso 2026","Estado"],
+    rows: [
+      ["PRI-01","Urgente","4 h","1 h antes","Supervisor",64,1],
+      ["PRI-02","Alta","24 h","4 h antes","Supervisor",186,1],
+      ["PRI-03","Normal","72 h","12 h antes","— ninguno —",162,1]
+    ]
+  },
+  motivo: {
+    t: "Motivos de pendiente",
+    s: "Por qué una orden termina como «finalizada con pendientes». Obligatorio elegir uno para pasar a ese estado.",
+    cols: ["Código","Motivo","Genera revisita","Genera cotización","Notifica al cliente","Uso 2026","Estado"],
+    rows: [
+      ["MOT-01","Falta de repuesto","Sí","Sí","Sí",14,1],
+      ["MOT-02","Requiere aprobación de presupuesto","Sí","Sí","Sí",9,1],
+      ["MOT-03","Sucursal cerrada / sin acceso","Sí","No","Sí",5,1],
+      ["MOT-04","Falta de herramienta especial","Sí","No","No",3,1],
+      ["MOT-05","Trabajo fuera de alcance contratado","No","Sí","Sí",4,1],
+      ["MOT-06","Condiciones inseguras","Sí","No","Sí",2,1],
+      ["MOT-07","Cliente suspende el trabajo","No","No","Sí",0,1]
+    ]
+  },
+  unidad: {
+    t: "Unidades de medida",
+    s: "Para materiales y mano de obra en la orden de servicio.",
+    cols: ["Código","Nombre","Símbolo","Decimales","Tipo","Uso 2026","Estado"],
+    rows: [
+      ["UN-01","Unidad","u","0","Cantidad",840,1],
+      ["UN-02","Kilogramo","kg","2","Peso",210,1],
+      ["UN-03","Metro","m","2","Longitud",164,1],
+      ["UN-04","Metro lineal de caño","ml","2","Longitud",98,1],
+      ["UN-05","Hora","h","2","Tiempo",412,1],
+      ["UN-06","Litro","L","2","Volumen",56,1],
+      ["UN-07","Juego","jgo","0","Cantidad",41,1],
+      ["UN-08","Rollo","rollo","0","Cantidad",12,0]
+    ]
+  }
+};
+
+var current = "gasto";
+function render() {
+  var c = CAT[current];
+  var showOff = document.getElementById("showoff").checked;
+  document.getElementById("cat-title").textContent = c.t;
+  document.getElementById("cat-sub").textContent = c.s;
+
+  var rows = c.rows.filter(function (r) { return showOff || r[r.length - 1] === 1; });
+  var head = "<thead><tr>" + c.cols.map(function (h, i) {
+    var numeric = /Uso|Tope/.test(h);
+    return '<th class="' + (numeric ? "num" : "") + '">' + h + "</th>";
+  }).join("") + '<th class="col-act"></th></tr></thead>';
+
+  var body = "<tbody>" + rows.map(function (r) {
+    var active = r[r.length - 1] === 1;
+    var tds = r.slice(0, -1).map(function (v, i) {
+      if (c.color === i) return '<td><span class="swatch" style="background:' + v + '"></span> <span class="u-mono u-sm">' + v + "</span></td>";
+      if (i === 0) return '<td class="u-mono u-sm strong">' + v + "</td>";
+      if (i === 1) return '<td class="strong">' + v + "</td>";
+      if (typeof v === "number" && c.cols[i] === "Tope por orden") return '<td class="num">' + NT.money(v, true) + "</td>";
+      if (typeof v === "number") return '<td class="num">' + NT.num(v) + "</td>";
+      if (v === "Sí" || String(v).indexOf("Sí") === 0) return '<td><span class="badge badge--ok">' + v + "</span></td>";
+      if (v === "No" || v === "No aplica") return '<td><span class="badge badge--neutral">' + v + "</span></td>";
+      if (v === "Obligatorio") return '<td><span class="badge badge--info">Obligatorio</span></td>';
+      return "<td>" + v + "</td>";
+    }).join("");
+    return "<tr data-row>" + tds +
+      "<td>" + (active ? '<span class="badge badge--ok"><i class="badge__dot"></i>Activo</span>'
+                       : '<span class="badge badge--neutral"><i class="badge__dot"></i>Inactivo</span>') + "</td>" +
+      '<td class="col-act"><span class="row-act">' +
+        '<button class="btn btn--sm btn--ghost" data-act="mock" data-what="La edición del ítem">' + NT.icon("edit", 14) + "</button>" +
+        '<button class="btn btn--sm btn--ghost" data-del="' + r[1] + '" data-uso="' + r[r.length - 2] + '">' + NT.icon("trash", 14) + "</button>" +
+      "</span></td></tr>";
+  }).join("") + "</tbody>";
+
+  document.getElementById("tbl").innerHTML = head + body;
+  document.getElementById("cnt").innerHTML = "<b>" + rows.length + "</b> ítems" +
+    (showOff ? "" : " activos · " + (c.rows.length - rows.length) + " inactivos ocultos");
+  NT.paintFx();
+}
+render();
+
+document.querySelectorAll(".cat-nav a").forEach(function (a) {
+  a.addEventListener("click", function (e) {
+    e.preventDefault();
+    document.querySelectorAll(".cat-nav a").forEach(function (x) { x.classList.remove("is-active"); });
+    a.classList.add("is-active");
+    current = a.dataset.cat;
+    render();
+  });
+});
+document.getElementById("showoff").addEventListener("change", render);
+
+document.addEventListener("click", function (e) {
+  var d = e.target.closest("[data-del]");
+  if (!d) return;
+  var uso = Number(d.dataset.uso);
+  if (uso > 0) {
+    NT.toast({ kind: "err", title: "No se puede borrar «" + d.dataset.del + "»", sticky: true,
+      msg: "Está referenciado por " + NT.num(uso) + " órdenes de 2026. Borrarlo dejaría esas órdenes sin referencia. Desactivalo: deja de ofrecerse en la app pero el histórico se conserva.",
+      reason: "FK_IN_USE · items_en_uso=" + uso + " · accion_sugerida=desactivar", action: "Desactivar en su lugar" });
+  } else {
+    NT.toast({ kind: "warn", title: "Confirmá la baja", msg: "«" + d.dataset.del + "» no tiene uso registrado en 2026, así que se puede borrar definitivamente.", action: "Borrar" });
+  }
+});
+document.getElementById("nuevo").addEventListener("click", function () {
+  NT.toast({ kind: "info", title: "Nuevo ítem en «" + CAT[current].t + "»",
+    msg: "El alta abre un formulario con los mismos campos de la tabla. Queda activo y disponible en la app en la próxima sincronización." });
+});
+</script>
+</body>
+</html>

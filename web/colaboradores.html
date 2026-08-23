@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Colaboradores</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  .jornada { display: grid; grid-template-columns: 92px minmax(0,1fr) 96px; gap: 7px; align-items: center; }
+  .jbar { height: 26px; background: var(--n-100); border-radius: var(--r-sm); position: relative; overflow: hidden; }
+  .jbar__h { position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.7) 0 1px, transparent 1px calc(100%/24)); }
+  .jbar__w { position: absolute; top: 0; bottom: 0; background: var(--accent); opacity: .85; border-radius: 2px; }
+  .jbar__b { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(45deg, var(--n-300) 0 4px, var(--n-200) 4px 8px); }
+  .jbar__lbl { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 650; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.3); pointer-events: none; }
+  .hours-scale { display: grid; grid-template-columns: repeat(8,1fr); font-size: 9px; color: var(--n-400); }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><span>Maestros</span><span class="sep">/</span><span>Colaboradores</span></div>
+      <div class="subbar__title">Colaboradores</div>
+    </div>
+    <div class="subbar__right">
+      <button class="btn" data-act="mock" data-what="La gestión de cuadrillas"><span id="ui"></span>Cuadrillas</button>
+      <button class="btn" data-act="mock" data-what="La exportación"><span id="di"></span>Exportar</button>
+      <button class="btn btn--primary" data-act="mock" data-what="El alta de colaborador"><span id="pi"></span>Nuevo colaborador</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="is-active" data-panel="lista">Personas <span class="cnt">24</span></button>
+    <button data-panel="jornadas">Jornadas laborales</button>
+    <button data-panel="cuadrillas">Cuadrillas <span class="cnt">6</span></button>
+  </div>
+
+  <div class="content" data-panels>
+
+    <!-- LISTA -->
+    <div data-panel-id="lista">
+      <div class="grid grid--4 u-mb-2">
+        <div class="kpi"><div class="kpi__label">Técnicos activos</div><div class="kpi__value">24</div><div class="kpi__delta flat">18 en campo hoy</div></div>
+        <div class="kpi kpi--ok"><div class="kpi__label">Ocupación media</div><div class="kpi__value">78%</div><div class="kpi__delta up">+5 pts vs. julio</div></div>
+        <div class="kpi kpi--warn"><div class="kpi__label">Sobreasignados hoy</div><div class="kpi__value">2</div><div class="kpi__delta down">Cuadrilla Alfa, Ó. Duarte</div></div>
+        <div class="kpi kpi--violet"><div class="kpi__label">Consentimiento de tracking</div><div class="kpi__value">23 <small>de 24</small></div><div class="kpi__delta down">1 pendiente de firma</div></div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <label class="search-input"><span id="si"></span><input class="input" placeholder="Buscar por nombre, documento o especialidad…"></label>
+          <select class="select" style="width:168px"><option>Todas las especialidades</option><option>Refrigeración</option><option>Climatización</option><option>Electricidad</option></select>
+          <select class="select" style="width:148px"><option>Todas las zonas</option><option>Asunción</option><option>Central</option></select>
+          <select class="select" style="width:148px"><option>Todos los estados</option><option>Activo</option><option>Licencia</option><option>Baja</option></select>
+          <div class="spacer"></div>
+          <button class="btn btn--sm" data-act="mock" data-what="La acción masiva">Acciones masivas</button>
+        </div>
+        <div class="table-wrap" style="max-height:calc(100vh - 400px)">
+          <table class="dt dt--zebra">
+            <thead><tr>
+              <th class="col-check"><input type="checkbox"></th>
+              <th class="sortable is-sorted">Colaborador <span class="sort">▲</span></th>
+              <th>Documento</th><th>Rol</th><th>Especialidad</th><th>Zona</th>
+              <th>Jornada</th><th class="num">Carga hoy</th><th class="num">OS mes</th>
+              <th>Consent.</th><th>Estado</th><th class="col-act"></th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="pager"><span>Mostrando <b>1</b>–<b>24</b> de <b>24</b> colaboradores</span>
+          <div class="pager__pages"><button class="is-active">1</button></div></div>
+      </div>
+    </div>
+
+    <!-- JORNADAS -->
+    <div data-panel-id="jornadas" hidden>
+      <div class="grid grid--sidebar">
+        <div class="card">
+          <div class="card__head"><span style="color:var(--accent)" id="ji"></span>
+            <div><div class="card__title">Jornada de Rubén Benítez</div><div class="card__sub">Refrigeración · Zona Norte · plantilla «Turno estándar»</div></div>
+            <div class="card__right">
+              <select class="select" style="width:186px;height:26px"><option>Rubén Benítez</option><option>Marcos Cáceres</option><option>Diego Ayala</option></select>
+              <button class="btn btn--sm btn--primary" id="save">Guardar</button>
+            </div></div>
+          <div class="card__body stack">
+            <div class="row row--wrap">
+              <div class="field" style="width:210px"><label class="field__label">Plantilla</label>
+                <select class="select"><option>Turno estándar (L–V 08–17, S 08–12)</option><option>Turno partido</option><option>Guardia rotativa</option><option>Personalizada</option></select></div>
+              <div class="field" style="width:150px"><label class="field__label">Horas semanales</label><input class="input" value="44" readonly></div>
+              <div class="field" style="width:150px"><label class="field__label">Tolerancia de inicio</label><input class="input" value="15 min"></div>
+              <div class="field" style="width:170px"><label class="field__label">Zona horaria</label><input class="input" value="America/Asuncion (−03)" readonly></div>
+            </div>
+
+            <div>
+              <div class="field__label u-mb-1">Franjas por día</div>
+              <div class="stack" style="gap:7px" id="jornada"></div>
+              <div class="hours-scale u-mt-1" style="padding-left:99px;padding-right:103px">
+                <span>00</span><span>03</span><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span>
+              </div>
+              <div class="row u-mt-2 u-xs u-muted" style="gap:16px">
+                <span><i style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:2px;vertical-align:-1px"></i> Jornada</span>
+                <span><i style="display:inline-block;width:10px;height:10px;background:repeating-linear-gradient(45deg,var(--n-300) 0 4px,var(--n-200) 4px 8px);border-radius:2px;vertical-align:-1px"></i> Descanso / almuerzo</span>
+              </div>
+            </div>
+
+            <div class="banner banner--violet"><span class="banner__icon" id="pv"></span>
+              <div><strong>La jornada define la franja de tracking</strong>La app solo registra ubicación dentro de la jornada configurada, más la tolerancia. Fuera de esa franja no se toma ni se guarda posición, y el técnico lo ve así en su pantalla «Mi privacidad».</div></div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card"><div class="card__head"><div class="card__title">Excepciones</div>
+            <div class="card__right"><button class="btn btn--sm" data-act="mock" data-what="El alta de excepción">Agregar</button></div></div>
+            <div class="card__body--flush">
+              <table class="dt"><tbody>
+                <tr data-row><td><span class="badge badge--info">Licencia</span></td><td class="u-sm">24 – 28 ago</td><td class="u-sm muted">Vacaciones</td></tr>
+                <tr data-row><td><span class="badge badge--warn">Guardia</span></td><td class="u-sm">23 ago</td><td class="u-sm muted">Domingo 08–14</td></tr>
+                <tr data-row><td><span class="badge badge--neutral">Feriado</span></td><td class="u-sm">15 ago</td><td class="u-sm muted">Fundación de Asunción</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+          <div class="card"><div class="card__head"><div class="card__title">Horas extra del mes</div></div>
+            <div class="card__body">
+              <div class="kpi" style="border:0;box-shadow:none;padding:0"><div class="kpi__label">Acumuladas</div><div class="kpi__value">12,5 <small>h</small></div>
+                <div class="kpi__delta down">límite mensual 20 h</div></div>
+              <div class="banner banner--warn u-mt-2" style="padding:8px 10px"><span class="banner__icon" id="hw"></span>
+                <div><strong>Al 63% del tope</strong>Asignarle más de 7,5 h extra este mes dispara una advertencia al despachar.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUADRILLAS -->
+    <div data-panel-id="cuadrillas" hidden>
+      <div class="grid grid--3" id="crews"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "colabs" });
+document.getElementById("ui").innerHTML = NT.icon("users", 14);
+document.getElementById("di").innerHTML = NT.icon("download", 14);
+document.getElementById("pi").innerHTML = NT.icon("plus", 14);
+document.getElementById("si").innerHTML = NT.icon("search", 15);
+document.getElementById("ji").innerHTML = NT.icon("clock", 16);
+document.getElementById("pv").innerHTML = NT.icon("shield", 16);
+document.getElementById("hw").innerHTML = NT.icon("alert", 15);
+
+var COL = [
+  ["Rubén Benítez","RB","var(--navy)","4.221.887","Técnico","Refrigeración industrial","Norte","L–V 08–17 · S 08–12",6.5,8,21,1,"Activo","badge--ok"],
+  ["Marcos Cáceres","MC","var(--violet)","3.998.120","Técnico senior","Refrigeración industrial","Centro","L–V 07–16",7,8,26,1,"Activo","badge--ok"],
+  ["Diego Ayala","DA","#0f766e","5.114.702","Técnico","Electricidad","Sur","L–V 08–17",5,8,19,1,"Activo","badge--ok"],
+  ["Luis Fretes","LF","#9a3412","4.556.033","Técnico","Climatización","Central","L–S 08–16",7.5,8,23,1,"Activo","badge--ok"],
+  ["Nadia Rolón","NR","#be123c","5.667.418","Técnica","Electricidad","Luque","L–V 08–17",5,8,17,1,"Activo","badge--ok"],
+  ["Óscar Duarte","OD","#155e75","4.010.996","Técnico","Refrigeración","Itá","L–V 07–16",9.5,8,24,1,"Activo","badge--ok"],
+  ["Hugo Melgarejo","HM","#7c2d12","5.220.874","Técnico","Instalaciones","San Lorenzo","L–V 08–17",6,8,15,1,"Activo","badge--ok"],
+  ["Silvia Ramos","SR","#4338ca","5.881.230","Supervisora","Coordinación","Asunción","L–V 08–18",8,9,0,1,"Activo","badge--ok"],
+  ["Julio Barreto","JB","#0e7490","4.771.559","Técnico","Climatización","Capiatá",  "L–V 08–17",4,8,12,0,"Activo","badge--ok"],
+  ["Nelson Ayala","NA","#a16207","5.334.017","Ayudante","Instalaciones","Ñemby","L–V 08–17",6,8,14,1,"Activo","badge--ok"],
+  ["Mirta Sosa","MS","#9d174d","5.902.663","Técnica","Electricidad","San Lorenzo","L–V 08–17",0,8,9,1,"Licencia","badge--info"],
+  ["Fabio Riveros","FR","#166534","4.443.128","Técnico","Refrigeración","Central","L–V 08–17",5.5,8,18,1,"Activo","badge--ok"],
+  ["Carla Villalba","CV","#6d28d9","5.775.902","Técnica","Climatización","Asunción","L–V 07–16",7,8,20,1,"Activo","badge--ok"],
+  ["Gerardo Meza","GM","#b45309","4.118.740","Técnico","Instalaciones","Luque","L–S 08–16",6.5,8,22,1,"Activo","badge--ok"],
+  ["Aldo Cabrera","AC","#1e40af","5.556.281","Ayudante","Refrigeración","Norte","L–V 08–17",6,8,11,1,"Activo","badge--ok"],
+  ["Romina Escobar","RE","#be185d","5.998.114","Técnica","Electricidad","Central","L–V 08–17",5,8,16,1,"Activo","badge--ok"]
+];
+document.getElementById("rows").innerHTML = COL.map(function (c) {
+  var over = c[8] > c[9];
+  return '<tr data-row><td><input type="checkbox"></td>' +
+    '<td class="strong"><span class="row" style="gap:7px"><span style="width:24px;height:24px;border-radius:50%;background:' + c[2] +
+      ';color:#fff;display:grid;place-items:center;font-size:9px;font-weight:700;flex:0 0 24px">' + c[1] + "</span>" + c[0] + "</span></td>" +
+    '<td class="u-mono u-sm muted">' + c[3] + "</td><td>" + c[4] + '</td><td class="muted">' + c[5] + "</td><td>" + c[6] + "</td>" +
+    '<td class="u-sm muted nowrap">' + c[7] + "</td>" +
+    '<td class="num ' + (over ? "" : "") + '" style="' + (over ? "color:var(--danger);font-weight:650" : "") + '">' + String(c[8]).replace(".", ",") + " / " + c[9] + " h</td>" +
+    '<td class="num">' + c[10] + "</td>" +
+    "<td>" + (c[11] ? '<span class="badge badge--ok" title="Consentimiento de tracking firmado">Firmado</span>'
+                    : '<span class="badge badge--danger" title="No firmó el consentimiento de tracking">Pendiente</span>') + "</td>" +
+    '<td><span class="badge ' + c[13] + '"><i class="badge__dot"></i>' + c[12] + "</span></td>" +
+    '<td class="col-act"><span class="row-act"><button class="btn btn--sm btn--ghost" data-act="mock" data-what="La edición del colaborador">' + NT.icon("edit", 14) + "</button></span></td></tr>";
+}).join("");
+
+/* Jornada semanal */
+var DIAS = [
+  ["Lunes",     8, 17, 12, 13],
+  ["Martes",    8, 17, 12, 13],
+  ["Miércoles", 8, 17, 12, 13],
+  ["Jueves",    8, 17, 12, 13],
+  ["Viernes",   8, 17, 12, 13],
+  ["Sábado",    8, 12, null, null],
+  ["Domingo",   null, null, null, null]
+];
+document.getElementById("jornada").innerHTML = DIAS.map(function (d) {
+  var body;
+  if (d[1] === null) {
+    body = '<div class="jbar"><div class="jbar__h"></div><div class="jbar__lbl" style="color:var(--n-500);text-shadow:none">Sin jornada</div></div>';
+  } else {
+    var l = d[1] / 24 * 100, w = (d[2] - d[1]) / 24 * 100;
+    var br = d[3] !== null ? '<div class="jbar__b" style="left:' + (d[3] / 24 * 100) + "%;width:" + ((d[4] - d[3]) / 24 * 100) + '%"></div>' : "";
+    body = '<div class="jbar"><div class="jbar__h"></div><div class="jbar__w" style="left:' + l + "%;width:" + w + '%"></div>' + br +
+      '<div class="jbar__lbl" style="left:' + l + "%;width:" + w + '%;right:auto">' + String(d[1]).padStart(2,"0") + ":00 – " + String(d[2]).padStart(2,"0") + ':00</div></div>';
+  }
+  var hrs = d[1] === null ? "—" : ((d[2] - d[1]) - (d[3] !== null ? d[4] - d[3] : 0)) + " h";
+  return '<div class="jornada"><label class="check u-sm"><input type="checkbox" ' + (d[1] !== null ? "checked" : "") + "> " + d[0] + "</label>" +
+    body + '<span class="u-xs u-muted u-right">' + hrs + "</span></div>";
+}).join("");
+
+document.getElementById("save").addEventListener("click", function () {
+  NT.toast({ kind: "ok", title: "Jornada guardada", msg: "Rubén Benítez · 44 h semanales. Se recalculó su disponibilidad en la agenda y la franja de tracking de su app." });
+});
+
+/* Cuadrillas */
+var CREWS = [
+  { n:"Cuadrilla Alfa", esp:"Instalaciones", lead:"Marcos Cáceres", m:[["MC","var(--violet)"],["HM","#7c2d12"],["AC","#1e40af"]], os:8, carga:"10 / 8 h", over:1 },
+  { n:"Cuadrilla Beta", esp:"Mantenimiento", lead:"Luis Fretes",    m:[["LF","#9a3412"],["GM","#b45309"]], os:5, carga:"7 / 8 h", over:0 },
+  { n:"Cuadrilla Gamma", esp:"Refrigeración", lead:"Rubén Benítez", m:[["RB","var(--navy)"],["FR","#166534"],["AC","#1e40af"],["NA","#a16207"]], os:6, carga:"6,5 / 8 h", over:0 },
+  { n:"Cuadrilla Delta", esp:"Electricidad", lead:"Diego Ayala",    m:[["DA","#0f766e"],["NR","#be123c"]], os:4, carga:"5 / 8 h", over:0 },
+  { n:"Cuadrilla Épsilon", esp:"Climatización", lead:"Carla Villalba", m:[["CV","#6d28d9"],["JB","#0e7490"]], os:3, carga:"4 / 8 h", over:0 },
+  { n:"Cuadrilla Zeta", esp:"Guardia fin de semana", lead:"Silvia Ramos", m:[["SR","#4338ca"],["RE","#be185d"],["MS","#9d174d"]], os:2, carga:"0 / 8 h", over:0 }
+];
+document.getElementById("crews").innerHTML = CREWS.map(function (c) {
+  return '<div class="card"><div class="card__head">' +
+    '<div><div class="card__title">' + c.n + '</div><div class="card__sub">' + c.esp + "</div></div>" +
+    '<div class="card__right"><span class="badge ' + (c.over ? "badge--danger" : "badge--ok") + '">' + c.carga + "</span></div></div>" +
+    '<div class="card__body">' +
+      '<div class="row"><span class="stack-av">' + c.m.map(function (m, i) {
+        return '<span class="av" style="background:' + m[1] + '">' + m[0] + "</span>";
+      }).join("") + '</span><span class="u-sm u-muted" style="margin-left:6px">' + c.m.length + " personas</span></div>" +
+      '<dl class="props u-mt-2" style="grid-template-columns:88px minmax(0,1fr)">' +
+        "<dt>Responsable</dt><dd>" + c.lead + "</dd>" +
+        "<dt>OS abiertas</dt><dd>" + c.os + "</dd>" +
+      "</dl>" +
+      (c.over ? '<div class="banner banner--danger u-mt-2" style="padding:7px 9px"><span class="banner__icon">' + NT.icon("alert", 15) +
+        "</span><div><strong>Sobreasignada</strong>10 h contra 8 de jornada.</div></div>" : "") +
+    "</div>" +
+    '<div class="card__foot"><button class="btn btn--sm" data-act="mock" data-what="La edición de la cuadrilla">Editar</button>' +
+      '<button class="btn btn--sm btn--ghost" data-act="mock" data-what="La vista de agenda de la cuadrilla">Ver agenda</button></div></div>';
+}).join("");
+</script>
+</body>
+</html>

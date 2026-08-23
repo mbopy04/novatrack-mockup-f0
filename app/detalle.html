@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Detalle del servicio</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="appmock">
+<div data-screen>
+  <div id="ab-host"></div>
+  <div id="netbar-host"></div>
+
+  <div class="ascreen">
+    <div class="apad">
+
+      <div class="acard" style="border-left:4px solid var(--st-trabajando)">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <span class="badge badge--trabajando"><i class="badge__dot"></i>Trabajando</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--n-500);font-weight:650">OS-2026-0838</span>
+        </div>
+        <div style="font-size:17px;font-weight:700;color:var(--n-900);letter-spacing:-.02em;line-height:1.25">
+          Supermercado Stock</div>
+        <div style="font-size:14px;color:var(--n-700);font-weight:600;margin-top:1px">Suc. Centro</div>
+        <div style="font-size:12.5px;color:var(--n-600);margin-top:6px;line-height:1.5">
+          Palma 456 c/ 14 de Mayo<br>Asunción, Paraguay</div>
+        <div style="display:flex;gap:8px;margin-top:11px">
+          <button class="abtn abtn--sm" id="ir" style="flex:1"><span id="i1"></span>Cómo llegar</button>
+          <button class="abtn abtn--sm" id="llamar" style="flex:1"><span id="i2"></span>Llamar</button>
+        </div>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--accent)" id="i3"></span>Datos de la orden</div>
+        <dl class="kv">
+          <dt>Tipo</dt><dd>Correctivo · Refrigeración industrial</dd>
+          <dt>Prioridad</dt><dd><span class="badge badge--warn">Alta · SLA 24 h</span></dd>
+          <dt>Programado</dt><dd>Hoy 10:00 – 13:00</dd>
+          <dt>Vence</dt><dd>23/08 11:42</dd>
+          <dt>Contacto</dt><dd>Andrea Duarte<br><span style="font-size:11.5px;color:var(--n-500)">Encargada de sucursal</span></dd>
+          <dt>Teléfono</dt><dd style="font-family:var(--mono);font-size:12.5px">+595 985 664-210</dd>
+        </dl>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--violet)" id="i4"></span>Problema reportado</div>
+        <p style="font-size:13px;line-height:1.6;color:var(--n-700);margin:0">
+          Cámara de congelados N.º 3 no sostiene temperatura: sube a −8 °C durante el día.
+          Se sospecha pérdida de gas o falla del presostato de baja. Revisar carga, estanqueidad y controles.
+          El cliente reporta el problema desde el martes 19/08.
+        </p>
+        <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
+          <span class="chip" id="adj1">foto-camara-3.jpg</span>
+          <span class="chip" id="adj2">informe-temperaturas.pdf</span>
+        </div>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--n-600)" id="i5"></span>Historial de esta sucursal</div>
+        <div style="font-size:12px;color:var(--n-600);line-height:1.7">
+          <div><b style="color:var(--n-800)">13/08</b> · Correctivo refrigeración — cerrada (vos)</div>
+          <div><b style="color:var(--n-800)">28/07</b> · Preventivo climatización — cerrada</div>
+          <div><b style="color:var(--n-800)">02/07</b> · Correctivo cámara 3 — cerrada</div>
+        </div>
+        <div class="abanner abanner--warn" style="margin-top:10px">
+          <span style="flex:0 0 15px" id="i6"></span>
+          <div><strong>Tercera visita a la cámara 3 en 8 semanas</strong>
+            Si vuelve a fallar por lo mismo, marcá el motivo de pendiente para que quede como reincidencia.</div>
+        </div>
+      </div>
+
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--accent)" id="i7"></span>Avance</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12.5px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--ok)" id="c1"></span>
+            <span style="flex:1">Fotos <b>4 de 4</b> mínimas</span><span class="badge badge--ok">Listo</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--ok)" id="c2"></span>
+            <span style="flex:1">Reporte de trabajo</span><span class="badge badge--ok">Listo</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--warn)" id="c3"></span>
+            <span style="flex:1">Gastos rendidos</span><span class="badge badge--warn">1 sin comprobante</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--n-400)" id="c4"></span>
+            <span style="flex:1">Firma del cliente</span><span class="badge badge--neutral">Pendiente</span></div>
+        </div>
+      </div>
+
+      <button class="abtn abtn--primary" style="margin-top:13px" onclick="location.href='estados.html'">
+        <span id="i8"></span>Continuar en campo
+      </button>
+      <div style="height:12px"></div>
+    </div>
+  </div>
+
+  <div id="tab-host"></div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "4 · Detalle del servicio", bat: "46" });
+document.getElementById("ab-host").outerHTML = A.appbar({
+  back: "servicios.html", title: "Detalle del servicio", sub: "OS-2026-0838"
+});
+document.getElementById("netbar-host").outerHTML = A.netbar("ok", null, "Sincronizado");
+document.getElementById("tab-host").outerHTML = A.tabbar("servicios.html");
+
+[["i1","map"],["i2","users"],["i3","file"],["i4","wrench"],["i5","clock"],["i6","alert"],["i7","layers"],["i8","chevright"]]
+  .forEach(function (p) { document.getElementById(p[0]).innerHTML = NT.icon(p[1], 16); });
+[["c1","okcircle"],["c2","okcircle"],["c3","alert"],["c4","info"]]
+  .forEach(function (p) { document.getElementById(p[0]).innerHTML = NT.icon(p[1], 16); });
+document.getElementById("adj1").insertAdjacentHTML("afterbegin", NT.icon("camera", 12) + " ");
+document.getElementById("adj2").insertAdjacentHTML("afterbegin", NT.icon("file", 12) + " ");
+
+document.getElementById("ir").addEventListener("click", function () {
+  A.toast({ kind: "info", title: "Abriendo navegación", msg: "En la app real se abre Google Maps con la coordenada de la sucursal: −25,28190 / −57,63340." });
+});
+document.getElementById("llamar").addEventListener("click", function () {
+  A.toast({ kind: "info", title: "Llamando a Andrea Duarte", msg: "+595 985 664-210 · encargada de la sucursal." });
+});
+[["adj1","foto-camara-3.jpg"],["adj2","informe-temperaturas.pdf"]].forEach(function (p) {
+  document.getElementById(p[0]).addEventListener("click", function () {
+    A.toast({ kind: "warn", title: "Adjunto no descargado", sticky: true,
+      msg: "«" + p[1] + "» todavía no se bajó a este teléfono. Se descarga cuando haya wifi, para no gastarte los datos.",
+      reason: "ATTACHMENT_NOT_CACHED · politica=solo_wifi · tamaño=1,2 MB" });
+  });
+});
+</script>
+</body>
+</html>

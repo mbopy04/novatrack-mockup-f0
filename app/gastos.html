@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Gastos</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="appmock">
+<div data-screen>
+  <div id="ab-host"></div>
+  <div id="netbar-host"></div>
+
+  <div class="ascreen">
+    <div class="apad">
+
+      <!-- Total del día en doble moneda -->
+      <div class="acard" style="background:linear-gradient(155deg,#16225a,#1B2A6B);border:0;color:#fff">
+        <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;opacity:.72;font-weight:700">Rendido en esta orden</div>
+        <div style="font-size:29px;font-weight:800;letter-spacing:-.035em;font-variant-numeric:tabular-nums;line-height:1.2" id="tot-usd">USD 48,50</div>
+        <div style="font-size:14px;opacity:.8;font-variant-numeric:tabular-nums" id="tot-gs">Gs 356.475</div>
+        <div style="font-size:10.5px;opacity:.6;margin-top:7px">TC del día: 1 USD = <span data-fx-label>7.350</span> Gs</div>
+      </div>
+
+      <div class="abanner abanner--danger" style="margin-top:11px" id="warn-box">
+        <span style="flex:0 0 16px" id="b1"></span>
+        <div><strong>1 gasto sin comprobante</strong>
+          «Almuerzo en ruta» exige comprobante y bloquea el cierre de la orden. Cargá la foto del ticket o quitá el gasto.</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:7px;margin:14px 0 8px">
+        <div style="font-size:12.5px;font-weight:700;color:var(--n-800)">Gastos cargados</div>
+        <span class="badge badge--neutral" id="cnt">3</span>
+      </div>
+
+      <div id="lista"></div>
+
+      <button class="abtn abtn--primary" id="nuevo" style="margin-top:12px"><span id="i1"></span>Cargar un gasto</button>
+
+      <!-- Formulario de alta -->
+      <div class="acard" id="form" hidden style="margin-top:12px;border-color:var(--accent)">
+        <div class="acard__t"><span style="color:var(--accent)" id="i2"></span>Nuevo gasto</div>
+
+        <div class="afield">
+          <label class="afield__l">Tipo de gasto <span class="req">*</span></label>
+          <select class="aselect" id="tipo">
+            <option value="GST-01|60|1">Combustible — tope USD 60</option>
+            <option value="GST-02|15|1">Peaje — tope USD 15</option>
+            <option value="GST-03|10|1">Estacionamiento — tope USD 10</option>
+            <option value="GST-04|12|1">Almuerzo en ruta — tope USD 12</option>
+            <option value="GST-05|250|1">Repuesto de urgencia — tope USD 250</option>
+            <option value="GST-08|45|1">Herramienta menor — tope USD 45</option>
+          </select>
+          <div style="font-size:11px;color:var(--n-500);margin-top:4px">Del catálogo administrable. Cada tipo define tope y si exige comprobante.</div>
+        </div>
+
+        <div class="afield">
+          <label class="afield__l">Moneda del comprobante <span class="req">*</span></label>
+          <div class="aseg" id="cur">
+            <button class="is-active" data-c="USD">USD</button>
+            <button data-c="GS">Guaraníes</button>
+          </div>
+        </div>
+
+        <div class="afield">
+          <label class="afield__l">Monto <span class="req">*</span></label>
+          <input class="ainput" id="monto" inputmode="decimal" placeholder="0,00">
+          <div style="font-size:12px;color:var(--n-600);margin-top:5px;font-variant-numeric:tabular-nums" id="conv">
+            Equivale a <b>Gs 0</b></div>
+        </div>
+
+        <div class="afield">
+          <label class="afield__l">Comprobante <span class="req" id="req-comp">*</span></label>
+          <button class="abtn abtn--sm" id="foto" style="border-style:dashed;border-color:var(--accent);color:var(--accent-600)">
+            <span id="i3"></span>Sacar foto del ticket</button>
+          <div id="comp-ok" hidden style="margin-top:8px;display:flex;align-items:center;gap:9px;
+               background:var(--ok-050);border:1.5px solid #bfe3d0;border-radius:9px;padding:8px 10px">
+            <span style="color:var(--ok)" id="i4"></span>
+            <div style="flex:1;font-size:12px;color:var(--n-700)"><b>ticket.jpg</b> · 412 KB
+              <div style="font-family:var(--mono);font-size:9.5px;color:var(--n-500);margin-top:2px">
+                12:41:08 −03 · −25,28190/−57,63340 ±7 m</div></div>
+          </div>
+        </div>
+
+        <div class="afield" style="margin-bottom:0">
+          <label class="afield__l">Detalle</label>
+          <input class="ainput" placeholder="Opcional">
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:13px">
+          <button class="abtn abtn--sm" id="cancel" style="flex:0 0 104px">Cancelar</button>
+          <button class="abtn abtn--sm abtn--primary" id="save" style="flex:1">Guardar gasto</button>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+    </div>
+  </div>
+
+  <div id="tab-host"></div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "9 · Gastos con comprobante y doble moneda", bat: "40" });
+document.getElementById("ab-host").outerHTML = A.appbar({ back: "estados.html", title: "Gastos", sub: "OS-2026-0838" });
+document.getElementById("netbar-host").outerHTML = A.netbar("sync", 7, "Sincronizando 7 elementos…");
+[["b1","alert"],["i1","plus"],["i2","money"],["i3","camera"],["i4","okcircle"]]
+  .forEach(function (p) { document.getElementById(p[0]).innerHTML = NT.icon(p[1], 16); });
+
+var GASTOS = [
+  { t: "Combustible",      cod: "GST-01", usd: 34.00, comp: 1, h: "09:35", est: "ok" },
+  { t: "Peaje",            cod: "GST-02", usd:  3.50, comp: 1, h: "09:52", est: "ok" },
+  { t: "Almuerzo en ruta", cod: "GST-04", usd: 11.00, comp: 0, h: "12:40", est: "warn" }
+];
+
+function render() {
+  document.getElementById("lista").innerHTML = GASTOS.map(function (g, i) {
+    var bad = !g.comp;
+    return '<div class="acard" style="padding:11px;margin-bottom:9px;' +
+      (bad ? "border-color:var(--danger);border-width:1.5px" : "") + '">' +
+      '<div style="display:flex;align-items:flex-start;gap:10px">' +
+        '<div style="width:34px;height:34px;border-radius:9px;background:' + (bad ? "var(--danger-050)" : "var(--accent-050)") +
+          ';display:grid;place-items:center;color:' + (bad ? "var(--danger)" : "var(--accent)") + ';flex:0 0 34px">' +
+          NT.icon("money", 17) + "</div>" +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13.5px;font-weight:650;color:var(--n-900)">' + g.t + "</div>" +
+          '<div style="font-size:11px;color:var(--n-500);font-family:var(--mono)">' + g.cod + " · " + g.h + "</div>" +
+          (g.comp
+            ? '<div style="font-size:11px;color:var(--ok);font-weight:650;margin-top:3px">✓ Con comprobante</div>'
+            : '<div style="font-size:11px;color:var(--danger);font-weight:700;margin-top:3px">Sin comprobante — bloquea el cierre</div>') +
+        "</div>" +
+        '<div style="text-align:right">' + NT.money(g.usd) + "</div>" +
+      "</div>" +
+      (bad ? '<button class="abtn abtn--sm" data-fix="' + i + '" style="margin-top:9px;border-color:var(--danger);color:var(--danger)">' +
+             NT.icon("camera", 15) + "Cargar comprobante ahora</button>" : "") +
+      "</div>";
+  }).join("");
+
+  var tot = GASTOS.reduce(function (a, g) { return a + g.usd; }, 0);
+  document.getElementById("tot-usd").textContent = NT.usd(tot);
+  document.getElementById("tot-gs").textContent = NT.gs(tot * NT.fx());
+  document.getElementById("cnt").textContent = GASTOS.length;
+  var bad = GASTOS.filter(function (g) { return !g.comp; }).length;
+  document.getElementById("warn-box").hidden = bad === 0;
+  NT.paintFx();
+}
+render();
+
+document.addEventListener("click", function (e) {
+  var f = e.target.closest("[data-fix]");
+  if (f) {
+    var i = Number(f.dataset.fix);
+    GASTOS[i].comp = 1;
+    render();
+    A.toast({ kind: "ok", title: "Comprobante cargado",
+      msg: "Se selló con ubicación y hora del momento de la foto. El cierre queda desbloqueado.",
+      reason: "RECEIPT_OK · GST-04 · 12:41:08 −03 · −25,281900/−57,633400 ±7 m" });
+  }
+});
+
+/* Formulario */
+var CUR = "USD";
+document.getElementById("nuevo").addEventListener("click", function () {
+  document.getElementById("form").hidden = false;
+  document.getElementById("form").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+document.getElementById("cancel").addEventListener("click", function () {
+  document.getElementById("form").hidden = true;
+});
+document.getElementById("cur").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-c]"); if (!b) return;
+  this.querySelectorAll("button").forEach(function (x) { x.classList.remove("is-active"); });
+  b.classList.add("is-active"); CUR = b.dataset.c;
+  document.getElementById("monto").placeholder = CUR === "USD" ? "0,00" : "0";
+  conv();
+});
+function conv() {
+  var v = parseFloat(String(document.getElementById("monto").value).replace(",", ".")) || 0;
+  document.getElementById("conv").innerHTML = CUR === "USD"
+    ? "Equivale a <b>" + NT.gs(v * NT.fx()) + "</b>"
+    : "Equivale a <b>" + NT.usd(v / NT.fx()) + "</b>";
+}
+document.getElementById("monto").addEventListener("input", conv);
+
+var hasComp = false;
+document.getElementById("foto").addEventListener("click", function () {
+  hasComp = true;
+  document.getElementById("comp-ok").hidden = false;
+  A.toast({ kind: "ok", title: "Comprobante capturado", msg: "412 KB tras comprimir. Sellado con ubicación y hora." });
+});
+
+document.getElementById("save").addEventListener("click", function () {
+  var raw = String(document.getElementById("monto").value).replace(",", ".");
+  var v = parseFloat(raw) || 0;
+  var parts = document.getElementById("tipo").value.split("|");
+  var cod = parts[0], tope = Number(parts[1]);
+  var usd = CUR === "USD" ? v : v / NT.fx();
+  var nombre = document.getElementById("tipo").selectedOptions[0].textContent.split(" — ")[0];
+
+  if (!v) {
+    A.toast({ kind: "err", title: "Falta el monto", msg: "Escribí cuánto gastaste.",
+      reason: "VALIDATION · campo=monto · requerido" });
+    return;
+  }
+  if (usd > tope) {
+    A.toast({ kind: "err", title: "Supera el tope de «" + nombre + "»", sticky: true,
+      msg: "El tope por orden es " + NT.usd(tope) + " y estás cargando " + NT.usd(usd) +
+           ". Cargalo igual solo si tu supervisor lo aprueba: le va a llegar para revisión.",
+      reason: "EXPENSE_OVER_LIMIT · " + cod + " · tope=" + tope + " · monto=" + usd.toFixed(2) });
+    return;
+  }
+  if (!hasComp) {
+    A.toast({ kind: "err", title: "Falta el comprobante", sticky: true,
+      msg: "«" + nombre + "» exige comprobante. Sacale la foto al ticket antes de guardar.",
+      reason: "RECEIPT_REQUIRED · " + cod + " · comprobante=obligatorio" });
+    return;
+  }
+  GASTOS.push({ t: nombre, cod: cod, usd: usd, comp: 1, h: "12:47", est: "ok" });
+  render();
+  document.getElementById("form").hidden = true;
+  document.getElementById("monto").value = ""; hasComp = false;
+  document.getElementById("comp-ok").hidden = true;
+  A.toast({ kind: "ok", title: "Gasto cargado", msg: nombre + " · " + NT.usd(usd) + " · " + NT.gs(usd * NT.fx()) });
+});
+
+document.getElementById("tab-host").outerHTML = A.tabbar("gastos.html");
+</script>
+</body>
+</html>

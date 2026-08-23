@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App técnico · Reporte de trabajo</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="appmock">
+<div data-screen>
+  <div id="ab-host"></div>
+  <div id="netbar-host"></div>
+
+  <div class="ascreen">
+    <div class="apad">
+
+      <div class="abanner abanner--info">
+        <span style="flex:0 0 16px" id="b1"></span>
+        <div><strong>Formulario de refrigeración</strong>
+          Los campos salen del tipo de servicio. Se guarda solo mientras escribís, aunque estés sin señal.</div>
+      </div>
+
+      <!-- Checklist -->
+      <div class="acard" style="margin-top:11px">
+        <div class="acard__t"><span style="color:var(--accent)" id="i1"></span>Mediciones</div>
+        <div class="afield">
+          <label class="afield__l">Presión de baja medida <span class="req">*</span></label>
+          <div style="display:flex;gap:8px"><input class="ainput" value="0,4" inputmode="decimal">
+            <select class="aselect" style="flex:0 0 92px"><option>bar</option><option>psi</option></select></div>
+          <div style="font-size:11px;color:var(--danger);margin-top:4px;font-weight:600">
+            Fuera de rango · referencia 1,8 bar</div>
+        </div>
+        <div class="afield">
+          <label class="afield__l">Presión de alta medida <span class="req">*</span></label>
+          <div style="display:flex;gap:8px"><input class="ainput" value="14,2" inputmode="decimal">
+            <select class="aselect" style="flex:0 0 92px"><option>bar</option><option>psi</option></select></div>
+        </div>
+        <div style="display:flex;gap:9px">
+          <div class="afield" style="flex:1">
+            <label class="afield__l">Temp. inicial</label>
+            <input class="ainput" value="−8" inputmode="decimal"></div>
+          <div class="afield" style="flex:1">
+            <label class="afield__l">Temp. final <span class="req">*</span></label>
+            <input class="ainput" value="−19" inputmode="decimal"></div>
+        </div>
+      </div>
+
+      <!-- Diagnóstico -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--violet)" id="i2"></span>Diagnóstico</div>
+        <div class="afield">
+          <label class="afield__l">Causa detectada <span class="req">*</span></label>
+          <select class="aselect">
+            <option>Fuga en unión soldada</option>
+            <option>Falla de compresor</option>
+            <option>Presostato descalibrado</option>
+            <option>Obstrucción en filtro secador</option>
+            <option>Falla eléctrica de control</option>
+          </select>
+        </div>
+        <div class="afield" style="margin-bottom:0">
+          <label class="afield__l">Trabajo realizado <span class="req">*</span></label>
+          <textarea class="atextarea" id="txt">Se midió presión de baja en 0,4 bar contra 1,8 bar de referencia. Se detectó fuga en la unión soldada de la línea de succión, a la salida del evaporador. Se recuperó gas remanente, se rehízo la soldadura con plata al 15%, se hizo vacío durante 45 min y se recargó con 2,4 kg de R-404A. Se verificó estanqueidad con detector electrónico: sin fugas. Temperatura de cámara bajó a −19 °C en 2 h 10 min.</textarea>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--n-500);margin-top:4px">
+            <span id="save-state">Guardado local 12:18</span><span id="chars">0 caracteres</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Materiales -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--accent)" id="i3"></span>Materiales usados</div>
+        <div id="mats"></div>
+        <button class="abtn abtn--sm" id="addmat" style="margin-top:9px"><span id="i4"></span>Agregar material</button>
+      </div>
+
+      <!-- Pendientes -->
+      <div class="acard">
+        <div class="acard__t"><span style="color:var(--warn)" id="i5"></span>¿Queda algo pendiente?</div>
+        <div class="aseg" style="margin-bottom:11px">
+          <button id="pend-no">No, quedó resuelto</button>
+          <button class="is-active" id="pend-si">Sí, queda pendiente</button>
+        </div>
+        <div id="pend-box">
+          <div class="afield">
+            <label class="afield__l">Motivo del pendiente <span class="req">*</span></label>
+            <select class="aselect">
+              <option>Falta de repuesto</option>
+              <option selected>Requiere aprobación de presupuesto</option>
+              <option>Sucursal cerrada / sin acceso</option>
+              <option>Falta de herramienta especial</option>
+              <option>Trabajo fuera de alcance contratado</option>
+              <option>Condiciones inseguras</option>
+            </select>
+          </div>
+          <div class="afield" style="margin-bottom:0">
+            <label class="afield__l">Qué falta hacer <span class="req">*</span></label>
+            <textarea class="atextarea" style="min-height:76px">Reemplazo del presostato de baja, que está fuera de rango de calibración. Se cotiza aparte y requiere revisita.</textarea>
+          </div>
+          <div class="abanner abanner--warn" style="margin-top:11px">
+            <span style="flex:0 0 15px" id="i6"></span>
+            <div><strong>La orden va a quedar en amarillo</strong>
+              «Finalizada con pendientes». Se genera automáticamente la revisita y se avisa al cliente.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="abtn abtn--primary" id="guardar" style="margin-top:13px">
+        <span id="i7"></span>Guardar reporte
+      </button>
+      <button class="abtn abtn--sm" style="margin-top:9px" onclick="location.href='firmas.html'">Continuar a firmas</button>
+      <div style="height:12px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+A.boot({ label: "7 · Formulario y reporte de trabajo", bat: "42" });
+document.getElementById("ab-host").outerHTML = A.appbar({ back: "estados.html", title: "Reporte de trabajo", sub: "OS-2026-0838" });
+document.getElementById("netbar-host").outerHTML = A.netbar("off", 6, "Sin conexión · se guarda en el teléfono");
+[["b1","file"],["i1","settings"],["i2","wrench"],["i3","layers"],["i4","plus"],["i5","alert"],["i6","alert"],["i7","check"]]
+  .forEach(function (p) { document.getElementById(p[0]).innerHTML = NT.icon(p[1], 16); });
+
+var MATS = [
+  ["Gas refrigerante R-404A", "2,40 kg"],
+  ["Varilla de aporte plata 15%", "1 u"],
+  ["Filtro secador 1/4\"", "1 u"]
+];
+function mats() {
+  document.getElementById("mats").innerHTML = MATS.map(function (m, i) {
+    return '<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--n-100)">' +
+      '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--n-900)">' + m[0] + "</div>" +
+      '<div style="font-size:11.5px;color:var(--n-500)">' + m[1] + "</div></div>" +
+      '<button style="background:none;border:0;color:var(--n-400);cursor:pointer" data-m="' + i + '">' + NT.icon("trash", 15) + "</button></div>";
+  }).join("");
+}
+mats();
+
+function chars() {
+  var n = document.getElementById("txt").value.length;
+  document.getElementById("chars").textContent = n + " caracteres";
+  document.getElementById("chars").style.color = n < 40 ? "var(--danger)" : "var(--n-500)";
+}
+chars();
+document.getElementById("txt").addEventListener("input", function () {
+  chars();
+  document.getElementById("save-state").textContent = "Guardando…";
+  clearTimeout(window._sv);
+  window._sv = setTimeout(function () {
+    document.getElementById("save-state").textContent = "Guardado local " +
+      new Date().toTimeString().slice(0, 5);
+  }, 700);
+});
+
+document.addEventListener("click", function (e) {
+  var m = e.target.closest("[data-m]");
+  if (m) { MATS.splice(Number(m.dataset.m), 1); mats(); A.toast({ kind: "warn", title: "Material quitado" }); }
+});
+document.getElementById("addmat").addEventListener("click", function () {
+  A.toast({ kind: "info", title: "Agregar material",
+    msg: "Se elige del catálogo con la unidad de medida que corresponda. Se puede buscar por código o por nombre." });
+});
+document.getElementById("pend-no").addEventListener("click", function () {
+  document.getElementById("pend-box").hidden = true;
+  document.getElementById("pend-si").classList.remove("is-active");
+  this.classList.add("is-active");
+  A.toast({ kind: "ok", title: "Sin pendientes", msg: "La orden va a poder cerrarse en gris, como cerrada." });
+});
+document.getElementById("pend-si").addEventListener("click", function () {
+  document.getElementById("pend-box").hidden = false;
+  document.getElementById("pend-no").classList.remove("is-active");
+  this.classList.add("is-active");
+});
+document.getElementById("guardar").addEventListener("click", function () {
+  if (document.getElementById("txt").value.trim().length < 40) {
+    A.toast({ kind: "err", title: "El reporte es muy corto", sticky: true,
+      msg: "Escribí al menos 40 caracteres describiendo qué hiciste. Este texto va al PDF que firma el cliente.",
+      reason: "VALIDATION · campo=trabajo_realizado · min=40 · actual=" + document.getElementById("txt").value.trim().length });
+    return;
+  }
+  A.toast({ kind: "ok", title: "Reporte guardado en el teléfono",
+    msg: "Estás sin señal, así que quedó en la cola. Se sube solo cuando vuelva la conexión.",
+    reason: "QUEUED_OFFLINE · cola=7 elementos · reintento automatico" });
+});
+</script>
+</body>
+</html>

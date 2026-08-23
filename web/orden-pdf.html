@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · Orden de servicio (PDF)</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  .pdfstage { background: var(--n-200); padding: 20px; display: flex; justify-content: center; }
+  .page {
+    width: 794px; min-height: 1123px; background: #fff; box-shadow: var(--sh-3);
+    padding: 34px 40px 46px; font-size: 11px; color: #1a2230; position: relative;
+  }
+  .page + .page { margin-top: 20px; }
+  .p-head { display: flex; gap: 16px; align-items: flex-start; border-bottom: 2px solid var(--navy); padding-bottom: 12px; }
+  .p-logo { width: 42px; height: 42px; border-radius: 6px; background: linear-gradient(135deg,var(--accent),var(--violet)); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 18px; }
+  .p-title { font-size: 17px; font-weight: 700; color: var(--navy); letter-spacing: -.02em; }
+  .p-os { text-align: right; margin-left: auto; }
+  .p-os__n { font-size: 19px; font-weight: 800; color: var(--navy); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .p-sec { margin-top: 15px; }
+  .p-sec__t { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: var(--violet); border-bottom: 1px solid #dfe4ec; padding-bottom: 3px; margin-bottom: 7px; }
+  .p-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 14px; }
+  .p-f__l { font-size: 8.5px; text-transform: uppercase; letter-spacing: .05em; color: #6b7890; font-weight: 700; }
+  .p-f__v { font-size: 11px; font-weight: 500; }
+  .p-tbl { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  .p-tbl th { background: #f1f4f9; text-align: left; padding: 5px 7px; font-size: 8.5px; text-transform: uppercase; letter-spacing: .05em; color: #4e5a70; border-bottom: 1px solid #dfe4ec; font-weight: 800; }
+  .p-tbl td { padding: 5px 7px; border-bottom: 1px solid #eef1f6; vertical-align: top; }
+  .p-tbl .n { text-align: right; font-variant-numeric: tabular-nums; }
+  .p-tbl tfoot td { font-weight: 700; border-top: 1.5px solid var(--navy); border-bottom: 0; padding-top: 7px; }
+  .p-geo { background: #f7f9fc; border: 1px solid #e2e7ef; border-radius: 4px; padding: 8px 10px; font-family: var(--mono); font-size: 9.2px; line-height: 1.75; color: #384357; }
+  .p-geo b { color: var(--navy); }
+  .p-states { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .p-state { border: 1px solid #e2e7ef; border-radius: 4px; padding: 7px 9px; border-left-width: 3px; }
+  .p-state__t { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .p-state__h { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .p-state__m { font-size: 8.5px; color: #6b7890; line-height: 1.5; }
+  .p-photos { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .p-photo { border: 1px solid #e2e7ef; border-radius: 4px; overflow: hidden; }
+  .p-photo__img { height: 92px; display: grid; place-items: center; color: #98a4b8;
+    background: repeating-linear-gradient(45deg,#f4f6fa 0 8px,#eef1f6 8px 16px); }
+  .p-photo__c { padding: 4px 6px; font-size: 8.5px; color: #4e5a70; line-height: 1.45; border-top: 1px solid #eef1f6; }
+  .p-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .p-sign__box { border: 1px solid #e2e7ef; border-radius: 4px; padding: 9px 11px; }
+  .p-sign__c { height: 62px; display: grid; place-items: center; border-bottom: 1px solid #c3ccda; margin-bottom: 6px; }
+  .p-foot { position: absolute; left: 40px; right: 40px; bottom: 20px; border-top: 1px solid #e2e7ef; padding-top: 7px;
+    display: flex; font-size: 8.5px; color: #6b7890; }
+  .p-wm { position: absolute; right: 40px; top: 300px; font-size: 62px; font-weight: 800; color: rgba(106,74,143,.055);
+    transform: rotate(-32deg); letter-spacing: -.04em; pointer-events: none; }
+  .p-hash { font-family: var(--mono); font-size: 8px; color: #98a4b8; word-break: break-all; }
+  @media print { .app > .topbar, .app > .body > .rail, .subbar, .mock-ribbon { display: none !important; }
+    .pdfstage { background: #fff; padding: 0; } .page { box-shadow: none; } }
+  @media (max-width: 900px) { .page { width: 100%; padding: 20px; } .p-grid, .p-states, .p-photos { grid-template-columns: repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><span>Análisis</span><span class="sep">/</span><span>Orden de servicio</span></div>
+      <div class="subbar__title">OS-2026-0838 · vista previa del PDF</div>
+    </div>
+    <div class="subbar__right">
+      <span class="badge badge--trabajando"><i class="badge__dot"></i>Trabajando</span>
+      <select class="select" style="width:176px"><option>Plantilla estándar</option><option>Plantilla con fotos ampliadas</option><option>Plantilla sin costos</option></select>
+      <label class="check u-sm"><input type="checkbox" checked> Incluir geoestampas</label>
+      <label class="check u-sm"><input type="checkbox" checked> Incluir fotos</label>
+      <button class="btn" id="print"><span id="pri"></span>Imprimir</button>
+      <button class="btn" data-act="mock" data-what="El envío por correo al cliente"><span id="mi"></span>Enviar al cliente</button>
+      <button class="btn btn--primary" data-act="mock" data-what="La descarga del PDF"><span id="di"></span>Descargar PDF</button>
+    </div>
+  </div>
+
+  <div class="content content--flush">
+    <div class="pdfstage">
+      <div>
+      <!-- ============ PÁGINA 1 ============ -->
+      <div class="page">
+        <div class="p-wm">EN CURSO</div>
+
+        <div class="p-head">
+          <div class="p-logo">N</div>
+          <div>
+            <div class="p-title">Orden de servicio</div>
+            <div style="font-size:10px;color:#4e5a70;line-height:1.55">
+              <b>Frigorífico Guaraní S.A.</b> · RUC 80098765-4<br>
+              Avda. Artigas 2145, Asunción · +595 21 555-0100 · servicios@guarani.com.py
+            </div>
+          </div>
+          <div class="p-os">
+            <div style="font-size:8.5px;text-transform:uppercase;letter-spacing:.07em;color:#6b7890;font-weight:700">N.º de orden</div>
+            <div class="p-os__n">OS-2026-0838</div>
+            <div style="font-size:9.5px;color:#4e5a70;margin-top:2px">Emitida 22/08/2026 09:12</div>
+            <div style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:9px;background:#e8f6ee;color:#1C7F4E;font-size:9px;font-weight:800;border:1px solid #bfe3d0">TRABAJANDO</div>
+          </div>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-sec__t">Cliente y sucursal</div>
+          <div class="p-grid">
+            <div><div class="p-f__l">Cliente</div><div class="p-f__v">Supermercado Stock S.A.</div></div>
+            <div><div class="p-f__l">RUC</div><div class="p-f__v">80012345-7</div></div>
+            <div><div class="p-f__l">Sucursal</div><div class="p-f__v">Suc. Centro</div></div>
+            <div><div class="p-f__l">Contacto en sitio</div><div class="p-f__v">Andrea Duarte</div></div>
+            <div style="grid-column:span 2"><div class="p-f__l">Dirección</div><div class="p-f__v">Palma 456 c/ 14 de Mayo, Asunción</div></div>
+            <div><div class="p-f__l">Teléfono</div><div class="p-f__v">+595 985 664-210</div></div>
+            <div><div class="p-f__l">Coordenadas de la sucursal</div><div class="p-f__v" style="font-family:var(--mono);font-size:9.5px">−25,28190 / −57,63340</div></div>
+          </div>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-sec__t">Datos del servicio</div>
+          <div class="p-grid">
+            <div><div class="p-f__l">Tipo</div><div class="p-f__v">Correctivo · Refrigeración industrial</div></div>
+            <div><div class="p-f__l">Prioridad</div><div class="p-f__v">Alta — SLA 24 h</div></div>
+            <div><div class="p-f__l">Programado</div><div class="p-f__v">22/08/2026 10:00 – 13:00</div></div>
+            <div><div class="p-f__l">Técnico asignado</div><div class="p-f__v">Marcos Cáceres · CI 3.998.120</div></div>
+          </div>
+          <div style="margin-top:9px">
+            <div class="p-f__l">Descripción del problema reportado</div>
+            <div class="p-f__v" style="margin-top:2px;line-height:1.6">Cámara de congelados N.º 3 no sostiene temperatura: sube a −8 °C durante el día.
+              Se sospecha pérdida de gas o falla del presostato de baja. El cliente reporta el problema desde el martes 19/08.</div>
+          </div>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-sec__t">Trazabilidad de campo — geoestampado</div>
+          <div class="p-states">
+            <div class="p-state" style="border-left-color:#D97316">
+              <div class="p-state__t" style="color:#D97316">En camino</div>
+              <div class="p-state__h">09:41</div>
+              <div class="p-state__m">−25,29910 / −57,60220<br>±11 m · a 4,2 km del destino</div>
+            </div>
+            <div class="p-state" style="border-left-color:#1C7F4E">
+              <div class="p-state__t" style="color:#1C7F4E">Check-in</div>
+              <div class="p-state__h">09:58</div>
+              <div class="p-state__m">−25,28188 / −57,63344<br>±8 m · a 4 m de la sucursal ✓</div>
+            </div>
+            <div class="p-state" style="border-left-color:#1C7F4E">
+              <div class="p-state__t" style="color:#1C7F4E">Trabajando</div>
+              <div class="p-state__h">10:02</div>
+              <div class="p-state__m">−25,28190 / −57,63340<br>±7 m · dentro del radio ✓</div>
+            </div>
+            <div class="p-state" style="border-left-color:#c3ccda">
+              <div class="p-state__t" style="color:#6b7890">Check-out</div>
+              <div class="p-state__h">—</div>
+              <div class="p-state__m">Pendiente. La orden no cierra sin check-out geoestampado.</div>
+            </div>
+          </div>
+
+          <div class="p-geo" style="margin-top:9px">
+            <b>SELLO DE CHECK-IN (evidencia no repudiable)</b><br>
+            latitud       −25,281880 &nbsp;·&nbsp; longitud −57,633440 &nbsp;·&nbsp; precisión ±8 m &nbsp;·&nbsp; altitud 43 m<br>
+            reloj del dispositivo 2026-08-22T09:58:41−03:00 &nbsp;·&nbsp; reloj del servidor 2026-08-22T09:58:44−03:00 &nbsp;·&nbsp; deriva +3 s<br>
+            origen de la posición GPS satelital (no red) &nbsp;·&nbsp; simulación de ubicación NO detectada &nbsp;·&nbsp; modo avión NO<br>
+            dispositivo Moto G84 · Android 14 · IMEI ****7712 &nbsp;·&nbsp; app NovaTrack 0.1.0 &nbsp;·&nbsp; batería 47%<br>
+            distancia a la sucursal registrada 4 m (radio de tolerancia 80 m) → <b>DENTRO DE RADIO</b><br>
+            <span class="p-hash">sha256 = 9f2c41ab77e0d3b5c8146ea90f7d2b3159ac4e08d6f1b27c53a0e94db6f8c210</span>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:7px;font-size:9px;color:#6b7890;align-items:flex-start">
+            <span style="color:#A16207;flex:0 0 13px" id="gi"></span>
+            <span><b style="color:#A16207">Hueco de cobertura registrado:</b> sin señal GPS entre 11:28:04 y 11:42:11 (14 min 7 s).
+              El hueco se informa tal cual: no se interpola una posición ni se rellena el tramo. La app siguió trabajando offline y encoló los eventos.</span>
+          </div>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-sec__t">Trabajo realizado</div>
+          <div class="p-f__v" style="line-height:1.6">Se midió presión de baja en 0,4 bar contra 1,8 bar de referencia. Se detectó fuga en la unión soldada
+            de la línea de succión, a la salida del evaporador. Se recuperó gas remanente, se rehízo la soldadura con plata al 15%,
+            se hizo vacío durante 45 min y se recargó con 2,4 kg de R-404A. Se verificó estanqueidad con detector electrónico: sin fugas.
+            Temperatura de cámara bajó a −19 °C en 2 h 10 min. <b>Queda pendiente</b> el reemplazo del presostato de baja, que está fuera de
+            rango de calibración; se cotiza aparte y requiere revisita.</div>
+        </div>
+
+        <div class="p-foot">
+          <span>NovaTrack · by Noventra — documento generado el 22/08/2026 11:42</span>
+          <span style="margin-left:auto">Página 1 de 2 · OS-2026-0838</span>
+        </div>
+      </div>
+
+      <!-- ============ PÁGINA 2 ============ -->
+      <div class="page">
+        <div class="p-head" style="border-bottom-width:1px">
+          <div class="p-logo" style="width:30px;height:30px;font-size:13px">N</div>
+          <div><div class="p-title" style="font-size:13px">Orden de servicio — continuación</div></div>
+          <div class="p-os"><div class="p-os__n" style="font-size:14px">OS-2026-0838</div></div>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-sec__t">Evidencia fotográfica</div>
+          <div class="p-photos">
+            <div class="p-photo"><div class="p-photo__img" id="ph1"></div>
+              <div class="p-photo__c"><b>Antes</b> · Manómetro 0,4 bar<br>10:07 · −25,28190/−57,63340 ±7 m</div></div>
+            <div class="p-photo"><div class="p-photo__img" id="ph2"></div>
+              <div class="p-photo__c"><b>Falla</b> · Fuga en unión soldada<br>10:24 · −25,28191/−57,63339 ±7 m</div></div>
+            <div class="p-photo"><div class="p-photo__img" id="ph3"></div>
+              <div class="p-photo__c"><b>Durante</b> · Soldadura rehecha<br>10:58 · −25,28190/−57,63341 ±6 m</div></div>
+            <div class="p-photo"><div class="p-photo__img" id="ph4"></div>
+              <div class="p-photo__c"><b>Después</b> · Cámara a −19 °C<br>12:14 · −25,28189/−57,63340 ±8 m</div></div>
+          </div>
+          <div style="font-size:8.5px;color:#6b7890;margin-top:5px">Cada foto lleva la geoestampa y el reloj del momento de la captura, tomados en el dispositivo antes de comprimir. 4 de 4 sincronizadas.</div>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-sec__t">Materiales y mano de obra</div>
+          <table class="p-tbl">
+            <thead><tr><th style="width:44px">Cant.</th><th>Detalle</th><th style="width:78px">Tipo</th>
+              <th class="n" style="width:82px">Unitario USD</th><th class="n" style="width:82px">Subtotal USD</th><th class="n" style="width:96px">Subtotal Gs</th></tr></thead>
+            <tbody id="items"></tbody>
+            <tfoot>
+              <tr><td colspan="4" class="n">Subtotal</td><td class="n" id="t1"></td><td class="n" id="t1g"></td></tr>
+              <tr><td colspan="4" class="n">IVA 10%</td><td class="n" id="t2"></td><td class="n" id="t2g"></td></tr>
+              <tr><td colspan="4" class="n" style="font-size:12px">TOTAL</td><td class="n" id="t3" style="font-size:12px"></td><td class="n" id="t3g" style="font-size:12px"></td></tr>
+            </tfoot>
+          </table>
+          <div style="font-size:8.5px;color:#6b7890;margin-top:5px">
+            Tipo de cambio aplicado: <b>1 USD = <span data-fx-label>7.350</span> Gs</b>, cotización del 22/08/2026.
+            El TC queda congelado en la orden al momento del cierre: un cambio posterior de cotización no altera este documento.</div>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-sec__t">Gastos rendidos por el técnico</div>
+          <table class="p-tbl">
+            <thead><tr><th>Fecha y hora</th><th>Tipo de gasto</th><th>Comprobante</th><th class="n">USD</th><th class="n">Gs</th><th style="width:96px">Estado</th></tr></thead>
+            <tbody id="gastos"></tbody>
+          </table>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-sec__t">Conformidad</div>
+          <div class="p-sign">
+            <div class="p-sign__box">
+              <div class="p-sign__c" id="sg1"></div>
+              <div class="p-f__l">Firma del técnico</div>
+              <div class="p-f__v">Marcos Cáceres · CI 3.998.120</div>
+              <div style="font-size:8.5px;color:#6b7890;margin-top:2px">Firmado en el dispositivo 22/08/2026 12:19 · −25,28190/−57,63340 ±7 m</div>
+            </div>
+            <div class="p-sign__box">
+              <div class="p-sign__c" style="color:#c3ccda;font-size:9px">Pendiente de firma en sitio</div>
+              <div class="p-f__l">Firma y aclaración del cliente</div>
+              <div class="p-f__v">Andrea Duarte · Encargada de sucursal</div>
+              <div style="font-size:8.5px;color:#A16207;margin-top:2px"><b>La orden no puede cerrarse sin esta firma.</b></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-sec">
+          <div class="p-geo">
+            <b>VERIFICACIÓN DEL DOCUMENTO</b><br>
+            Este PDF se genera desde los eventos registrados en NovaTrack. Cada transición de estado, foto, gasto y firma
+            conserva su geoestampa y su doble marca de tiempo (dispositivo y servidor).<br>
+            <span class="p-hash">documento sha256 = 4c8e0b71fa93d25e6817cb04a9f3e57d20b6194ac8d73f0e5b21976cae43d8f5</span><br>
+            Verificable en: novatrack.app/v/OS-2026-0838
+          </div>
+        </div>
+
+        <div class="p-foot">
+          <span>NovaTrack · by Noventra — documento generado el 22/08/2026 11:42</span>
+          <span style="margin-left:auto">Página 2 de 2 · OS-2026-0838</span>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "orden" });
+document.getElementById("pri").innerHTML = NT.icon("printer", 14);
+document.getElementById("mi").innerHTML  = NT.icon("upload", 14);
+document.getElementById("di").innerHTML  = NT.icon("download", 14);
+document.getElementById("gi").innerHTML  = NT.icon("alert", 13);
+["ph1","ph2","ph3","ph4"].forEach(function (k) { document.getElementById(k).innerHTML = NT.icon("camera", 26); });
+document.getElementById("sg1").innerHTML =
+  '<svg width="150" height="46" viewBox="0 0 150 46"><path d="M6 34 C 20 8, 30 40, 42 20 S 60 6, 72 28 S 92 40, 104 16 C 112 4, 124 30, 144 22" ' +
+  'fill="none" stroke="#1a2230" stroke-width="1.6" stroke-linecap="round"/></svg>';
+
+var FX = NT.fx();
+function g(u) { return NT.num(Math.round(u * FX / 1000) * 1000); }
+
+var ITEMS = [
+  [ "2,40 kg", "Gas refrigerante R-404A",                        "Repuesto", 38.50 ],
+  [ "1 u",     "Varilla de aporte plata 15% — soldadura",        "Repuesto", 12.00 ],
+  [ "1 u",     "Filtro secador 1/4\"",                           "Repuesto", 21.00 ],
+  [ "3,50 h",  "Mano de obra técnica especializada",             "Servicio", 45.00 ],
+  [ "1 u",     "Traslado ida y vuelta (18 km)",                  "Servicio", 22.00 ]
+];
+var sub = 0;
+document.getElementById("items").innerHTML = ITEMS.map(function (r) {
+  var qty = parseFloat(String(r[0]).replace(",", ".")) || 1;
+  var st = r[3] * qty; sub += st;
+  return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] +
+    '</td><td class="n">' + NT.num(r[3], 2) + '</td><td class="n">' + NT.num(st, 2) + '</td><td class="n">' + g(st) + "</td></tr>";
+}).join("");
+var iva = sub * .10, tot = sub + iva;
+document.getElementById("t1").textContent  = NT.num(sub, 2);
+document.getElementById("t1g").textContent = g(sub);
+document.getElementById("t2").textContent  = NT.num(iva, 2);
+document.getElementById("t2g").textContent = g(iva);
+document.getElementById("t3").textContent  = NT.num(tot, 2);
+document.getElementById("t3g").textContent = g(tot);
+
+var GASTOS = [
+  ["22/08 09:35", "Combustible",            "Ticket 0041-882471", 34.00, "ok",   "Aprobado"],
+  ["22/08 09:52", "Peaje",                  "Ticket 118-4420",     3.50, "ok",   "Aprobado"],
+  ["22/08 12:40", "Almuerzo en ruta",       "Sin comprobante",    11.00, "warn", "Observado"]
+];
+document.getElementById("gastos").innerHTML = GASTOS.map(function (r) {
+  var col = r[4] === "ok" ? "#1C7F4E" : "#A16207";
+  var bg  = r[4] === "ok" ? "#e8f6ee" : "#fdf5e6";
+  return "<tr><td>" + r[0] + "</td><td>" + r[1] + '</td><td style="' + (r[4] === "warn" ? "color:#A16207;font-weight:700" : "") + '">' + r[2] +
+    '</td><td class="n">' + NT.num(r[3], 2) + '</td><td class="n">' + g(r[3]) +
+    '</td><td><span style="display:inline-block;padding:1px 7px;border-radius:9px;background:' + bg + ";color:" + col +
+    ';font-size:8.5px;font-weight:800;border:1px solid ' + col + '33">' + r[5] + "</span></td></tr>";
+}).join("") +
+  '<tr><td colspan="3" style="text-align:right;font-weight:700">Total rendido</td><td class="n" style="font-weight:700">' +
+  NT.num(48.5, 2) + '</td><td class="n" style="font-weight:700">' + g(48.5) + "</td><td></td></tr>";
+
+NT.paintFx();
+document.getElementById("print").addEventListener("click", function () {
+  NT.toast({ kind: "info", title: "Vista de impresión", msg: "En el mockup se abre el diálogo del navegador. El PDF real se arma en el servidor con la plantilla elegida." });
+  setTimeout(function () { window.print(); }, 500);
+});
+</script>
+</body>
+</html>
