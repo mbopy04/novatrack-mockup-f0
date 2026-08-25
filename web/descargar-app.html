@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaTrack · App del técnico</title>
+<link rel="stylesheet" href="../assets/css/novatrack.css">
+<style>
+  .apk-hero { display: grid; grid-template-columns: 1fr 208px; gap: 22px; align-items: start; }
+  .apk-ver { font-size: 30px; font-weight: 800; letter-spacing: -.5px; color: var(--navy); line-height: 1.1; }
+  .apk-meta { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; margin-top: 14px; font-size: var(--fs-md); }
+  .apk-meta dt { color: var(--n-600); }
+  .apk-meta dd { margin: 0; color: var(--n-800); font-variant-numeric: tabular-nums; }
+  .qr-box { text-align: center; }
+  .qr-box svg { width: 178px; height: 178px; display: block; border: 1px solid var(--n-200); border-radius: var(--r-md); background: #fff; padding: 8px; }
+  .hash { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; word-break: break-all; line-height: 1.5; color: var(--n-700); }
+  .steps { counter-reset: s; display: flex; flex-direction: column; gap: 13px; }
+  .steps li { counter-increment: s; list-style: none; display: grid; grid-template-columns: 25px 1fr; gap: 11px; align-items: start; }
+  .steps li::before { content: counter(s); display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: var(--accent-050); color: var(--navy); font-weight: 700; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="app" data-shell>
+<div data-page style="display:contents">
+
+  <div class="subbar">
+    <div>
+      <div class="crumbs"><span>Sistema</span><span class="sep">/</span><span>App del técnico</span></div>
+      <div class="subbar__title">App del técnico — instalación directa</div>
+    </div>
+    <div class="subbar__right">
+      <span class="u-xs u-muted">Sin Play Store</span>
+      <button class="btn" data-act="mock" data-what="El historial de versiones publicadas"><span id="hi"></span>Historial</button>
+      <button class="btn btn--primary" id="publicar"><span id="ui"></span>Publicar nueva versión</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stack">
+
+      <div class="card">
+        <div class="card__head">
+          <div>
+            <div class="card__title">Versión publicada</div>
+            <div class="card__sub">Es la que baja cualquiera que escanee el código. Publicar una nueva la reemplaza acá mismo.</div>
+          </div>
+          <div class="card__right"><span class="badge badge--ok"><span class="badge__dot"></span>Activa</span></div>
+        </div>
+        <div class="card__body">
+          <div class="apk-hero">
+            <div>
+              <div class="apk-ver">NovaTrack Técnico 1.0.4</div>
+              <dl class="apk-meta">
+                <dt>Código de versión</dt><dd>14</dd>
+                <dt>Tamaño</dt><dd>48,2 MB</dd>
+                <dt>Publicada</dt><dd>25/08/2026 14:10</dd>
+                <dt>Servidor</dt><dd>https://147.93.15.169</dd>
+                <dt>Android mínimo</dt><dd>8.0 (API 26)</dd>
+              </dl>
+              <div style="display:flex; gap:9px; margin-top:18px">
+                <a class="btn btn--primary" href="#" data-act="mock" data-what="La descarga del APK"><span id="di"></span>Descargar APK</a>
+                <button class="btn" id="copiar"><span id="ci"></span>Copiar enlace</button>
+              </div>
+              <div class="u-xs u-muted" style="margin-top:9px">
+                Novedades de esta versión: rendición de gastos con tope por tipo, y la orden terminada deja de desaparecer del teléfono.
+              </div>
+            </div>
+            <div class="qr-box">
+              <svg viewBox="0 0 29 29" shape-rendering="crispEdges" role="img" aria-label="Código QR con el enlace de descarga" id="qr"></svg>
+              <div class="u-xs u-muted" style="margin-top:8px">Escaneá con la cámara<br>del teléfono del técnico</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid--2">
+
+        <div class="card">
+          <div class="card__head"><div class="card__title">Cómo instalarla</div></div>
+          <div class="card__body">
+            <ol class="steps">
+              <li><div><strong>Escaneá el código</strong> con la cámara del teléfono, o abrí el enlace copiado.</div></li>
+              <li><div><strong>Permití la instalación</strong> cuando Android pregunte. Es «Instalar apps desconocidas», y hay que dárselo al navegador que hizo la descarga — no a NovaTrack.</div></li>
+              <li><div><strong>Abrí el archivo descargado</strong> y confirmá la instalación.</div></li>
+              <li><div><strong>Entrá con el código y el PIN</strong> del técnico: <b>TEC-01</b> y sus 6 dígitos. Los dás de alta y los reseteás en <a href="colaboradores.html">Colaboradores</a>.</div></li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__head">
+            <div><div class="card__title">Verificar el archivo</div>
+              <div class="card__sub">Sin tienda, nadie garantiza que lo que bajó llegó entero.</div></div>
+          </div>
+          <div class="card__body">
+            <div class="u-sm" style="margin-bottom:9px">SHA-256 del APK publicado:</div>
+            <div class="hash">3f9a1c07e5b84d2a6f0c19be7d4358a2c6e0fb1937d85ac24e6b0f7213c9d84e</div>
+            <div class="banner banner--info" style="margin-top:14px">
+              <span class="banner__icon" id="bi2"></span>
+              <div><strong>Una descarga cortada no se ve</strong>
+                Un APK truncado falla al instalar con «Aplicación no instalada», que es el mismo mensaje que da un APK mal firmado.
+                Si pasa, comparar esta huella es lo que distingue un caso del otro.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="banner banner--warn">
+        <span class="banner__icon" id="bi"></span>
+        <div><strong>Actualizar es manual, y el teléfono no avisa solo</strong>
+          Sin Play Store no hay actualización automática: cuando se publica una versión nueva hay que volver a mandar este enlace.
+          La app muestra su propia versión en Ajustes, así que el técnico puede comparar contra la de acá arriba.
+          Android además <b>se niega</b> a instalar encima una versión con código de versión menor o igual, y el error no lo explica.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/js/novatrack.js"></script>
+<script>
+NT.boot({ active: "apk" });
+document.getElementById("hi").innerHTML = NT.icon("clock", 14);
+document.getElementById("ui").innerHTML = NT.icon("upload", 14);
+document.getElementById("di").innerHTML = NT.icon("download", 14);
+document.getElementById("ci").innerHTML = NT.icon("file", 14);
+document.getElementById("bi").innerHTML = NT.icon("alert", 16);
+document.getElementById("bi2").innerHTML = NT.icon("info", 16);
+
+/* El QR es maqueta: un patrón fijo de 29×29 con los tres localizadores en su
+   lugar, para que se vea el peso visual real del bloque. El de la web sale de
+   `src/lib/qr.ts`, que ya está escrito y probado. */
+(function () {
+  var N = 29, svg = document.getElementById("qr"), out = [];
+  function loc(ox, oy) {
+    for (var y = 0; y < 7; y++) for (var x = 0; x < 7; x++) {
+      var borde = x === 0 || x === 6 || y === 0 || y === 6;
+      var centro = x >= 2 && x <= 4 && y >= 2 && y <= 4;
+      if (borde || centro) out.push([ox + x, oy + y]);
+    }
+  }
+  loc(0, 0); loc(N - 7, 0); loc(0, N - 7);
+  function ocupado(x, y) {
+    return (x < 8 && y < 8) || (x >= N - 8 && y < 8) || (x < 8 && y >= N - 8);
+  }
+  var s = 1103515245, r = function () { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+  for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+    if (!ocupado(x, y) && r() > 0.52) out.push([x, y]);
+  }
+  svg.innerHTML = out.map(function (p) {
+    return '<rect x="' + p[0] + '" y="' + p[1] + '" width="1" height="1" fill="#0b2545"/>';
+  }).join("");
+})();
+
+document.getElementById("copiar").addEventListener("click", function () {
+  NT.toast({ kind: "ok", title: "Enlace copiado",
+    msg: "https://147.93.15.169/descargar/novatrack-tecnico-1.0.4.apk — el mismo que lleva el código QR." });
+});
+document.getElementById("publicar").addEventListener("click", function () {
+  NT.toast({ kind: "info", title: "Publicar una versión nueva",
+    msg: "Se sube el APK firmado que sale de EAS. La pantalla calcula el SHA-256 y lee la versión del archivo, así que la huella no se transcribe a mano." });
+});
+</script>
+</body>
+</html>

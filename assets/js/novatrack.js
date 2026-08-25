@@ -165,6 +165,7 @@
       { k: "orden",     t: "Orden de servicio",   i: "file",     h: "orden-pdf.html" }
     ]},
     { g: "Sistema", items: [
+      { k: "apk",       t: "App del técnico",     i: "download", h: "descargar-app.html" },
       { k: "patrones",  t: "Patrones de UI",      i: "settings", h: "patrones.html" }
     ]}
   ];
